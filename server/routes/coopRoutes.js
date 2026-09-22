@@ -148,7 +148,7 @@ router.post("/save", (req, res) => {
        db.query(
         `
           SELECT COUNT(*) AS total
-          FROM Coops
+          FROM coops
           WHERE UserID = ?
         `,
         [userId],
@@ -199,7 +199,7 @@ router.post("/save", (req, res) => {
 
         db.query(
           `
-            INSERT INTO Coops
+            INSERT INTO coops
             (
               UserID,
               CoopName,
@@ -253,7 +253,7 @@ router.get(
     db.query(
       `
         SELECT *
-        FROM Coops
+        FROM coops
         WHERE UserID = ?
         ORDER BY CoopID DESC
       `,
@@ -293,7 +293,7 @@ router.get(
     db.query(
       `
         SELECT *
-        FROM Coops
+        FROM coops
         WHERE UserID = ?
         ORDER BY CoopID DESC
         LIMIT 1
@@ -355,7 +355,7 @@ router.put(
 
     db.query(
       `
-        UPDATE Coops
+        UPDATE coops
         SET Status = 'inactive'
         WHERE UserID = ?
       `,
@@ -383,7 +383,7 @@ router.put(
 
         db.query(
           `
-            UPDATE Coops
+            UPDATE coops
             SET Status = 'active'
             WHERE CoopID = ?
           `,
@@ -432,7 +432,7 @@ router.get(
     db.query(
       `
         SELECT *
-        FROM Coops
+        FROM coops
         WHERE UserID = ?
         AND Status = 'active'
         LIMIT 1
@@ -478,7 +478,7 @@ router.put(
 
     db.query(
       `
-        UPDATE Coops
+        UPDATE coops
         SET Status = 'inactive'
         WHERE CoopID = ?
       `,
@@ -541,7 +541,7 @@ router.delete(
 
     db.query(
       `
-        DELETE FROM Coops
+        DELETE FROM coops
         WHERE CoopID = ?
         AND UserID = ?
       `,
@@ -601,3 +601,4 @@ router.delete(
 
 
 module.exports = router;
+
