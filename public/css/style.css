@@ -17755,3 +17755,19 @@ input:checked + span::before {
   box-shadow: none;
   transform: none;
 }
+
+body {
+  animation: smartcoopPageIn 0.3s ease-out;
+}
+
+@keyframes smartcoopPageIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

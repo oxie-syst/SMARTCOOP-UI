@@ -416,113 +416,188 @@ function setupAdminLoginPage() {
     }
 
 async function loadDashboard() {
+  const storedUser =
+    localStorage.getItem("user") ||
+    localStorage.getItem(SMARTCOOP_USER_KEY);
 
-    const storedUser = localStorage.getItem("user");
+  if (!storedUser) {
+    window.location.href = "login.html";
+    return;
+  }
 
-    if (!storedUser) {
-        window.location.href = "login.html";
-        return;
-    }
+  let user;
 
-    const user = JSON.parse(storedUser);
-    const firstName = user.name.split(" ")[0];
+  try {
+    user = JSON.parse(storedUser);
+  } catch (error) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  const displayName =
+    user.name ||
+    user.FullName ||
+    user.fullName ||
+    user.username ||
+    user.Username ||
+    "";
+
+  const firstName = displayName
+    ? displayName.split(" ")[0]
+    : "";
+
+  if (displayName) {
+    setText("topUsername", displayName);
+    setText("dropdownName", displayName);
+  }
+
+  setText(
+    "dropdownEmail",
+    user.email ||
+    user.Email ||
+    ""
+  );
+
+  if (firstName) {
+    setText(
+      "userAvatarTop",
+      firstName.charAt(0).toUpperCase()
+    );
+
+    setText(
+      "greeting",
+      `${getGreeting()}, ${firstName}! 👋`
+    );
+  }
+
+  try {
     const response = await fetch(
-        `/api/coops/active/${user.id}`
+      `/api/coops/active/${user.id || user.UserID}`
     );
 
     const data = await response.json();
 
-const activeProject = data.coop;
-if (activeProject) {
+    const activeProject = data.coop;
 
-    setText("totalChickens", activeProject.NumberOfChickens);
+    window.dashboardActiveProject =
+      activeProject || null;
 
-    setText("activeCoops", 1);
+    if (activeProject) {
+      setText(
+        "totalChickens",
+        activeProject.NumberOfChickens
+      );
 
-    setText("activeCoopsText", "1 Active Coop");
+      setText("activeCoops", 1);
 
-    setText(
+      setText(
+        "activeCoopsText",
+        "1 Active Coop"
+      );
+
+      setText(
         "monthlyCost",
-        `₱${Number(activeProject.TotalCost).toLocaleString()}`
-    );
+        `₱${Number(
+          activeProject.TotalCost || 0
+        ).toLocaleString()}`
+      );
 
-}
-    document.getElementById("topUsername").textContent = user.name;
-    document.getElementById("dropdownName").textContent = user.name;
-    document.getElementById("dropdownEmail").textContent = user.email;
+      const projectContainer =
+        document.getElementById(
+          "projectContainer"
+        );
 
-    if (document.getElementById("userAvatarTop")) {
-        document.getElementById("userAvatarTop").textContent =
-            firstName.charAt(0).toUpperCase();
-    }
-
-    document.getElementById("greeting").textContent =
-    `${getGreeting()}, ${firstName}! 👋`;
-
-
-      window.dashboardActiveProject = activeProject;
-
-      const projectContainer = document.getElementById("projectContainer");
-
-      if (projectContainer && activeProject) {
+      if (projectContainer) {
         projectContainer.innerHTML = `
-      <div class="project-card">
-        <div class="project-header">
-          <div>
-            <h3>${activeProject.CoopName}</h3>
-            <p>${activeProject.ChickenType}${activeProject.Climate ? ` • ${activeProject.Climate} Climate` : ""}</p>
+          <div class="project-card">
+
+            <div class="project-header">
+              <div>
+                <h3>${activeProject.CoopName}</h3>
+                <p>
+                  ${activeProject.ChickenType}${
+                    activeProject.Climate
+                      ? ` • ${activeProject.Climate} Climate`
+                      : ""
+                  }
+                </p>
+              </div>
+
+              <span class="status-badge">
+                Active
+              </span>
+            </div>
+
+            <div class="project-grid">
+
+              <div class="project-item">
+                <small>Dimensions</small>
+                <strong>
+                  ${activeProject.CoopSize}
+                </strong>
+              </div>
+
+              <div class="project-item">
+                <small>Chickens</small>
+                <strong>
+                  ${activeProject.NumberOfChickens}
+                </strong>
+              </div>
+
+              <div class="project-item">
+                <small>Capacity Usage</small>
+                <strong>85%</strong>
+              </div>
+
+              <div class="project-item">
+                <small>Investment</small>
+                <strong>
+                  ₱${Number(
+                    activeProject.TotalCost || 0
+                  ).toLocaleString()}
+                </strong>
+              </div>
+
+            </div>
+
+            <div class="project-actions">
+
+              <button
+                type="button"
+                class="model-btn"
+                onclick="openDashboardModel()"
+              >
+                <i data-lucide="box"></i>
+                View 3D Model
+              </button>
+
+              <button
+                type="button"
+                class="cost-btn"
+                onclick="openDashboardCosts()"
+              >
+                <i data-lucide="wallet"></i>
+                View Costs
+              </button>
+
+            </div>
+
           </div>
-          <span class="status-badge">Active</span>
-        </div>
-
-        <div class="project-grid">
-          <div class="project-item">
-            <small>Dimensions</small>
-            <strong>${activeProject.CoopSize}</strong>
-          </div>
-
-          <div class="project-item">
-            <small>Chickens</small>
-            <strong>${activeProject.NumberOfChickens}</strong>
-          </div>
-
-          <div class="project-item">
-            <small>Capacity Usage</small>
-            <strong>85%</strong>
-          </div>
-
-          <div class="project-item">
-            <small>Investment</small>
-            <strong>₱${Number(activeProject.TotalCost || 0).toLocaleString()}</strong>
-          </div>
-        </div>
-
-        <div class="project-actions">
-
-          <button
-            type="button"
-            class="model-btn"
-            onclick="openDashboardModel()">
-            <i data-lucide="box"></i>
-            View 3D Model
-          </button>
-
-          <button
-            type="button"
-            class="cost-btn"
-            onclick="openDashboardCosts()">
-            <i data-lucide="wallet"></i>
-            View Costs
-          </button>
-
-        </div>
-        </div>
-    `;
+        `;
       }
-
-
-      if (window.lucide) lucide.createIcons();
     }
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+
+  } catch (error) {
+    console.error(
+      "DASHBOARD LOAD ERROR:",
+      error
+    );
+  }
+}
 
     function setText(id, value) {
       const element = document.getElementById(id);
@@ -605,21 +680,27 @@ function loadUserInfo() {
 
   const user = JSON.parse(storedUser);
 
-  const userName =
-    user.name ||
-    user.fullName ||
-    user.username ||
-    "User";
+    const userName =
+      user.name ||
+      user.FullName ||
+      user.fullName ||
+      user.username ||
+      user.Username ||
+      "";
 
   const firstName = userName.split(" ")[0];
 
+ if (userName) {
   setText("topUsername", userName);
+}
   setText(
     "userAvatarTop",
     user.avatar || firstName.charAt(0).toUpperCase()
   );
 
+  if (userName) {
   setText("dropdownName", userName);
+}
   setText(
     "dropdownEmail",
     user.email || "user@smartcoop.com"
