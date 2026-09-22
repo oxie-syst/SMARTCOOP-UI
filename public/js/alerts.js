@@ -132,7 +132,7 @@ async function loadAlertsPage() {
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/alerts/user/${userId}`
+      `/api/alerts/user/${userId}`
     );
 
     const result =
@@ -552,7 +552,7 @@ async function loadDashboardAlerts() {
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/alerts/user/${userId}`
+      `/api/alerts/user/${userId}`
     );
 
     const result =
@@ -809,7 +809,7 @@ async function loadNotificationDropdown() {
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/alerts/user/${userId}`
+      `/api/alerts/user/${userId}`
     );
 
     const result =
@@ -1124,7 +1124,7 @@ async function addReminder() {
 
   try {
     let url =
-      "http://localhost:3000/api/alerts";
+      "/api/alerts";
 
     let method = "POST";
 
@@ -1282,7 +1282,7 @@ async function updateReminderCompletion(
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/alerts/${id}/complete`,
+      `/api/alerts/${id}/complete`,
       {
         method: "PUT",
 
@@ -1341,7 +1341,7 @@ async function deleteReminder(id) {
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/alerts/${id}?userId=${userId}`,
+      `/api/alerts/${id}?userId=${userId}`,
       {
         method: "DELETE"
       }

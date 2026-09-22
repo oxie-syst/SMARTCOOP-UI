@@ -53,7 +53,7 @@ async function loadRecordsPage() {
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/records/user/${userId}`
+      `/api/records/user/${userId}`
     );
 
     const result = await response.json();
@@ -1464,7 +1464,7 @@ async function saveRecord() {
 
   try {
     let url =
-      `http://localhost:3000/api/records/${activeRecordTab}`;
+      `/api/records/${activeRecordTab}`;
 
     let method = "POST";
 
@@ -1542,7 +1542,7 @@ async function deleteRecord(id) {
   try {
     const response =
       await fetch(
-        `http://localhost:3000/api/records/${activeRecordTab}/${id}?userId=${userId}`,
+        `/api/records/${activeRecordTab}/${id}?userId=${userId}`,
         {
           method: "DELETE"
         }

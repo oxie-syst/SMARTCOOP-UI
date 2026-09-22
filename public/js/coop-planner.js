@@ -145,7 +145,7 @@ async function getPlans() {
 
   const response =
     await fetch(
-      `http://localhost:3000/api/coops/user/${user.id}`
+      `/api/coops/user/${user.id}`
     );
 
   const result =
@@ -175,7 +175,7 @@ async function savePlan() {
   try {
     const response =
       await fetch(
-        "http://localhost:3000/api/coops/save",
+        "/api/coops/save",
         {
           method: "POST",
 
@@ -387,7 +387,7 @@ async function saveCurrentPlan() {
   try {
     const response =
       await fetch(
-        "http://localhost:3000/api/coops",
+        "/api/coops",
         {
           method: "POST",
 
@@ -1546,7 +1546,7 @@ if (!user || !user.id) {
 try {
   const response =
     await fetch(
-      "http://localhost:3000/api/coops/generate",
+      "/api/coops/generate",
       {
         method: "POST",
 
@@ -2288,7 +2288,7 @@ async function setActive(coopId) {
 
   const response =
     await fetch(
-      `http://localhost:3000/api/coops/set-active/${coopId}`,
+      `/api/coops/set-active/${coopId}`,
       {
         method: "PUT",
 
@@ -2325,7 +2325,7 @@ async function setInactive(
 
   const response =
     await fetch(
-      `http://localhost:3000/api/coops/set-inactive/${coopId}`,
+      `/api/coops/set-inactive/${coopId}`,
       {
         method: "PUT"
       }
@@ -2365,7 +2365,7 @@ async function loadPlans() {
   try {
     const response =
       await fetch(
-        `http://localhost:3000/api/coops/user/${user.id}`
+        `/api/coops/user/${user.id}`
       );
 
     const data =
@@ -2633,7 +2633,7 @@ async function deletePlan(id) {
   try {
     const response =
       await fetch(
-        `http://localhost:3000/api/coops/${id}`,
+        `/api/coops/${id}`,
         {
           method: "DELETE",
 

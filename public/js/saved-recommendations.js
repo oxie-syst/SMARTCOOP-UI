@@ -63,7 +63,7 @@ async function loadSavedRecommendations() {
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/saved-recommendations/user/${userId}`
+      `/api/saved-recommendations/user/${userId}`
     );
 
     const data =
@@ -481,7 +481,7 @@ async function deleteSavedRecommendation(id) {
 
   try {
     const response = await fetch(
-      `http://localhost:3000/api/saved-recommendations/${id}`,
+      `/api/saved-recommendations/${id}`,
       {
         method: "DELETE",
 

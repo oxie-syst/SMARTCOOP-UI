@@ -104,7 +104,7 @@ if (!userId) {
 }
 
     const response = await fetch(
-      "http://localhost:3000/api/breed-recommendation",
+      "/api/breed-recommendation",
       {
         method: "POST",
 
@@ -624,7 +624,7 @@ async function saveBreedRecommendation(index) {
     }
 
     const response = await fetch(
-      "http://localhost:3000/api/saved-recommendations",
+      "/api/saved-recommendations",
       {
         method: "POST",
 

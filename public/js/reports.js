@@ -75,7 +75,7 @@ async function loadReportsPage() {
   try {
     const response =
       await fetch(
-        `http://localhost:3000/api/reports/${userId}?period=${encodeURIComponent(
+        `/api/reports/${userId}?period=${encodeURIComponent(
           period
         )}&coop=${encodeURIComponent(
           coop
@@ -889,7 +889,7 @@ async function exportReportCSV() {
   try {
     const response =
       await fetch(
-        `http://localhost:3000/api/reports/${userId}?period=${encodeURIComponent(
+        `/api/reports/${userId}?period=${encodeURIComponent(
           period
         )}&coop=${encodeURIComponent(
           coop

@@ -427,7 +427,7 @@ async function loadDashboard() {
     const user = JSON.parse(storedUser);
     const firstName = user.name.split(" ")[0];
     const response = await fetch(
-        `http://localhost:3000/api/coops/active/${user.id}`
+        `/api/coops/active/${user.id}`
     );
 
     const data = await response.json();

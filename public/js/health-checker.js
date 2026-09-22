@@ -189,7 +189,7 @@ if (!userId) {
   try {
     const response =
       await fetch(
-        "http://localhost:3000/api/health-checker/analyze",
+        "/api/health-checker/analyze",
         {
           method: "POST",
 
@@ -705,7 +705,7 @@ async function saveCurrentHealthRecord() {
   try {
     const response =
       await fetch(
-        "http://localhost:3000/api/health-checker/history",
+        "/api/health-checker/history",
         {
           method: "POST",
 
@@ -835,7 +835,7 @@ async function loadHealthHistory() {
   try {
     const response =
       await fetch(
-        `http://localhost:3000/api/health-checker/history/${userId}`
+        `/api/health-checker/history/${userId}`
       );
 
     const data =
@@ -1094,7 +1094,7 @@ async function deleteHealthRecord(
   try {
     const response =
       await fetch(
-        `http://localhost:3000/api/health-checker/history/${id}?userId=${userId}`,
+        `/api/health-checker/history/${id}?userId=${userId}`,
         {
           method: "DELETE"
         }

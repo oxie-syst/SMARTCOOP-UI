@@ -407,7 +407,6 @@ async function sendAIMessage() {
   );
 
 
-
   } finally {
 
     aiIsSending = false;
