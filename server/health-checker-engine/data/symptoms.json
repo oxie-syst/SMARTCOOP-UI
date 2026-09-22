@@ -1,0 +1,23 @@
+{
+  "symptoms": [
+    { "id": "sneezing",        "label": "Sneezing",                  "category": "respiratory" },
+    { "id": "coughing",        "label": "Coughing",                  "category": "respiratory" },
+    { "id": "wateryEyes",      "label": "Watery eyes",                "category": "respiratory" },
+    { "id": "nasalDischarge",  "label": "Nasal discharge",            "category": "respiratory" },
+
+    { "id": "diarrhea",        "label": "Diarrhea",                   "category": "digestive" },
+    { "id": "reducedAppetite", "label": "Reduced appetite",           "category": "digestive" },
+
+    { "id": "lethargy",        "label": "Lethargy / Weakness",        "category": "general" },
+    { "id": "droppedWings",    "label": "Dropped wings",               "category": "general" },
+    { "id": "paleComb",        "label": "Pale comb / wattles",         "category": "general" },
+
+    { "id": "featherLoss",     "label": "Unusual feather loss",        "category": "skin" },
+    { "id": "skinLesions",     "label": "Skin lesions / sores",        "category": "skin" },
+
+    { "id": "swelling",        "label": "Swelling (face / legs)",      "category": "physical" },
+    { "id": "lameness",        "label": "Lameness / Limping",          "category": "physical" },
+
+    { "id": "eggProblems",     "label": "Egg production issues",       "category": "production" }
+  ]
+}

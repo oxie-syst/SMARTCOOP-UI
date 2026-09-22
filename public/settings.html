@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Settings | SmartCoop</title>
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body
+  class="dashboard-body"
+  onload="loadUserInfo(); loadSettingsPage();">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+
+      <a href="user.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a href="coop-planner.html">
+        <i data-lucide="box"></i>
+        Coop Planner
+      </a>
+
+      <a href="breed-recommendation.html">
+        <i data-lucide="sparkles"></i>
+        Breed Recommendation
+      </a>
+
+      <a href="saved-recommendations.html">
+        <i data-lucide="star"></i>
+        Saved Recommendations
+      </a>
+
+      <a href="health-checker.html">
+        <i data-lucide="heart"></i>
+        Health Checker
+      </a>
+
+      <a href="ai-assistant.html">
+        <i data-lucide="message-square"></i>
+        AI Assistant
+      </a>
+
+      <a href="alerts.html">
+        <i data-lucide="bell"></i>
+        Alerts & Reminders
+      </a>
+
+      <a href="record-management.html">
+        <i data-lucide="file-text"></i>
+        Record Management
+      </a>
+
+      <a href="reports.html">
+        <i data-lucide="bar-chart"></i>
+        Reports
+      </a>
+
+      <a href="chicken-info.html">
+        <i data-lucide="bird"></i>
+        Chicken Info
+      </a>
+
+      <a href="settings.html" class="active">
+        <i data-lucide="settings"></i>
+        Settings
+      </a>
+
+    </nav>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+        <i data-lucide="leaf"></i>
+
+        <span>
+          Smart Poultry Planning and Management System
+        </span>
+      </div>
+
+
+      <div class="top-profile">
+
+        <button
+          class="notif-btn"
+          type="button"
+          onclick="toggleNotificationMenu()">
+
+          <i data-lucide="bell"></i>
+          <span class="notif"></span>
+        </button>
+
+        <div
+          id="notificationDropdown"
+          class="notification-dropdown hidden">
+
+          <div class="notification-dropdown-header">
+            <div>
+              <strong>Notifications</strong>
+              <span id="notificationCount">0 active</span>
+            </div>
+          </div>
+
+          <div
+            id="notificationDropdownList"
+            class="notification-dropdown-list">
+          </div>
+
+        </div>
+
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()">
+
+          <div
+            class="avatar"
+            id="userAvatarTop">
+            U
+          </div>
+
+          <div class="top-profile-name">
+            <span id="topUsername">User</span>
+            <small>Farm Owner</small>
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+
+        </button>
+
+
+        <div
+          id="profileDropdown"
+          class="profile-dropdown hidden">
+
+          <div class="dropdown-user">
+
+            <strong id="dropdownName">
+              User
+            </strong>
+
+            <p id="dropdownEmail">
+              user@smartcoop.com
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            onclick="window.location.href='settings.html'">
+            Settings
+          </button>
+
+          <button
+            type="button"
+            onclick="window.location.href='admin-dashboard.html'">
+            Switch to Admin
+          </button>
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+            Logout
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <section class="content settings-modern">
+
+      <div class="settings-page-header">
+
+        <div>
+
+          <div class="settings-eyebrow">
+            <i data-lucide="settings-2"></i>
+            ACCOUNT SETTINGS
+          </div>
+
+          <h1>Settings</h1>
+
+          <p>
+            Manage your SmartCoop account, farm information,
+            notification preferences, and account security.
+          </p>
+
+        </div>
+
+        <div class="settings-header-icon">
+          <i data-lucide="settings"></i>
+        </div>
+
+      </div>
+
+
+      <div class="settings-layout">
+
+        <div class="settings-menu">
+
+          <button
+            class="settings-menu-btn active"
+            type="button"
+            onclick="showSettingsTab('profile', this)">
+
+            <div class="settings-menu-icon">
+              <i data-lucide="user-round"></i>
+            </div>
+
+            <span>
+              <strong>Profile</strong>
+              <small>Personal information</small>
+            </span>
+
+            <i data-lucide="chevron-right"></i>
+
+          </button>
+
+
+          <button
+            class="settings-menu-btn"
+            type="button"
+            onclick="showSettingsTab('farm', this)">
+
+            <div class="settings-menu-icon">
+              <i data-lucide="warehouse"></i>
+            </div>
+
+            <span>
+              <strong>Farm Information</strong>
+              <small>Farm details</small>
+            </span>
+
+            <i data-lucide="chevron-right"></i>
+
+          </button>
+
+
+          <button
+            class="settings-menu-btn"
+            type="button"
+            onclick="showSettingsTab('notifications', this)">
+
+            <div class="settings-menu-icon">
+              <i data-lucide="bell-ring"></i>
+            </div>
+
+            <span>
+              <strong>Notifications</strong>
+              <small>Alert preferences</small>
+            </span>
+
+            <i data-lucide="chevron-right"></i>
+
+          </button>
+
+
+          <button
+            class="settings-menu-btn"
+            type="button"
+            onclick="showSettingsTab('security', this)">
+
+            <div class="settings-menu-icon">
+              <i data-lucide="shield-check"></i>
+            </div>
+
+            <span>
+              <strong>Security</strong>
+              <small>Password & account</small>
+            </span>
+
+            <i data-lucide="chevron-right"></i>
+
+          </button>
+
+        </div>
+
+
+        <div class="settings-content-panel">
+
+          <div
+            id="profile"
+            class="settings-tab">
+
+            <div class="settings-section-heading">
+
+              <div>
+                <span>PROFILE</span>
+                <h2>Personal Information</h2>
+
+                <p>
+                  Update your personal details and contact
+                  information.
+                </p>
+              </div>
+
+              <i data-lucide="user-round"></i>
+
+            </div>
+
+
+            <div class="settings-profile-card">
+
+              <div
+                class="settings-big-avatar"
+                id="settingsAvatar">
+                U
+              </div>
+
+              <div>
+
+                <strong id="settingsProfileName">
+                  SmartCoop User
+                </strong>
+
+                <p id="settingsProfileEmail">
+                  user@smartcoop.com
+                </p>
+
+                <small>
+                  SmartCoop Farm Owner Account
+                </small>
+
+              </div>
+
+            </div>
+
+
+            <div class="settings-divider"></div>
+
+
+            <div class="settings-form-grid">
+
+              <div class="settings-field">
+
+                <label for="settingsName">
+                  Full Name
+                </label>
+
+                <div class="settings-input-wrap">
+
+                  <i data-lucide="user"></i>
+
+                  <input
+                    id="settingsName"
+                    type="text"
+                    placeholder="Enter your full name">
+
+                </div>
+
+              </div>
+
+
+              <div class="settings-field">
+
+                <label for="settingsEmail">
+                  Email Address
+                </label>
+
+                <div class="settings-input-wrap">
+
+                  <i data-lucide="mail"></i>
+
+                  <input
+                    id="settingsEmail"
+                    type="email"
+                    placeholder="Enter your email">
+
+                </div>
+
+              </div>
+
+
+              <div class="settings-field">
+
+                <label for="settingsPhone">
+                  Phone Number
+                </label>
+
+                <div class="settings-input-wrap">
+
+                  <i data-lucide="phone"></i>
+
+                  <input
+                    id="settingsPhone"
+                    type="text"
+                    placeholder="+63 XXX XXX XXXX">
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="settings-actions">
+
+              <button
+                class="settings-save-btn"
+                type="button"
+                onclick="saveProfile()">
+
+                <i data-lucide="save"></i>
+                Save Changes
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="farm"
+            class="settings-tab hidden">
+
+            <div class="settings-section-heading">
+
+              <div>
+                <span>FARM PROFILE</span>
+                <h2>Farm Information</h2>
+
+                <p>
+                  Manage basic information about your poultry farm.
+                </p>
+              </div>
+
+              <i data-lucide="warehouse"></i>
+
+            </div>
+
+
+            <div class="settings-form-grid">
+
+              <div class="settings-field">
+
+                <label for="settingsFarmName">
+                  Farm Name
+                </label>
+
+                <div class="settings-input-wrap">
+
+                  <i data-lucide="warehouse"></i>
+
+                  <input
+                    id="settingsFarmName"
+                    type="text"
+                    placeholder="Enter farm name">
+
+                </div>
+
+              </div>
+
+
+              <div class="settings-field">
+
+                <label for="settingsFarmLocation">
+                  Farm Location
+                </label>
+
+                <div class="settings-input-wrap">
+
+                  <i data-lucide="map-pin"></i>
+
+                  <input
+                    id="settingsFarmLocation"
+                    type="text"
+                    placeholder="City, Province">
+
+                </div>
+
+              </div>
+
+
+              <div class="settings-field">
+
+                <label for="settingsFarmSize">
+                  Farm Size
+                </label>
+
+                <div class="settings-input-wrap">
+
+                  <i data-lucide="maximize"></i>
+
+                  <input
+                    id="settingsFarmSize"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Example: 0.5">
+
+                  <span class="settings-input-suffix">
+                    hectares
+                  </span>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="settings-info-box">
+
+              <i data-lucide="info"></i>
+
+              <div>
+                <strong>Farm Information</strong>
+
+                <p>
+                  These details help identify your farm profile
+                  inside SmartCoop.
+                </p>
+              </div>
+
+            </div>
+
+
+            <div class="settings-actions">
+
+              <button
+                class="settings-save-btn"
+                type="button"
+                onclick="saveFarmInfo()">
+
+                <i data-lucide="save"></i>
+                Save Farm Information
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="notifications"
+            class="settings-tab hidden">
+
+            <div class="settings-section-heading">
+
+              <div>
+                <span>NOTIFICATIONS</span>
+                <h2>Notification Preferences</h2>
+
+                <p>
+                  Choose what types of SmartCoop notifications
+                  you want to receive.
+                </p>
+              </div>
+
+              <i data-lucide="bell-ring"></i>
+
+            </div>
+
+
+            <div class="settings-notification-list">
+
+
+              <div class="settings-notification-item">
+
+                <div class="settings-notification-info">
+
+                  <div class="settings-notification-icon">
+                    <i data-lucide="mail"></i>
+                  </div>
+
+                  <div>
+                    <strong>Email Alerts</strong>
+
+                    <p>
+                      Receive important SmartCoop alerts
+                      through email.
+                    </p>
+                  </div>
+
+                </div>
+
+                <label class="settings-switch">
+
+                  <input
+                    id="emailAlerts"
+                    type="checkbox">
+
+                  <span></span>
+
+                </label>
+
+              </div>
+
+
+              <div class="settings-notification-item">
+
+                <div class="settings-notification-info">
+
+                  <div class="settings-notification-icon">
+                    <i data-lucide="message-square-text"></i>
+                  </div>
+
+                  <div>
+                    <strong>SMS Alerts</strong>
+
+                    <p>
+                      Allow SMS notifications for important
+                      farm reminders.
+                    </p>
+                  </div>
+
+                </div>
+
+                <label class="settings-switch">
+
+                  <input
+                    id="smsAlerts"
+                    type="checkbox">
+
+                  <span></span>
+
+                </label>
+
+              </div>
+
+
+              <div class="settings-notification-item">
+
+                <div class="settings-notification-info">
+
+                  <div class="settings-notification-icon">
+                    <i data-lucide="smartphone"></i>
+                  </div>
+
+                  <div>
+                    <strong>Push Notifications</strong>
+
+                    <p>
+                      Receive notifications while using
+                      SmartCoop.
+                    </p>
+                  </div>
+
+                </div>
+
+                <label class="settings-switch">
+
+                  <input
+                    id="pushNotifications"
+                    type="checkbox">
+
+                  <span></span>
+
+                </label>
+
+              </div>
+
+
+              <div class="settings-notification-item">
+
+                <div class="settings-notification-info">
+
+                  <div class="settings-notification-icon">
+                    <i data-lucide="bar-chart-3"></i>
+                  </div>
+
+                  <div>
+                    <strong>Weekly Reports</strong>
+
+                    <p>
+                      Receive reminders to review weekly
+                      farm performance.
+                    </p>
+                  </div>
+
+                </div>
+
+                <label class="settings-switch">
+
+                  <input
+                    id="weeklyReports"
+                    type="checkbox">
+
+                  <span></span>
+
+                </label>
+
+              </div>
+
+
+              <div class="settings-notification-item">
+
+                <div class="settings-notification-info">
+
+                  <div class="settings-notification-icon">
+                    <i data-lucide="heart-pulse"></i>
+                  </div>
+
+                  <div>
+                    <strong>Health Alerts</strong>
+
+                    <p>
+                      Receive reminders related to flock
+                      health monitoring.
+                    </p>
+                  </div>
+
+                </div>
+
+                <label class="settings-switch">
+
+                  <input
+                    id="healthAlerts"
+                    type="checkbox">
+
+                  <span></span>
+
+                </label>
+
+              </div>
+
+
+              <div class="settings-notification-item">
+
+                <div class="settings-notification-info">
+
+                  <div class="settings-notification-icon">
+                    <i data-lucide="wheat"></i>
+                  </div>
+
+                  <div>
+                    <strong>Feeding Reminders</strong>
+
+                    <p>
+                      Enable reminders related to scheduled
+                      feeding activities.
+                    </p>
+                  </div>
+
+                </div>
+
+                <label class="settings-switch">
+
+                  <input
+                    id="feedingReminders"
+                    type="checkbox">
+
+                  <span></span>
+
+                </label>
+
+              </div>
+
+            </div>
+
+
+            <div class="settings-actions">
+
+              <button
+                class="settings-save-btn"
+                type="button"
+                onclick="saveNotifications()">
+
+                <i data-lucide="save"></i>
+                Save Preferences
+
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="security"
+            class="settings-tab hidden">
+
+            <div class="settings-section-heading">
+
+              <div>
+                <span>ACCOUNT SECURITY</span>
+                <h2>Security Settings</h2>
+
+                <p>
+                  Manage your password and account security.
+                </p>
+              </div>
+
+              <i data-lucide="shield-check"></i>
+
+            </div>
+
+
+            <div class="settings-security-box">
+
+              <h3>
+                <i data-lucide="key-round"></i>
+                Change Password
+              </h3>
+
+
+              <div class="settings-password-fields">
+
+                <div class="settings-field">
+
+                  <label for="currentPassword">
+                    Current Password
+                  </label>
+
+                  <div class="settings-input-wrap">
+
+                    <i data-lucide="lock"></i>
+
+                    <input
+                      id="currentPassword"
+                      type="password"
+                      placeholder="Enter current password">
+
+                  </div>
+
+                </div>
+
+
+                <div class="settings-field">
+
+                  <label for="newPassword">
+                    New Password
+                  </label>
+
+                  <div class="settings-input-wrap">
+
+                    <i data-lucide="lock-keyhole"></i>
+
+                    <input
+                      id="newPassword"
+                      type="password"
+                      placeholder="Enter new password">
+
+                  </div>
+
+                </div>
+
+
+                <div class="settings-field">
+
+                  <label for="confirmPassword">
+                    Confirm New Password
+                  </label>
+
+                  <div class="settings-input-wrap">
+
+                    <i data-lucide="check-circle"></i>
+
+                    <input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Confirm new password">
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <button
+                class="settings-save-btn"
+                type="button"
+                onclick="updatePassword()">
+
+                <i data-lucide="shield-check"></i>
+                Update Password
+
+              </button>
+
+            </div>
+
+
+            <div class="settings-danger-zone">
+
+              <div class="settings-danger-icon">
+                <i data-lucide="triangle-alert"></i>
+              </div>
+
+              <div class="settings-danger-text">
+
+                <strong>Danger Zone</strong>
+
+                <p>
+                  Deleting your account permanently removes
+                  your SmartCoop account.
+                </p>
+
+              </div>
+
+              <button
+                type="button"
+                onclick="deleteAccount()">
+
+                <i data-lucide="trash-2"></i>
+                Delete Account
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <div
+    id="settingsToast"
+    class="settings-toast hidden">
+
+    <i data-lucide="circle-check"></i>
+
+    <span id="settingsToastText">
+      Changes saved successfully.
+    </span>
+
+  </div>
+
+
+  <script src="js/auth.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/alerts.js"></script>
+
+  <script>
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  </script>
+
+</body>
+
+</html>

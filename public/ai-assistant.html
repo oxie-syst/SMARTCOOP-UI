@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Assistant | SmartCoop</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="dashboard-body" onload="loadUserInfo();">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+
+      <a href="user.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a href="coop-planner.html">
+        <i data-lucide="box"></i>
+        Coop Planner
+      </a>
+
+      <a href="breed-recommendation.html">
+        <i data-lucide="sparkles"></i>
+        Breed Recommendation
+      </a>
+
+      <a href="saved-recommendations.html">
+        <i data-lucide="star"></i>
+        Saved Recommendations
+      </a>
+
+      <a href="health-checker.html">
+        <i data-lucide="heart"></i>
+        Health Checker
+      </a>
+
+      <a href="ai-assistant.html" class="active">
+        <i data-lucide="message-square"></i>
+        AI Assistant
+      </a>
+
+      <a href="alerts.html">
+        <i data-lucide="bell"></i>
+        Alerts & Reminders
+      </a>
+
+      <a href="record-management.html">
+        <i data-lucide="file-text"></i>
+        Record Management
+      </a>
+
+      <a href="reports.html">
+        <i data-lucide="bar-chart"></i>
+        Reports
+      </a>
+
+      <a href="chicken-info.html">
+        <i data-lucide="bird"></i>
+        Chicken Info
+      </a>
+
+      <a href="settings.html">
+        <i data-lucide="settings"></i>
+        Settings
+      </a>
+
+    </nav>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+        <i data-lucide="leaf"></i>
+        <span>
+          Smart Poultry Planning and Management System
+        </span>
+      </div>
+
+
+      <div class="top-profile">
+
+        <button
+          class="notif-btn"
+          type="button"
+          onclick="toggleNotificationMenu()">
+
+          <i data-lucide="bell"></i>
+          <span class="notif"></span>
+
+        </button>
+
+
+        <div
+          id="notificationDropdown"
+          class="notification-dropdown hidden">
+
+          <div class="notification-dropdown-header">
+
+            <div>
+              <strong>Notifications</strong>
+              <span id="notificationCount">
+                0 active
+              </span>
+            </div>
+
+          </div>
+
+          <div
+            id="notificationDropdownList"
+            class="notification-dropdown-list">
+          </div>
+
+        </div>
+
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()">
+
+          <div
+            class="avatar"
+            id="userAvatarTop">
+            U
+          </div>
+
+          <div class="top-profile-name">
+
+            <span id="topUsername">
+              User
+            </span>
+
+            <small>
+              Farm Owner
+            </small>
+
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+
+        </button>
+
+
+        <div
+          id="profileDropdown"
+          class="profile-dropdown hidden">
+
+          <div class="dropdown-user">
+
+            <strong id="dropdownName">
+              User
+            </strong>
+
+            <p id="dropdownEmail">
+              user@smartcoop.com
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            onclick="window.location.href='onboarding.html?mode=review'">
+
+            How It Works
+
+          </button>
+
+          <button
+            type="button"
+            onclick="window.location.href='settings.html'">
+
+            Settings
+
+          </button>
+
+          <button
+            type="button"
+            onclick="window.location.href='admin-dashboard.html'">
+
+            Switch to Admin
+
+          </button>
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+
+            Logout
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <section class="content ai-modern-page">
+
+      <div class="ai-page-header">
+
+        <div>
+
+          <span class="ai-page-eyebrow">
+            AI-POWERED FARMING SUPPORT
+          </span>
+
+          <h1>
+            SmartCoop AI Assistant
+          </h1>
+
+          <p>
+            Get quick poultry farming guidance, planning help,
+            and management suggestions.
+          </p>
+
+        </div>
+
+
+        <div class="ai-status-card">
+
+          <span class="ai-status-dot"></span>
+
+          <div>
+            <strong>SmartCoop AI</strong>
+            <small>Ready to assist</small>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="ai-modern-layout">
+
+
+        <aside class="ai-suggestions-card">
+
+          <div class="ai-suggestions-header">
+
+            <div class="ai-suggestions-icon">
+              <i data-lucide="lightbulb"></i>
+            </div>
+
+            <div>
+              <h2>Suggested Questions</h2>
+              <p>
+                Choose a topic to get started
+              </p>
+            </div>
+
+          </div>
+
+
+          <div class="ai-suggestion-list">
+
+            <button
+              type="button"
+              onclick="askSuggested('How do I start a backyard poultry farm?')">
+
+              <i data-lucide="sprout"></i>
+
+              <span>
+                How do I start a backyard poultry farm?
+              </span>
+
+              <i
+                data-lucide="chevron-right"
+                class="suggestion-arrow">
+              </i>
+
+            </button>
+
+
+            <button
+              type="button"
+              onclick="askSuggested('What is the best breed for egg production?')">
+
+              <i data-lucide="egg"></i>
+
+              <span>
+                Best breed for egg production
+              </span>
+
+              <i
+                data-lucide="chevron-right"
+                class="suggestion-arrow">
+              </i>
+
+            </button>
+
+
+            <button
+              type="button"
+              onclick="askSuggested('How do I calculate the correct coop capacity?')">
+
+              <i data-lucide="house"></i>
+
+              <span>
+                Calculate coop capacity
+              </span>
+
+              <i
+                data-lucide="chevron-right"
+                class="suggestion-arrow">
+              </i>
+
+            </button>
+
+
+            <button
+              type="button"
+              onclick="askSuggested('How can I reduce poultry farming costs?')">
+
+              <i data-lucide="wallet"></i>
+
+              <span>
+                Reduce poultry farming costs
+              </span>
+
+              <i
+                data-lucide="chevron-right"
+                class="suggestion-arrow">
+              </i>
+
+            </button>
+
+
+            <button
+              type="button"
+              onclick="askSuggested('What are common chicken diseases and how can I prevent them?')">
+
+              <i data-lucide="heart-pulse"></i>
+
+              <span>
+                Disease prevention
+              </span>
+
+              <i
+                data-lucide="chevron-right"
+                class="suggestion-arrow">
+              </i>
+
+            </button>
+
+
+            <button
+              type="button"
+              onclick="askSuggested('What feed is suitable for layer chickens?')">
+
+              <i data-lucide="wheat"></i>
+
+              <span>
+                Feed advice for layers
+              </span>
+
+              <i
+                data-lucide="chevron-right"
+                class="suggestion-arrow">
+              </i>
+
+            </button>
+
+          </div>
+
+
+          <div class="ai-suggestion-note">
+
+            <i data-lucide="info"></i>
+
+            <span>
+              SmartCoop AI provides general poultry management
+              guidance and should not replace professional
+              veterinary advice.
+            </span>
+
+          </div>
+
+        </aside>
+
+
+        <section class="ai-chat-card">
+
+          <div class="ai-chat-header">
+
+            <div class="ai-chat-identity">
+
+              <div class="ai-bot-avatar">
+                <i data-lucide="bot"></i>
+              </div>
+
+              <div>
+                <h2>SmartCoop AI</h2>
+
+                <p>
+                  <span class="ai-online-dot"></span>
+                  Online
+                </p>
+              </div>
+
+            </div>
+
+
+            <button
+              type="button"
+              class="ai-clear-btn"
+              onclick="clearAIChat()">
+
+              <i data-lucide="rotate-ccw"></i>
+
+              Clear chat
+
+            </button>
+
+          </div>
+
+
+          <div
+            id="chatMessages"
+            class="ai-chat-messages">
+
+            <div class="ai-message bot">
+
+              <div class="ai-message-avatar">
+                <i data-lucide="bot"></i>
+              </div>
+
+              <div class="ai-message-body">
+
+                <div class="ai-message-bubble">
+
+                  <strong>
+                    Hello! I'm SmartCoop AI.
+                  </strong>
+
+                  <p>
+                    I can help you with poultry breeds,
+                    coop planning, feeding, health management,
+                    farm costs, and general poultry care.
+                  </p>
+
+                  <p>
+                    Choose a suggested question or type your
+                    own question below.
+                  </p>
+
+                </div>
+
+                <span class="ai-message-time">
+                  Ready to help
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="aiTypingIndicator"
+            class="ai-typing-indicator hidden">
+
+            <div class="ai-typing-avatar">
+              <i data-lucide="bot"></i>
+            </div>
+
+            <div class="ai-typing-bubble">
+
+              <span></span>
+              <span></span>
+              <span></span>
+
+            </div>
+
+            <small>
+              SmartCoop AI is thinking...
+            </small>
+
+          </div>
+
+
+          <div class="ai-chat-input-area">
+
+            <div class="ai-chat-input-wrap">
+
+              <textarea
+                id="aiInput"
+                rows="1"
+                maxlength="1000"
+                placeholder="Ask SmartCoop AI about poultry farming...">
+              </textarea>
+
+              <button
+                type="button"
+                id="aiSendBtn"
+                onclick="sendAIMessage()">
+
+                <i data-lucide="send"></i>
+
+              </button>
+
+            </div>
+
+            <div class="ai-input-footer">
+
+              <span>
+                Press Enter to send • Shift + Enter for new line
+              </span>
+
+              <span id="aiCharacterCount">
+                0 / 1000
+              </span>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script src="js/auth.js"></script>
+  <script src="js/alerts.js"></script>
+  <script src="js/ai-assistant.js"></script>
+
+  <script>
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+    );
+  </script>
+
+</body>
+</html>

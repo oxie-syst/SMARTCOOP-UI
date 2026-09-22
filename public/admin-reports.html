@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Reports & Analytics | SmartCoop</title>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body
+  class="dashboard-body"
+  onload="checkAdmin(); loadAdminReports(); loadUserInfo();">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+
+      <a href="admin-dashboard.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a href="admin-users.html">
+        <i data-lucide="users"></i>
+        Manage Users
+      </a>
+
+      <a
+        href="admin-reports.html"
+        class="active">
+
+        <i data-lucide="bar-chart-3"></i>
+        Reports & Analytics
+
+      </a>
+
+    </nav>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+
+        <i data-lucide="bar-chart-3"></i>
+
+        <span id="topbarText">
+          Reports & Analytics
+        </span>
+
+      </div>
+
+
+      <div class="top-profile">
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()">
+
+          <div
+            class="avatar"
+            id="userAvatarTop">
+
+            A
+
+          </div>
+
+          <div class="top-profile-name">
+
+            <span id="topUsername">
+              Admin
+            </span>
+
+            <small>
+              Administrator
+            </small>
+
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+
+        </button>
+
+
+        <div
+          id="profileDropdown"
+          class="profile-dropdown hidden">
+
+          <div class="dropdown-user">
+
+            <strong id="dropdownName">
+              Admin
+            </strong>
+
+            <p id="dropdownEmail">
+              admin@smartcoop.com
+            </p>
+
+            <small>
+              SmartCoop Administrator
+            </small>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+
+            <i data-lucide="log-out"></i>
+            Logout
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <section class="content admin-content">
+
+      <div class="admin-page-header">
+
+        <div>
+
+          <span class="admin-page-eyebrow">
+            ANALYTICS
+          </span>
+
+          <h1>
+            Reports & Analytics
+          </h1>
+
+          <p>
+            Review SmartCoop growth, feature usage,
+            farm records, and system activity.
+          </p>
+
+        </div>
+
+
+        <div class="reports-actions">
+
+          <button
+            class="btn-outline"
+            type="button"
+            onclick="exportAdminReport('CSV')">
+
+            <i data-lucide="file-spreadsheet"></i>
+            Export CSV
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- DATE FILTER -->
+
+      <div class="admin-panel">
+
+        <div class="date-filter">
+
+          <div>
+
+            <label>
+              Date Range
+            </label>
+
+            <p id="adminReportPeriod">
+              Showing: All Time
+            </p>
+
+          </div>
+
+
+          <div class="date-inputs">
+
+            <div>
+
+              <small>
+                From
+              </small>
+
+              <input
+                type="date"
+                id="adminReportDateFrom">
+
+            </div>
+
+
+            <div>
+
+              <small>
+                To
+              </small>
+
+              <input
+                type="date"
+                id="adminReportDateTo">
+
+            </div>
+
+
+            <button
+              class="btn-primary"
+              type="button"
+              onclick="applyAdminReportFilter()">
+
+              Apply
+
+            </button>
+
+
+            <button
+              class="btn-outline"
+              type="button"
+              onclick="resetAdminReportFilter()">
+
+              Reset
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- SUMMARY CARDS -->
+
+      <div class="reports-cards">
+
+        <div class="report-card">
+
+          <p>
+            Total Users
+          </p>
+
+          <h2 id="reportTotalUsers">
+            0
+          </h2>
+
+          <span>
+            Registered farmer accounts
+          </span>
+
+        </div>
+
+
+        <div class="report-card">
+
+          <p>
+            Total Coop Projects
+          </p>
+
+          <h2 id="reportTotalProjects">
+            0
+          </h2>
+
+          <span>
+            Coop plans created
+          </span>
+
+        </div>
+
+
+        <div class="report-card">
+
+          <p>
+            Total Farm Records
+          </p>
+
+          <h2 id="reportTotalRecords">
+            0
+          </h2>
+
+          <span>
+            Recorded farm activities
+          </span>
+
+        </div>
+
+
+        <div class="report-card">
+
+          <p>
+            Total AI Requests
+          </p>
+
+          <h2 id="reportTotalAIRequests">
+            0
+          </h2>
+
+          <span>
+            SmartCoop AI interactions
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- USER AND PROJECT CHARTS -->
+
+      <div class="admin-chart-row">
+
+        <div class="admin-panel">
+
+          <div class="admin-panel-header">
+
+            <div>
+
+              <h3>
+                User Registration Growth
+              </h3>
+
+              <p>
+                New SmartCoop users over time
+              </p>
+
+            </div>
+
+            <i data-lucide="users"></i>
+
+          </div>
+
+
+          <div class="admin-chart-container">
+
+            <canvas
+              id="adminReportUserChart">
+            </canvas>
+
+          </div>
+
+        </div>
+
+
+        <div class="admin-panel">
+
+          <div class="admin-panel-header">
+
+            <div>
+
+              <h3>
+                Project Growth
+              </h3>
+
+              <p>
+                Coop projects created over time
+              </p>
+
+            </div>
+
+            <i data-lucide="folder-kanban"></i>
+
+          </div>
+
+
+          <div class="admin-chart-container">
+
+            <canvas
+              id="adminReportProjectChart">
+            </canvas>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- RECORDS AND FEATURE USAGE -->
+
+      <div class="admin-chart-row">
+
+        <div class="admin-panel">
+
+          <div class="admin-panel-header">
+
+            <div>
+
+              <h3>
+                Record Activity
+              </h3>
+
+              <p>
+                Breakdown of farm management records
+              </p>
+
+            </div>
+
+            <i data-lucide="database"></i>
+
+          </div>
+
+
+          <div class="admin-chart-container">
+
+            <canvas
+              id="adminRecordActivityChart">
+            </canvas>
+
+          </div>
+
+        </div>
+
+
+        <div class="admin-panel">
+
+          <div class="admin-panel-header">
+
+            <div>
+
+              <h3>
+                Feature Usage
+              </h3>
+
+              <p>
+                Percentage of users using SmartCoop features
+              </p>
+
+            </div>
+
+            <i data-lucide="activity"></i>
+
+          </div>
+
+
+          <div class="usage-wrap">
+
+            <div class="usage-item">
+
+              <div class="usage-row">
+
+                <span>
+                  Coop Planner
+                </span>
+
+                <strong id="reportPlannerUsageText">
+                  0%
+                </strong>
+
+              </div>
+
+
+              <div class="usage-track">
+
+                <div
+                  id="reportPlannerUsageBar"
+                  style="width: 0%;">
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="usage-item light">
+
+              <div class="usage-row">
+
+                <span>
+                  Record Management
+                </span>
+
+                <strong id="reportRecordUsageText">
+                  0%
+                </strong>
+
+              </div>
+
+
+              <div class="usage-track">
+
+                <div
+                  id="reportRecordUsageBar"
+                  style="width: 0%;">
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="usage-item brown">
+
+              <div class="usage-row">
+
+                <span>
+                  AI Features
+                </span>
+
+                <strong id="reportAIUsageText">
+                  0%
+                </strong>
+
+              </div>
+
+
+              <div class="usage-track">
+
+                <div
+                  id="reportAIUsageBar"
+                  style="width: 0%;">
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- AI USAGE -->
+
+      <div class="admin-panel">
+
+        <div class="admin-panel-header">
+
+          <div>
+
+            <h3>
+              AI Usage Trend
+            </h3>
+
+            <p>
+              SmartCoop AI requests over time
+            </p>
+
+          </div>
+
+          <i data-lucide="bot"></i>
+
+        </div>
+
+
+        <div class="admin-chart-container admin-chart-large">
+
+          <canvas
+            id="adminAIUsageChart">
+          </canvas>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script src="js/auth.js"></script>
+
+  <script>
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+
+      }
+    );
+
+  </script>
+
+</body>
+
+</html>

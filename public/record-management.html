@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Record Management | SmartCoop</title>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="dashboard-body" onload="loadUserInfo(); loadRecordsPage();">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+      <a href="user.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a href="coop-planner.html">
+        <i data-lucide="box"></i>
+        Coop Planner
+      </a>
+
+      <a href="breed-recommendation.html">
+        <i data-lucide="sparkles"></i>
+        Breed Recommendation
+      </a>
+
+      <a href="saved-recommendations.html">
+        <i data-lucide="star"></i>
+        Saved Recommendations
+      </a>
+
+      <a href="health-checker.html">
+        <i data-lucide="heart"></i>
+        Health Checker
+      </a>
+
+      <a href="ai-assistant.html">
+        <i data-lucide="message-square"></i>
+        AI Assistant
+      </a>
+
+      <a href="alerts.html">
+        <i data-lucide="bell"></i>
+        Alerts & Reminders
+      </a>
+
+      <a href="record-management.html" class="active">
+        <i data-lucide="file-text"></i>
+        Record Management
+      </a>
+
+      <a href="reports.html">
+        <i data-lucide="bar-chart"></i>
+        Reports
+      </a>
+
+      <a href="chicken-info.html">
+        <i data-lucide="bird"></i>
+        Chicken Info
+      </a>
+
+      <a href="settings.html">
+        <i data-lucide="settings"></i>
+        Settings
+      </a>
+    </nav>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+        <i data-lucide="leaf"></i>
+        <span>Smart Poultry Planning and Management System</span>
+      </div>
+
+      <div class="top-profile">
+
+      <button
+        class="notif-btn"
+        type="button"
+        onclick="toggleNotificationMenu()">
+
+        <i data-lucide="bell"></i>
+        <span class="notif"></span>
+      </button>
+
+      <div
+        id="notificationDropdown"
+        class="notification-dropdown hidden">
+
+        <div class="notification-dropdown-header">
+          <div>
+            <strong>Notifications</strong>
+            <span id="notificationCount">0 active</span>
+          </div>
+        </div>
+
+        <div
+          id="notificationDropdownList"
+          class="notification-dropdown-list">
+        </div>
+
+      </div>
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()">
+
+          <div class="avatar" id="userAvatarTop">U</div>
+
+          <div class="top-profile-name">
+            <span id="topUsername">User</span>
+            <small>Farm Owner</small>
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+
+        </button>
+
+        <div id="profileDropdown" class="profile-dropdown hidden">
+
+          <div class="dropdown-user">
+            <strong id="dropdownName">User</strong>
+            <p id="dropdownEmail">user@smartcoop.com</p>
+          </div>
+
+          <button
+            type="button"
+            onclick="window.location.href='settings.html'">
+            Settings
+          </button>
+
+          <button
+            type="button"
+            onclick="window.location.href='admin-dashboard.html'">
+            Switch to Admin
+          </button>
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+            Logout
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <section class="content records-modern">
+
+      <div class="records-hero">
+
+        <div class="records-title">
+
+          <div class="records-title-icon">
+            <i data-lucide="chart-no-axes-combined"></i>
+          </div>
+
+          <div>
+            <h1>Record Management</h1>
+            <p>Manage all operational data that drives your dashboard metrics</p>
+          </div>
+
+        </div>
+
+        <div class="records-farm-art">
+          <i data-lucide="bird"></i>
+          <i data-lucide="warehouse"></i>
+          <i data-lucide="bird"></i>
+        </div>
+
+      </div>
+
+
+      <div class="records-stat-grid">
+
+        <article class="records-stat-card">
+
+          <div class="records-stat-top">
+
+            <div class="records-stat-icon expense">
+              <i data-lucide="wallet-cards"></i>
+            </div>
+
+            <div>
+              <p>Total Expenses</p>
+              <h2 id="recordTotalExpenses">₱0</h2>
+              <small id="recordExpenseCount">0 transaction</small>
+            </div>
+
+          </div>
+
+          <div class="records-stat-bottom">
+            <span>
+              <i data-lucide="arrow-up-right"></i>
+              —
+            </span>
+
+            <small>vs last 30 days</small>
+          </div>
+
+        </article>
+
+
+        <article class="records-stat-card">
+
+          <div class="records-stat-top">
+
+            <div class="records-stat-icon eggs">
+              <i data-lucide="egg"></i>
+            </div>
+
+            <div>
+              <p>Total Eggs Collected</p>
+              <h2 id="recordTotalEggs">0</h2>
+              <small id="recordEggCount">0 collection log</small>
+            </div>
+
+          </div>
+
+          <div class="records-stat-bottom">
+            <span>—</span>
+            <small>vs last 30 days</small>
+          </div>
+
+        </article>
+
+
+        <article class="records-stat-card">
+
+          <div class="records-stat-top">
+
+            <div class="records-stat-icon mortality">
+              <i data-lucide="heart-pulse"></i>
+            </div>
+
+            <div>
+              <p>Mortality Rate</p>
+              <h2 id="recordMortalityRate">0%</h2>
+              <small id="recordDeathCount">0 total death</small>
+            </div>
+
+          </div>
+
+          <div class="records-stat-bottom">
+            <span>
+              <i data-lucide="activity"></i>
+              —
+            </span>
+
+            <small>vs last 30 days</small>
+          </div>
+
+        </article>
+
+
+        <article class="records-stat-card">
+
+          <div class="records-stat-top">
+
+            <div class="records-stat-icon chicken">
+              <i data-lucide="bird"></i>
+            </div>
+
+            <div>
+              <p>Active Chicken Flock</p>
+              <h2 id="recordTotalChickens">0</h2>
+              <small id="recordChickenCount">0 batch logs</small>
+            </div>
+
+          </div>
+
+          <div class="records-stat-bottom">
+            <span>—</span>
+            <small>vs last 30 days</small>
+          </div>
+
+        </article>
+
+
+        <article class="records-stat-card">
+
+          <div class="records-stat-top">
+
+            <div class="records-stat-icon meat">
+              <i data-lucide="beef"></i>
+            </div>
+
+            <div>
+              <p>Meat Production</p>
+              <h2 id="recordTotalMeat">0 kg</h2>
+              <small id="recordMeatCount">0 harvest logs</small>
+            </div>
+
+          </div>
+
+          <div class="records-stat-bottom">
+            <span>—</span>
+            <small>vs last 30 days</small>
+          </div>
+
+        </article>
+
+      </div>
+
+
+      <div class="record-tabs records-modern-tabs">
+
+        <button
+          class="active"
+          onclick="switchRecordTab('expenses')">
+
+          <i data-lucide="wallet-cards"></i>
+          Expenses
+
+        </button>
+
+        <button onclick="switchRecordTab('eggs')">
+          <i data-lucide="egg"></i>
+          Egg Collection
+        </button>
+
+        <button onclick="switchRecordTab('mortality')">
+          <i data-lucide="heart-pulse"></i>
+          Mortality
+        </button>
+
+        <button onclick="switchRecordTab('chicken')">
+          <i data-lucide="bird"></i>
+          Add Chicken
+        </button>
+
+        <button onclick="switchRecordTab('meat')">
+          <i data-lucide="beef"></i>
+          Meat Production
+        </button>
+
+      </div>
+
+
+      <div class="panel record-panel records-main-panel">
+
+        <div class="record-panel-header">
+
+          <div>
+            <h2 id="recordPanelTitle">Expense Records</h2>
+            <p id="recordPanelSubtitle">
+              Track all farm-related expenses
+            </p>
+          </div>
+
+          <button
+            class="add-record-btn"
+            id="recordAddBtn"
+            onclick="openRecordModal()">
+
+            <i data-lucide="plus"></i>
+            Add Expense
+
+          </button>
+
+        </div>
+
+
+        <div class="record-tools records-modern-tools">
+
+          <div class="record-search">
+            <i data-lucide="search"></i>
+
+            <input
+              id="recordSearchInput"
+              type="text"
+              placeholder="Search by description..."
+              oninput="loadRecordsPage()">
+          </div>
+
+
+          <select
+            id="recordCategoryFilter"
+            onchange="loadRecordsPage()">
+
+            <option value="all">All Categories</option>
+            <option value="Feed">Feed</option>
+            <option value="Medicine">Medicine</option>
+            <option value="Labor">Labor</option>
+            <option value="Construction">Construction</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Livestock">Chicken Batches</option>
+            <option value="Harvest">Meat Harvest</option>
+            <option value="Misc">Miscellaneous</option>
+
+          </select>
+
+          <button class="records-filter-btn" type="button">
+            <i data-lucide="list-filter"></i>
+          </button>
+
+        </div>
+
+
+        <div class="running-total records-running-total">
+
+          <span>
+            <i data-lucide="chart-no-axes-combined"></i>
+            <strong>Running Total</strong>
+          </span>
+
+          <div class="running-total-value">
+            <strong id="runningTotal">₱0</strong>
+            <small>Total Expenses</small>
+          </div>
+
+        </div>
+
+
+        <div class="record-table-wrap records-table-wrap">
+
+          <table class="record-table">
+            <thead id="recordTableHead"></thead>
+            <tbody id="recordTableBody"></tbody>
+          </table>
+
+
+          <div id="recordEmptyState" class="records-empty-state">
+
+            <div class="records-empty-icon">
+              <i data-lucide="clipboard-search"></i>
+            </div>
+
+            <h3>No expense records yet</h3>
+
+            <p>
+              Start tracking your farm expenses and operational records.
+            </p>
+
+            <button
+              type="button"
+              onclick="openRecordModal()">
+
+              <i data-lucide="plus"></i>
+              Add Your First Expense
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <div id="recordModal" class="coop-modal hidden">
+
+    <div class="coop-modal-card record-modern-modal">
+
+      <button
+        class="modal-x"
+        type="button"
+        onclick="closeRecordModal()">
+        ×
+      </button>
+
+      <h2 id="recordModalTitle">Add Record</h2>
+
+      <p class="modal-subtitle">
+        Enter the record details below
+      </p>
+
+      <div id="recordFormFields"></div>
+
+
+      <div class="record-modal-footer">
+
+        <button
+          class="record-save-btn"
+          type="button"
+          onclick="saveRecord()">
+          Save Record
+        </button>
+
+        <button
+          class="record-cancel-btn"
+          type="button"
+          onclick="closeRecordModal()">
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+<script src="js/auth.js"></script>
+<script src="js/record-management.js"></script>
+<script src="js/alerts.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+</script>
+
+</body>
+</html>

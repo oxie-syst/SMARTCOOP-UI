@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Alerts & Reminders | SmartCoop</title>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="dashboard-body" onload="loadUserInfo(); loadAlertsPage();">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+      <a href="user.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a href="coop-planner.html">
+        <i data-lucide="box"></i>
+        Coop Planner
+      </a>
+
+      <a href="breed-recommendation.html">
+        <i data-lucide="sparkles"></i>
+        Breed Recommendation
+      </a>
+
+      <a href="saved-recommendations.html">
+        <i data-lucide="star"></i>
+        Saved Recommendations
+      </a>
+
+      <a href="health-checker.html">
+        <i data-lucide="heart"></i>
+        Health Checker
+      </a>
+
+      <a href="ai-assistant.html">
+        <i data-lucide="message-square"></i>
+        AI Assistant
+      </a>
+
+      <a href="alerts.html" class="active">
+        <i data-lucide="bell"></i>
+        Alerts & Reminders
+      </a>
+
+      <a href="record-management.html">
+        <i data-lucide="file-text"></i>
+        Record Management
+      </a>
+
+      <a href="reports.html">
+        <i data-lucide="bar-chart"></i>
+        Reports
+      </a>
+
+      <a href="chicken-info.html">
+        <i data-lucide="bird"></i>
+        Chicken Info
+      </a>
+
+      <a href="settings.html">
+        <i data-lucide="settings"></i>
+        Settings
+      </a>
+    </nav>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+        <i data-lucide="leaf"></i>
+        <span>Smart Poultry Planning and Management System</span>
+      </div>
+
+      <div class="top-profile">
+
+      <button
+        class="notif-btn"
+        type="button"
+        onclick="toggleNotificationMenu()">
+
+        <i data-lucide="bell"></i>
+        <span class="notif"></span>
+      </button>
+
+      <div
+        id="notificationDropdown"
+        class="notification-dropdown hidden">
+
+        <div class="notification-dropdown-header">
+          <div>
+            <strong>Notifications</strong>
+            <span id="notificationCount">0 active</span>
+          </div>
+        </div>
+
+        <div
+          id="notificationDropdownList"
+          class="notification-dropdown-list">
+        </div>
+
+      </div>
+
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()">
+
+          <div class="avatar" id="userAvatarTop">U</div>
+
+          <div class="top-profile-name">
+            <span id="topUsername">User</span>
+            <small>Farm Owner</small>
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+
+        </button>
+
+
+        <div id="profileDropdown" class="profile-dropdown hidden">
+
+          <div class="dropdown-user">
+            <strong id="dropdownName">User</strong>
+            <p id="dropdownEmail">user@smartcoop.com</p>
+          </div>
+
+          <button
+            type="button"
+            onclick="window.location.href='settings.html'">
+            Settings
+          </button>
+
+          <button
+            type="button"
+            onclick="window.location.href='admin-dashboard.html'">
+            Switch to Admin
+          </button>
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+            Logout
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <section class="content alerts-modern">
+
+      <div class="alerts-modern-header">
+
+        <div class="alerts-heading">
+
+          <div class="alerts-heading-icon">
+            <i data-lucide="bell-ring"></i>
+          </div>
+
+          <div>
+            <h1>Alerts & Reminders</h1>
+            <p>Stay on top of your farm tasks and important dates</p>
+          </div>
+
+        </div>
+
+
+        <button
+          class="alerts-add-btn"
+          type="button"
+          onclick="openReminderModal()">
+
+          <i data-lucide="plus"></i>
+          Add Reminder
+
+        </button>
+
+      </div>
+
+
+      <div class="alerts-stats-grid">
+
+        <article class="alerts-stat-card">
+
+          <div class="alerts-stat-icon stat-upcoming">
+            <i data-lucide="calendar-clock"></i>
+          </div>
+
+          <div class="alerts-stat-details">
+            <h2 id="upcomingCount">0</h2>
+            <strong>Upcoming</strong>
+            <p>Reminders to do</p>
+          </div>
+
+          <i
+            data-lucide="activity"
+            class="alerts-stat-decoration green-decoration">
+          </i>
+
+        </article>
+
+
+        <article class="alerts-stat-card">
+
+          <div class="alerts-stat-icon stat-completed">
+            <i data-lucide="circle-check-big"></i>
+          </div>
+
+          <div class="alerts-stat-details">
+            <h2 id="completedCount">0</h2>
+            <strong>Completed</strong>
+            <p>Tasks completed</p>
+          </div>
+
+          <i
+            data-lucide="activity"
+            class="alerts-stat-decoration green-decoration">
+          </i>
+
+        </article>
+
+
+        <article class="alerts-stat-card">
+
+          <div class="alerts-stat-icon stat-priority">
+            <i data-lucide="flag"></i>
+          </div>
+
+          <div class="alerts-stat-details">
+            <h2 id="highPriorityCount" class="red-number">0</h2>
+            <strong>High Priority</strong>
+            <p>Needs attention</p>
+          </div>
+
+          <i
+            data-lucide="activity"
+            class="alerts-stat-decoration red-decoration">
+          </i>
+
+        </article>
+
+
+        <article class="alerts-stat-card">
+
+          <div class="alerts-stat-icon stat-overdue">
+            <i data-lucide="clock-3"></i>
+          </div>
+
+          <div class="alerts-stat-details">
+            <h2 id="overdueCount" class="orange-number">0</h2>
+            <strong>Overdue</strong>
+            <p>Past due items</p>
+          </div>
+
+          <i
+            data-lucide="activity"
+            class="alerts-stat-decoration orange-decoration">
+          </i>
+
+        </article>
+
+      </div>
+
+
+      <div class="alerts-filter-card">
+
+        <div class="alerts-tabs tabs">
+
+          <button
+            type="button"
+            class="active"
+            data-filter="all">
+
+            <i data-lucide="list"></i>
+            <span>All (0)</span>
+
+          </button>
+
+
+          <button
+            type="button"
+            data-filter="upcoming">
+
+            <i data-lucide="calendar-days"></i>
+            <span>Upcoming (0)</span>
+
+          </button>
+
+
+          <button
+            type="button"
+            data-filter="completed">
+
+            <i data-lucide="circle-check"></i>
+            <span>Completed (0)</span>
+
+          </button>
+
+
+          <button
+            type="button"
+            data-filter="overdue">
+
+            <i data-lucide="clock"></i>
+            <span>Overdue (0)</span>
+
+          </button>
+
+        </div>
+
+
+        <div class="alerts-sort">
+
+          <i data-lucide="arrow-up-down"></i>
+
+          <select id="reminderSort">
+            <option value="date">Sort by: Due Date</option>
+            <option value="priority">Sort by: Priority</option>
+            <option value="newest">Sort by: Newest</option>
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="alerts-list-card">
+
+        <div id="alertsList" class="reminder-list"></div>
+
+
+        <div id="alertsEmptyState" class="alerts-empty">
+
+          <div class="alerts-empty-art">
+
+            <div class="empty-art-circle">
+
+              <div class="empty-art-clipboard">
+
+                <div class="empty-art-clip"></div>
+
+                <div class="empty-art-row">
+                  <i data-lucide="check"></i>
+                  <span></span>
+                </div>
+
+                <div class="empty-art-row">
+                  <i data-lucide="check"></i>
+                  <span></span>
+                </div>
+
+                <div class="empty-art-row">
+                  <i data-lucide="check"></i>
+                  <span></span>
+                </div>
+
+              </div>
+
+
+              <div class="empty-art-bell">
+                <i data-lucide="bell"></i>
+              </div>
+
+
+              <div class="empty-art-bird">
+                <i data-lucide="bird"></i>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <h2>No reminders yet</h2>
+
+          <p>
+            You don't have any reminders. Add one to stay on top
+            of your farm tasks!
+          </p>
+
+
+          <button
+            type="button"
+            onclick="openReminderModal()">
+
+            <i data-lucide="plus"></i>
+            Add Your First Reminder
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <div id="reminderModal" class="coop-modal hidden">
+
+    <div class="coop-modal-card reminder-modal">
+
+      <button
+        class="modal-x"
+        type="button"
+        onclick="closeReminderModal()">
+        ×
+      </button>
+
+
+      <h2>Add New Reminder</h2>
+
+      <p class="modal-subtitle">
+        Create a reminder for important farm tasks
+      </p>
+
+
+      <div class="input-group">
+
+        <label>Title *</label>
+
+        <input
+          id="reminderTitle"
+          type="text"
+          placeholder="e.g., Feed chickens">
+
+      </div>
+
+
+      <div class="input-group">
+
+        <label>Description</label>
+
+        <input
+          id="reminderDesc"
+          type="text"
+          placeholder="Additional details...">
+
+      </div>
+
+
+      <div class="input-row">
+
+        <div class="input-group">
+
+          <label>Category</label>
+
+        <select id="reminderCategory">
+          <option value="feeding">Feeding</option>
+          <option value="vaccination">Vaccination</option>
+          <option value="health">Health</option>
+          <option value="cleaning">Cleaning</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="production">Production</option>
+          <option value="other">Other</option>
+        </select>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>Priority</label>
+
+          <select id="reminderPriority">
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+            <option value="low">Low</option>
+          </select>
+
+        </div>
+
+      </div>
+
+
+      <div class="input-row">
+
+        <div class="input-group">
+
+          <label>Date *</label>
+
+          <input
+            id="reminderDate"
+            type="date">
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>Time *</label>
+
+          <input
+            id="reminderTime"
+            type="time">
+
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          class="reminder-save-btn"
+          type="button"
+          onclick="addReminder()">
+          Add Reminder
+        </button>
+
+        <button
+          class="reminder-cancel-btn"
+          type="button"
+          onclick="closeReminderModal()">
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+<script src="js/auth.js"></script>
+<script src="js/alerts.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+</script>
+
+</body>
+</html>

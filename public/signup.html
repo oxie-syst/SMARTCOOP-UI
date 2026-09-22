@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Signup - SmartCoop</title>
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <script
+    src="https://accounts.google.com/gsi/client"
+    async
+    defer>
+  </script>
+</head>
+
+<body class="auth-body">
+
+  <main class="auth-wrapper">
+
+    <section class="brand-header">
+
+      <div class="logo-box">
+        S
+      </div>
+
+      <div>
+        <h1>SmartCoop</h1>
+        <p>Smart Poultry Management</p>
+      </div>
+
+    </section>
+
+
+    <section class="auth-card">
+
+      <div class="card-header">
+
+        <h2>Create an account</h2>
+
+        <p>
+          Start managing your poultry farm smartly
+        </p>
+
+      </div>
+
+
+      <form
+        id="signupForm"
+        class="form-stack">
+
+
+        <div
+          id="signupError"
+          class="error-box hidden">
+        </div>
+
+
+        <div class="input-group">
+
+          <label for="name">
+            Full Name
+          </label>
+
+          <input
+            id="name"
+            type="text"
+            placeholder="Enter your full name"
+            autocomplete="name"
+            required>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label for="signupEmail">
+            Email
+          </label>
+
+          <input
+            id="signupEmail"
+            type="email"
+            placeholder="Enter your email"
+            autocomplete="email"
+            required>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label for="phoneNumber">
+            Phone Number
+          </label>
+
+          <input
+            id="phoneNumber"
+            type="tel"
+            placeholder="Enter your phone number"
+            autocomplete="tel"
+            required>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label for="signupPassword">
+            Password
+          </label>
+
+          <div class="password-box">
+
+            <input
+              id="signupPassword"
+              type="password"
+              placeholder="Enter password"
+              autocomplete="new-password"
+              required>
+
+            <span
+              class="toggle-icon"
+              onclick="togglePassword('signupPassword', this)">
+
+              👁
+
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label for="confirmPassword">
+            Confirm Password
+          </label>
+
+          <div class="password-box">
+
+            <input
+              id="confirmPassword"
+              type="password"
+              placeholder="Confirm password"
+              autocomplete="new-password"
+              required>
+
+            <span
+              class="toggle-icon"
+              onclick="togglePassword('confirmPassword', this)">
+
+              👁
+
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <button
+          type="submit"
+          class="primary-btn"
+          id="signupBtn">
+
+          Create Account
+
+        </button>
+
+      </form>
+
+
+      <div class="divider">
+        <span>or continue with</span>
+      </div>
+
+
+      <div class="social-login">
+
+        <div
+          id="g_id_onload"
+          data-client_id="809976421121-0fg5n8g6jc02vgb61pr927pgbrmf8hn5.apps.googleusercontent.com"
+          data-callback="handleGoogleCredential"
+          data-auto_prompt="false">
+        </div>
+
+        <div
+          class="g_id_signin"
+          data-type="standard"
+          data-shape="rectangular"
+          data-theme="outline"
+          data-text="continue_with"
+          data-size="large"
+          data-logo_alignment="left"
+          data-width="320">
+        </div>
+
+      </div>
+
+
+      <div class="auth-footer">
+
+        Already have an account?
+
+        <a href="login.html">
+          Sign in
+        </a>
+
+      </div>
+
+    </section>
+
+
+    <div class="auth-footer">
+
+      <a
+        href="index.html"
+        class="back-home">
+
+        ← Back to Home
+
+      </a>
+
+    </div>
+
+  </main>
+
+
+  <div
+    id="toast"
+    class="toast hidden">
+  </div>
+
+
+  <script src="js/auth.js"></script>
+
+</body>
+
+</html>

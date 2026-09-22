@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Getting Started | SmartCoop</title>
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+  <main class="onboarding-page">
+
+    <section class="onboarding-card">
+
+      <div class="onboarding-topbar">
+
+        <div class="onboarding-brand">
+          <div class="onboarding-logo">
+            <i data-lucide="bird"></i>
+          </div>
+
+          <div>
+            <h2>SmartCoop</h2>
+            <p>Getting Started Guide</p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="onboarding-skip"
+          id="skipOnboardingBtn">
+          Skip
+        </button>
+
+      </div>
+
+
+      <div class="onboarding-content">
+
+        <div class="onboarding-visual">
+
+          <div class="onboarding-icon-box">
+            <i
+              id="slideIcon"
+              data-lucide="sparkles">
+            </i>
+          </div>
+
+          <span
+            class="onboarding-step-label"
+            id="slideStep">
+            Welcome
+          </span>
+
+          <h1 id="slideTitle">
+            Welcome to SmartCoop
+          </h1>
+
+          <p
+            class="onboarding-tagline"
+            id="slideTagline">
+            Plan smarter. Raise better.
+          </p>
+
+        </div>
+
+
+        <div class="onboarding-details">
+
+          <div class="onboarding-section">
+
+            <span class="onboarding-section-title">
+              WHAT IT DOES
+            </span>
+
+            <p id="slideDescription">
+              SmartCoop helps beginners plan, manage,
+              monitor, and improve their poultry farm
+              using simple digital tools.
+            </p>
+
+          </div>
+
+
+          <div class="onboarding-section">
+
+            <span class="onboarding-section-title">
+              WHY IT HELPS
+            </span>
+
+            <p id="slideBenefit">
+              Instead of guessing what to do next,
+              SmartCoop guides you through the important
+              steps of starting and managing a poultry farm.
+            </p>
+
+          </div>
+
+
+          <div
+            class="onboarding-section onboarding-connection"
+            id="connectionSection">
+
+            <span class="onboarding-section-title">
+              WHAT COMES NEXT
+            </span>
+
+            <div class="onboarding-next-feature">
+
+              <div class="onboarding-next-icon">
+                <i data-lucide="arrow-right"></i>
+              </div>
+
+              <p id="slideConnection">
+                Start by learning the basics through
+                Chicken Info.
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="onboarding-bottom">
+
+        <button
+          type="button"
+          class="onboarding-back hidden"
+          id="backSlideBtn">
+
+          <i data-lucide="arrow-left"></i>
+
+          Back
+
+        </button>
+
+
+        <div class="onboarding-progress-area">
+
+          <span
+            class="onboarding-progress-text"
+            id="slideCounter">
+            1 of 11
+          </span>
+
+          <div
+            class="onboarding-progress"
+            id="onboardingProgress">
+          </div>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="onboarding-next"
+          id="nextSlideBtn">
+
+          Next
+
+          <i data-lucide="arrow-right"></i>
+
+        </button>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <div
+    class="onboarding-exit-modal hidden"
+    id="skipOnboardingModal">
+
+    <div class="onboarding-exit-card">
+
+      <div class="onboarding-exit-icon">
+        <i data-lucide="circle-help"></i>
+      </div>
+
+      <h2>Skip the introduction?</h2>
+
+      <p>
+        You can start using SmartCoop immediately.
+        This guide is designed to help new users
+        understand the recommended workflow.
+      </p>
+
+      <div class="onboarding-exit-actions">
+
+        <button
+          type="button"
+          class="onboarding-cancel-btn"
+          id="cancelSkipBtn">
+          Continue Guide
+        </button>
+
+        <button
+          type="button"
+          class="onboarding-confirm-btn"
+          id="confirmSkipBtn">
+          Skip to Dashboard
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <script src="js/onboarding.js"></script>
+
+</body>
+
+</html>

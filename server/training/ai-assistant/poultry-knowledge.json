@@ -1,0 +1,156 @@
+{
+  "breeds": [
+    {
+      "name": "Leghorn",
+      "type": "Layer",
+      "bestFor": "Egg production",
+      "traits": [
+        "High egg production",
+        "Active",
+        "Efficient feed conversion"
+      ],
+      "notes": "Suitable for farmers focused mainly on egg production."
+    },
+    {
+      "name": "Rhode Island Red",
+      "type": "Dual Purpose",
+      "bestFor": "Backyard farming",
+      "traits": [
+        "Hardy",
+        "Adaptable",
+        "Good egg production",
+        "Suitable for meat and eggs"
+      ],
+      "notes": "A practical option for backyard raisers because of its adaptability."
+    },
+    {
+      "name": "ISA Brown",
+      "type": "Layer",
+      "bestFor": "Egg production",
+      "traits": [
+        "High egg production",
+        "Docile temperament",
+        "Beginner friendly"
+      ],
+      "notes": "Commonly selected for consistent egg production."
+    },
+    {
+      "name": "Plymouth Rock",
+      "type": "Dual Purpose",
+      "bestFor": "Backyard and small farms",
+      "traits": [
+        "Calm temperament",
+        "Hardy",
+        "Good for meat and eggs"
+      ],
+      "notes": "Suitable for raisers who want a manageable dual-purpose breed."
+    }
+  ],
+
+  "housing": {
+    "space": [
+      "Avoid overcrowding inside the poultry house.",
+      "Provide enough space for chickens to move comfortably.",
+      "Space requirements depend on chicken type, age, and production system."
+    ],
+    "ventilation": [
+      "Maintain good airflow inside the coop.",
+      "Avoid excessive heat and humidity.",
+      "Ventilation should remove moisture, odor, and excess heat without creating strong drafts."
+    ],
+    "lighting": [
+      "Provide appropriate lighting based on the age and purpose of the chickens.",
+      "Maintain a consistent lighting schedule when managing layers."
+    ]
+  },
+
+  "feeding": {
+    "general": [
+      "Provide feed appropriate for the chicken's age and production stage.",
+      "Keep feed clean and protected from moisture and contamination.",
+      "Avoid sudden major changes in feed whenever possible."
+    ],
+    "water": [
+      "Provide continuous access to clean and fresh drinking water.",
+      "Clean water containers regularly.",
+      "Monitor water consumption because changes may indicate management or health concerns."
+    ]
+  },
+
+  "health": {
+    "generalMonitoring": [
+      "Observe chickens daily for changes in activity, appetite, posture, and behavior.",
+      "Separate visibly sick birds from the flock when appropriate.",
+      "Keep records of unusual symptoms, mortality, and production changes."
+    ],
+    "warningSigns": [
+      "Persistent weakness",
+      "Severe breathing difficulty",
+      "Sudden increase in mortality",
+      "Large drop in feed or water intake",
+      "Rapid decline in egg production"
+    ],
+    "guidance": "SmartCoop AI provides general poultry management guidance and should not be treated as a confirmed veterinary diagnosis."
+  },
+
+  "biosecurity": [
+    "Limit unnecessary visitors inside poultry areas.",
+    "Clean and disinfect equipment regularly.",
+    "Avoid sharing contaminated equipment between poultry groups.",
+    "Control rodents, insects, and other possible disease carriers.",
+    "Keep new or returning birds separated before introducing them to an existing flock.",
+    "Maintain clean footwear and tools when entering poultry areas."
+  ],
+
+  "sanitation": [
+    "Remove excessive manure and wet litter.",
+    "Keep feeders and drinkers clean.",
+    "Maintain dry litter whenever possible.",
+    "Dispose of waste properly.",
+    "Regularly inspect the coop for moisture, pests, and damaged areas."
+  ],
+
+  "eggProduction": [
+    "Egg production is affected by breed, age, nutrition, lighting, environment, and health.",
+    "Consistent access to feed and clean water supports stable production.",
+    "Sudden production decreases should be investigated together with changes in feed intake, health, lighting, and environment."
+  ],
+
+  "broilerManagement": [
+    "Monitor growth, feed intake, water intake, and mortality.",
+    "Maintain suitable temperature and ventilation.",
+    "Avoid overcrowding.",
+    "Keep litter dry and feeders and drinkers accessible.",
+    "Use records to compare expenses, growth, and flock performance."
+  ],
+
+  "recordKeeping": [
+    "Record feed expenses.",
+    "Record egg production.",
+    "Record mortality.",
+    "Record chicken purchases and flock changes.",
+    "Record meat production or sales when applicable.",
+    "Review records regularly to identify changes in cost and production."
+  ],
+
+  "budgeting": [
+    "Include chicken purchase cost, feed, housing materials, utilities, equipment, health-related expenses, and maintenance when estimating poultry expenses.",
+    "Use actual farm records whenever possible instead of relying only on estimates.",
+    "Compare expenses with production results when evaluating farm performance."
+  ],
+
+  "smartcoop": {
+    "purpose": "SmartCoop is a poultry planning and management system designed to assist users with poultry-related planning, recommendations, records, monitoring, and decision support.",
+    "features": [
+      "Coop Planner",
+      "Breed Recommendation",
+      "Saved Recommendations",
+      "Health Checker",
+      "Alerts and Reminders",
+      "Record Management",
+      "Reports and Analytics",
+      "Chicken Information",
+      "AI Assistant"
+    ]
+  }
+}

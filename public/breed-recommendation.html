@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Breed Recommendation</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="dashboard-body" onload="loadUserInfo()">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+
+      <a href="user.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a href="coop-planner.html">
+        <i data-lucide="box"></i>
+        Coop Planner
+      </a>
+
+      <a href="breed-recommendation.html" class="active">
+        <i data-lucide="sparkles"></i>
+        Breed Recommendation
+      </a>
+
+      <a href="saved-recommendations.html">
+        <i data-lucide="star"></i>
+        Saved Recommendations
+      </a>
+
+      <a href="health-checker.html">
+        <i data-lucide="heart"></i>
+        Health Checker
+      </a>
+
+      <a href="ai-assistant.html">
+        <i data-lucide="message-square"></i>
+        AI Assistant
+      </a>
+
+      <a href="alerts.html">
+        <i data-lucide="bell"></i>
+        Alerts & Reminders
+      </a>
+
+      <a href="record-management.html">
+        <i data-lucide="file-text"></i>
+        Record Management
+      </a>
+
+      <a href="reports.html">
+        <i data-lucide="bar-chart"></i>
+        Reports
+      </a>
+
+      <a href="chicken-info.html">
+        <i data-lucide="bird"></i>
+        Chicken Info
+      </a>
+
+      <a href="settings.html">
+        <i data-lucide="settings"></i>
+        Settings
+      </a>
+
+    </nav>
+
+  </aside>
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+        <i data-lucide="leaf"></i>
+        <span>Smart Poultry Planning and Management System</span>
+      </div>
+
+      <div class="top-profile">
+
+      <button
+        class="notif-btn"
+        type="button"
+        onclick="toggleNotificationMenu()">
+
+        <i data-lucide="bell"></i>
+        <span class="notif"></span>
+      </button>
+
+      <div
+        id="notificationDropdown"
+        class="notification-dropdown hidden">
+
+        <div class="notification-dropdown-header">
+          <div>
+            <strong>Notifications</strong>
+            <span id="notificationCount">0 active</span>
+          </div>
+        </div>
+
+        <div
+          id="notificationDropdownList"
+          class="notification-dropdown-list">
+        </div>
+
+      </div>
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()">
+
+          <div class="avatar" id="userAvatarTop">
+            U
+          </div>
+
+          <div class="top-profile-name">
+            <span id="topUsername">User</span>
+            <small>Farm Owner</small>
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+
+        </button>
+
+        <div id="profileDropdown" class="profile-dropdown hidden">
+
+          <div class="dropdown-user">
+            <strong id="dropdownName">User</strong>
+            <p id="dropdownEmail">user@smartcoop.com</p>
+          </div>
+
+        <button
+          type="button"
+          onclick="window.location.href='settings.html'">
+          Settings
+        </button>
+
+        <button
+          type="button"
+          onclick="window.location.href='admin-dashboard.html'">
+          Switch to Admin
+        </button>
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+            Logout
+          </button>
+
+
+        </div>
+
+      </div>
+
+    </header>
+
+    <section class="content breed-page">
+
+      <div class="breed-page-header">
+
+        <div>
+
+          <div class="breed-title-row">
+
+            <i data-lucide="sparkles"></i>
+
+            <h1>
+              Breed Recommendation
+            </h1>
+
+          </div>
+
+          <p>
+            Select your primary poultry goal and let SmartCoop
+            recommend the best chicken breeds for your farm.
+          </p>
+
+        </div>
+
+        <div class="breed-ai-info">
+
+          <div class="breed-ai-info-icon">
+            <i data-lucide="bot"></i>
+          </div>
+
+          <div>
+
+            <strong>
+              AI-Powered Matching
+            </strong>
+
+            <p>
+              SmartCoop uses AI and curated poultry data to
+              recommend suitable breeds based on your selected goal.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="breed-main-layout">
+
+        <div class="breed-left-column">
+
+          <div class="breed-goal-card panel">
+
+            <div class="breed-section-title">
+
+              <span class="breed-step-icon">
+                <i data-lucide="target"></i>
+              </span>
+
+              <div>
+
+                <h2>
+                  1. Choose Your Primary Goal
+                </h2>
+
+                <p>
+                  What is your main goal in raising chickens?
+                </p>
+
+              </div>
+
+            </div>
+
+            <div class="breed-goal-options">
+
+              <button
+                type="button"
+                class="breed-goal-option"
+                data-goal="eggs">
+
+                <div class="breed-goal-emoji">
+                  🥚
+                </div>
+
+                <div class="breed-goal-text">
+
+                  <strong>
+                    Egg Production
+                  </strong>
+
+                  <span>
+                    Focus on high egg yield and consistent production.
+                  </span>
+
+                </div>
+
+                <span class="breed-radio"></span>
+
+              </button>
+
+              <button
+                type="button"
+                class="breed-goal-option"
+                data-goal="meat">
+
+                <div class="breed-goal-emoji">
+                  🐔
+                </div>
+
+                <div class="breed-goal-text">
+
+                  <strong>
+                    Meat Production
+                  </strong>
+
+                  <span>
+                    Focus on fast growth and meat yield.
+                  </span>
+
+                </div>
+
+                <span class="breed-radio"></span>
+
+              </button>
+
+              <button
+                type="button"
+                class="breed-goal-option"
+                data-goal="dual">
+
+                <div class="breed-goal-emoji">
+                  ⚖️
+                </div>
+
+                <div class="breed-goal-text">
+
+                  <strong>
+                    Dual Purpose
+                  </strong>
+
+                  <span>
+                    Good balance of meat production and egg laying.
+                  </span>
+
+                </div>
+
+                <span class="breed-radio"></span>
+
+              </button>
+
+            </div>
+
+            <input
+              type="hidden"
+              id="primaryGoal"
+              value=""
+            >
+
+            <button
+              type="button"
+              class="recommend-btn breed-main-btn"
+              onclick="getBreedRecommendation()">
+
+              <i data-lucide="sparkles"></i>
+
+              Get AI Recommendations
+
+            </button>
+
+          </div>
+
+          <div class="breed-about-card panel">
+
+            <div class="breed-about-title">
+
+              <i data-lucide="shield-check"></i>
+
+              <h3>
+                About Recommendations
+              </h3>
+
+            </div>
+
+            <p>
+              SmartCoop provides two recommendations:
+            </p>
+
+            <div class="breed-about-item">
+
+              <i data-lucide="check"></i>
+
+              <span>
+
+                <strong>
+                  Beginner Friendly
+                </strong>
+
+                – Easier to raise and manage.
+
+              </span>
+
+            </div>
+
+            <div class="breed-about-item">
+
+              <i data-lucide="check"></i>
+
+              <span>
+
+                <strong>
+                  Experienced Raisers
+                </strong>
+
+                – Best for raisers with more poultry experience.
+
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="breed-right-column">
+
+          <div
+            class="breed-result panel"
+            id="breedResult">
+
+            <div class="breed-result-header">
+
+              <div>
+
+                <h2>
+
+                  <i data-lucide="bird"></i>
+
+                  2. Your Recommended Breeds
+
+                </h2>
+
+                <p>
+                  Your AI recommendations will appear here.
+                </p>
+
+              </div>
+
+              <span class="breed-result-status">
+                AI Powered
+              </span>
+
+            </div>
+
+            <div class="empty-recommendation">
+
+              <div class="empty-recommendation-icon">
+
+                <i data-lucide="sparkles"></i>
+
+              </div>
+
+              <h2>
+                AI-Powered Breed Matching
+              </h2>
+
+              <p>
+                Choose your primary goal and SmartCoop will provide
+                one beginner-friendly breed and one breed suitable
+                for experienced raisers.
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="breed-reminder">
+
+        <div class="breed-reminder-icon">
+          <i data-lucide="shield-check"></i>
+        </div>
+
+        <p>
+
+          <strong>
+            Remember:
+          </strong>
+
+          Proper housing, nutrition, and health management are
+          important for successful poultry raising regardless of breed.
+
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script src="js/breed-recommendation.js"></script>
+  <script src="js/alerts.js"></script>
+
+  <script>
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+
+        const goalInput =
+          document.getElementById("primaryGoal");
+
+        const goalButtons =
+          document.querySelectorAll(".breed-goal-option");
+
+        goalButtons.forEach(button => {
+
+          button.addEventListener(
+            "click",
+            function () {
+
+              const goal =
+                this.dataset.goal;
+
+              goalInput.value = goal;
+
+              goalButtons.forEach(item => {
+                item.classList.remove("selected");
+              });
+
+              this.classList.add("selected");
+
+              console.log(
+                "Selected goal:",
+                goalInput.value
+              );
+
+            }
+          );
+
+        });
+
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+
+      }
+    );
+
+  </script>
+
+</body>
+</html>

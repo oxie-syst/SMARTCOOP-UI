@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Admin Dashboard | SmartCoop</title>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body
+  class="dashboard-body"
+  onload="checkAdmin(); loadAdminDashboard(); loadUserInfo();">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+
+      <a
+        href="admin-dashboard.html"
+        class="active">
+
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+
+      </a>
+
+      <a href="admin-users.html">
+
+        <i data-lucide="users"></i>
+        Manage Users
+
+      </a>
+
+      <a href="admin-reports.html">
+
+        <i data-lucide="bar-chart-3"></i>
+        Reports & Analytics
+
+      </a>
+
+    </nav>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+
+        <i data-lucide="shield-check"></i>
+
+        <span id="topbarText">
+          Admin Dashboard
+        </span>
+
+      </div>
+
+
+      <div class="top-profile">
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()">
+
+          <div
+            class="avatar"
+            id="userAvatarTop">
+
+            A
+
+          </div>
+
+          <div class="top-profile-name">
+
+            <span id="topUsername">
+              Admin
+            </span>
+
+            <small>
+              Administrator
+            </small>
+
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+
+        </button>
+
+
+        <div
+          id="profileDropdown"
+          class="profile-dropdown hidden">
+
+          <div class="dropdown-user">
+
+            <strong id="dropdownName">
+              Admin
+            </strong>
+
+            <p id="dropdownEmail">
+              admin@smartcoop.com
+            </p>
+
+            <small>
+              SmartCoop Administrator
+            </small>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+
+            <i data-lucide="log-out"></i>
+            Logout
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <section class="content admin-content">
+
+      <div class="admin-page-header">
+
+        <div>
+
+          <span class="admin-page-eyebrow">
+            ADMINISTRATION
+          </span>
+
+          <h1 id="greetingText">
+            Welcome, Admin
+          </h1>
+
+          <p>
+            Monitor SmartCoop users, system activity,
+            coop projects, and platform usage.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="admin-kpis">
+
+
+        <div class="admin-kpi-card">
+
+          <div>
+
+            <p>
+              Total Users
+            </p>
+
+            <h2 id="adminTotalUsers">
+              0
+            </h2>
+
+            <small>
+              Registered farmer accounts
+            </small>
+
+          </div>
+
+          <div class="admin-kpi-icon">
+            <i data-lucide="users"></i>
+          </div>
+
+        </div>
+
+
+        <div class="admin-kpi-card">
+
+          <div>
+
+            <p>
+              Active Users
+            </p>
+
+            <h2 id="adminActiveUsers">
+              0
+            </h2>
+
+            <small>
+              Active SmartCoop accounts
+            </small>
+
+          </div>
+
+          <div class="admin-kpi-icon">
+            <i data-lucide="user-check"></i>
+          </div>
+
+        </div>
+
+
+        <div class="admin-kpi-card">
+
+          <div>
+
+            <p>
+              Total Projects
+            </p>
+
+            <h2 id="adminTotalProjects">
+              0
+            </h2>
+
+            <small>
+              Created coop plans
+            </small>
+
+          </div>
+
+          <div class="admin-kpi-icon">
+            <i data-lucide="folder-kanban"></i>
+          </div>
+
+        </div>
+
+
+      </div>
+
+
+      <div class="admin-chart-row">
+
+
+        <div class="admin-panel">
+
+          <div class="admin-panel-header">
+
+            <div>
+
+              <h3>
+                User Activity
+              </h3>
+
+              <p>
+                SmartCoop user registrations over time
+              </p>
+
+            </div>
+
+            <i data-lucide="activity"></i>
+
+          </div>
+
+
+          <div class="admin-chart-container">
+
+            <canvas
+              id="adminUserActivityChart">
+            </canvas>
+
+          </div>
+
+        </div>
+
+
+        <div class="admin-panel">
+
+          <div class="admin-panel-header">
+
+            <div>
+
+              <h3>
+                System Usage
+              </h3>
+
+              <p>
+                SmartCoop feature usage overview
+              </p>
+
+            </div>
+
+            <i data-lucide="pie-chart"></i>
+
+          </div>
+
+
+          <div class="usage-wrap">
+
+
+            <div class="usage-item">
+
+              <div class="usage-row">
+
+                <span>
+                  Coop Planner
+                </span>
+
+                <strong id="plannerUsageText">
+                  0%
+                </strong>
+
+              </div>
+
+              <div class="usage-track">
+
+                <div
+                  id="plannerUsageBar"
+                  style="width: 0%;">
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="usage-item light">
+
+              <div class="usage-row">
+
+                <span>
+                  Record Management
+                </span>
+
+                <strong id="recordUsageText">
+                  0%
+                </strong>
+
+              </div>
+
+              <div class="usage-track">
+
+                <div
+                  id="recordUsageBar"
+                  style="width: 0%;">
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="usage-item brown">
+
+              <div class="usage-row">
+
+                <span>
+                  AI Features
+                </span>
+
+                <strong id="aiUsageText">
+                  0%
+                </strong>
+
+              </div>
+
+              <div class="usage-track">
+
+                <div
+                  id="aiUsageBar"
+                  style="width: 0%;">
+                </div>
+
+              </div>
+
+            </div>
+
+
+          </div>
+
+        </div>
+
+
+      </div>
+
+
+      <div class="admin-panel">
+
+        <div class="admin-panel-header">
+
+          <div>
+
+            <h3>
+              Project Growth
+            </h3>
+
+            <p>
+              Coop projects created over time
+            </p>
+
+          </div>
+
+          <i data-lucide="trending-up"></i>
+
+        </div>
+
+
+        <div class="admin-chart-container admin-chart-large">
+
+          <canvas
+            id="adminProjectGrowthChart">
+          </canvas>
+
+        </div>
+
+      </div>
+
+
+      <div class="admin-panel">
+
+        <div class="admin-table-head">
+
+          <div>
+
+            <h3>
+              Recent Users
+            </h3>
+
+            <p>
+              Recently registered SmartCoop accounts
+            </p>
+
+          </div>
+
+
+          <a
+            href="admin-users.html"
+            class="admin-view-all-btn">
+
+            View All Users
+
+            <i data-lucide="arrow-right"></i>
+
+          </a>
+
+        </div>
+
+
+        <div class="admin-search">
+
+          <i data-lucide="search"></i>
+
+          <input
+            id="adminSearchUser"
+            type="text"
+            placeholder="Search recent users..."
+            oninput="loadAdminUsersTable()">
+
+        </div>
+
+
+        <div class="admin-table-wrapper">
+
+          <table class="admin-table">
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  Name
+                </th>
+
+                <th>
+                  Email
+                </th>
+
+                <th>
+                  Role
+                </th>
+
+                <th>
+                  Status
+                </th>
+
+                <th>
+                  Joined
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody id="adminUsersTable">
+
+              <tr>
+
+                <td colspan="5">
+
+                  <div class="admin-table-loading">
+
+                    <i data-lucide="loader-circle"></i>
+
+                    <span>
+                      Loading users...
+                    </span>
+
+                  </div>
+
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script src="js/auth.js"></script>
+
+  <script>
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+    );
+  </script>
+
+</body>
+
+</html>

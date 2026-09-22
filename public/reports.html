@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Reports & Analytics | SmartCoop</title>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+</head>
+
+<body
+  class="dashboard-body"
+  onload="loadUserInfo(); loadReportsPage();"
+>
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+
+      <a href="user.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a href="coop-planner.html">
+        <i data-lucide="box"></i>
+        Coop Planner
+      </a>
+
+      <a href="breed-recommendation.html">
+        <i data-lucide="sparkles"></i>
+        Breed Recommendation
+      </a>
+
+      <a href="saved-recommendations.html">
+        <i data-lucide="star"></i>
+        Saved Recommendations
+      </a>
+
+      <a href="health-checker.html">
+        <i data-lucide="heart"></i>
+        Health Checker
+      </a>
+
+      <a href="ai-assistant.html">
+        <i data-lucide="message-square"></i>
+        AI Assistant
+      </a>
+
+      <a href="alerts.html">
+        <i data-lucide="bell"></i>
+        Alerts & Reminders
+      </a>
+
+      <a href="record-management.html">
+        <i data-lucide="file-text"></i>
+        Record Management
+      </a>
+
+      <a
+        href="reports.html"
+        class="active"
+      >
+        <i data-lucide="bar-chart"></i>
+        Reports
+      </a>
+
+      <a href="chicken-info.html">
+        <i data-lucide="bird"></i>
+        Chicken Info
+      </a>
+
+      <a href="settings.html">
+        <i data-lucide="settings"></i>
+        Settings
+      </a>
+
+    </nav>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+
+        <i data-lucide="leaf"></i>
+
+        <span>
+          Smart Poultry Planning and Management System
+        </span>
+
+      </div>
+
+
+      <div class="top-profile">
+
+        <button
+          class="notif-btn"
+          type="button"
+          onclick="toggleNotificationMenu()"
+        >
+
+          <i data-lucide="bell"></i>
+
+          <span class="notif"></span>
+
+        </button>
+
+
+        <div
+          id="notificationDropdown"
+          class="notification-dropdown hidden"
+        >
+
+          <div class="notification-dropdown-header">
+
+            <div>
+
+              <strong>
+                Notifications
+              </strong>
+
+              <span id="notificationCount">
+                0 active
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="notificationDropdownList"
+            class="notification-dropdown-list"
+          >
+          </div>
+
+        </div>
+
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()"
+        >
+
+          <div
+            class="avatar"
+            id="userAvatarTop"
+          >
+            U
+          </div>
+
+
+          <div class="top-profile-name">
+
+            <span id="topUsername">
+              User
+            </span>
+
+            <small>
+              Farm Owner
+            </small>
+
+          </div>
+
+
+          <i data-lucide="chevron-down"></i>
+
+        </button>
+
+
+        <div
+          id="profileDropdown"
+          class="profile-dropdown hidden"
+        >
+
+          <div class="dropdown-user">
+
+            <strong id="dropdownName">
+              User
+            </strong>
+
+            <p id="dropdownEmail">
+              user@smartcoop.com
+            </p>
+
+          </div>
+
+
+          <button
+            type="button"
+            onclick="window.location.href='settings.html'"
+          >
+            Settings
+          </button>
+
+
+          <button
+            type="button"
+            onclick="window.location.href='admin-dashboard.html'"
+          >
+            Switch to Admin
+          </button>
+
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()"
+          >
+            Logout
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <section class="content">
+
+      <div class="reports-header">
+
+        <div>
+
+          <h1>
+            Reports & Analytics
+          </h1>
+
+          <p>
+            Track your farm's performance using your actual
+            SmartCoop records.
+          </p>
+
+        </div>
+
+
+        <div
+          class="report-actions"
+          id="premiumReportActions"
+        >
+
+          <button
+            type="button"
+            id="exportCsvButton"
+            onclick="exportReport('csv')"
+          >
+
+            <i data-lucide="download"></i>
+
+            Export CSV
+
+            <span class="report-premium-mini">
+              <i data-lucide="crown"></i>
+              Premium
+            </span>
+
+          </button>
+
+
+          <button
+            type="button"
+            class="green-btn"
+            id="exportPdfButton"
+            onclick="exportReport('pdf')"
+          >
+
+            <i data-lucide="file-down"></i>
+
+            Export PDF
+
+            <span class="report-premium-mini">
+              <i data-lucide="crown"></i>
+              Premium
+            </span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div class="notice">
+
+        <strong>
+          All metrics are calculated from your actual records.
+        </strong>
+
+        Update values in
+
+        <a href="record-management.html">
+          Record Management
+        </a>
+
+        to see changes reflected here.
+
+      </div>
+
+
+      <div class="report-filters panel">
+
+        <select
+          id="reportPeriodFilter"
+          onchange="loadReportsPage()"
+        >
+
+          <option value="all">
+            All Time
+          </option>
+
+          <option value="7days">
+            Last 7 Days
+          </option>
+
+          <option value="month">
+            This Month
+          </option>
+
+          <option value="quarter">
+            Last 3 Months
+          </option>
+
+          <option value="year">
+            This Year
+          </option>
+
+        </select>
+
+
+        <select
+          id="reportCoopFilter"
+          onchange="loadReportsPage()"
+        >
+
+          <option value="all">
+            All Coops
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="report-section-heading">
+
+        <div>
+
+          <h2>
+            Farm Summary
+          </h2>
+
+          <p>
+            Basic report information available to all SmartCoop users.
+          </p>
+
+        </div>
+
+
+        <span class="report-free-badge">
+          Free
+        </span>
+
+      </div>
+
+
+      <div class="report-cards">
+
+        <div class="report-card">
+
+          <p>
+            Total Chickens
+          </p>
+
+          <h2 id="reportTotalChickens">
+            0
+          </h2>
+
+          <small id="reportChickenLogs">
+            0 batch logs
+          </small>
+
+        </div>
+
+
+        <div class="report-card">
+
+          <p>
+            Eggs Collected
+          </p>
+
+          <h2 id="reportTotalEggs">
+            0
+          </h2>
+
+          <small id="reportEggLogs">
+            0 collection logs
+          </small>
+
+        </div>
+
+
+        <div class="report-card">
+
+          <p>
+            Meat Production
+          </p>
+
+          <h2 id="reportTotalMeat">
+            0 kg
+          </h2>
+
+          <small id="reportMeatLogs">
+            0 harvest logs
+          </small>
+
+        </div>
+
+
+        <div class="report-card">
+
+          <p>
+            Total Expenses
+          </p>
+
+          <h2 id="reportTotalExpenses">
+            ₱0.00
+          </h2>
+
+          <small id="reportExpenseLogs">
+            0 transactions
+          </small>
+
+        </div>
+
+
+        <div class="report-card">
+
+          <p>
+            Mortality Rate
+          </p>
+
+          <h2 id="reportMortalityRate">
+            0.00%
+          </h2>
+
+          <small id="reportDeathCount">
+            0 total deaths
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <div
+        class="report-premium-lock"
+        id="reportPremiumLock"
+      >
+
+        <div class="report-premium-lock-icon">
+
+          <i data-lucide="crown"></i>
+
+        </div>
+
+
+        <div class="report-premium-lock-content">
+
+          <span class="report-premium-label">
+            SMARTCOOP PREMIUM
+          </span>
+
+          <h2>
+            Unlock Advanced Reports & Analytics
+          </h2>
+
+          <p>
+            Upgrade to Premium to view production trends,
+            expense breakdowns, mortality trends, detailed
+            coop performance, and export your reports.
+          </p>
+
+
+          <div class="report-premium-benefits">
+
+            <span>
+              <i data-lucide="check"></i>
+              Historical charts
+            </span>
+
+            <span>
+              <i data-lucide="check"></i>
+              Expense analysis
+            </span>
+
+            <span>
+              <i data-lucide="check"></i>
+              Coop performance
+            </span>
+
+            <span>
+              <i data-lucide="check"></i>
+              CSV & PDF export
+            </span>
+
+          </div>
+
+
+          <button
+            type="button"
+            onclick="window.location.href='subscription.html'"
+          >
+
+            <i data-lucide="crown"></i>
+
+            Upgrade to Premium
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <div
+        id="premiumReportsContent"
+        class="premium-reports-content"
+      >
+
+        <div class="report-section-heading">
+
+          <div>
+
+            <h2>
+              Advanced Analytics
+            </h2>
+
+            <p>
+              Detailed trends and insights from your farm records.
+            </p>
+
+          </div>
+
+
+          <span class="report-premium-badge">
+
+            <i data-lucide="crown"></i>
+
+            Premium
+
+          </span>
+
+        </div>
+
+
+        <div class="charts-grid">
+
+          <div class="panel chart-panel">
+
+            <h2>
+              Egg Production Trend
+            </h2>
+
+            <p>
+              Egg collection over time
+            </p>
+
+            <div style="height:300px;">
+
+              <canvas id="eggTrendChart"></canvas>
+
+            </div>
+
+          </div>
+
+
+          <div class="panel chart-panel">
+
+            <h2>
+              Expense Breakdown
+            </h2>
+
+            <p>
+              Distribution of farming costs
+            </p>
+
+            <div style="height:300px;">
+
+              <canvas id="expenseChart"></canvas>
+
+            </div>
+
+          </div>
+
+
+          <div class="panel chart-panel">
+
+            <h2>
+              Mortality Trend
+            </h2>
+
+            <p>
+              Recorded chicken mortality over time
+            </p>
+
+            <div style="height:300px;">
+
+              <canvas id="mortalityChart"></canvas>
+
+            </div>
+
+          </div>
+
+
+          <div class="panel chart-panel">
+
+            <h2>
+              Monthly Cost Trend
+            </h2>
+
+            <p>
+              Total farm expenses over time
+            </p>
+
+            <div style="height:300px;">
+
+              <canvas id="costChart"></canvas>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="panel coop-performance">
+
+          <div class="coop-performance-heading">
+
+            <div>
+
+              <h2>
+                Coop Performance
+              </h2>
+
+              <p>
+                Detailed metrics calculated for each coop.
+              </p>
+
+            </div>
+
+
+            <span class="report-premium-badge">
+
+              <i data-lucide="crown"></i>
+
+              Premium
+
+            </span>
+
+          </div>
+
+
+          <div style="overflow-x:auto;">
+
+            <table class="record-table">
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    Coop Name
+                  </th>
+
+                  <th>
+                    Chickens
+                  </th>
+
+                  <th>
+                    Type
+                  </th>
+
+                  <th>
+                    Status
+                  </th>
+
+                  <th>
+                    Eggs Collected
+                  </th>
+
+                  <th>
+                    Total Expenses
+                  </th>
+
+                  <th>
+                    Actions
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody id="coopPerformanceBody">
+
+                <tr>
+
+                  <td colspan="7">
+                    Loading coop performance...
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script src="js/auth.js"></script>
+
+  <script src="js/reports.js"></script>
+
+  <script src="js/alerts.js"></script>
+
+
+  <script>
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+
+  </script>
+
+</body>
+
+</html>

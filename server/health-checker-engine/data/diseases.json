@@ -1,0 +1,247 @@
+{
+  "_meta": {
+    "description": "Rule-based knowledge base for the SmartCoop Health Checker. Every symptomWeights key MUST exist in symptoms.json (the 14 checkboxes in the existing UI) — nothing outside that checklist is ever scored. priorityOverride forces a minimum priority regardless of score, used for notifiable diseases (Newcastle Disease, Avian Influenza) where the Philippines requires DA/BAI reporting even on a moderate symptom match.",
+    "note": "Weights and guidance text are a starting rule base grounded in standard PH backyard poultry disease references. Verify against a DA-BAI or veterinary source before citing in the paper."
+  },
+  "diseases": [
+    {
+      "id": "infectious_bronchitis",
+      "name": "Infectious Bronchitis",
+      "priorityOverride": null,
+      "symptomWeights": {
+        "sneezing": 80, "coughing": 70, "wateryEyes": 75,
+        "nasalDischarge": 70, "eggProblems": 65, "reducedAppetite": 30
+      },
+      "recommendedActions": [
+        "Isolate birds showing respiratory signs from the rest of the flock.",
+        "Ensure good ventilation in the coop without creating cold drafts.",
+        "Provide clean drinking water and easy access to feed.",
+        "Consult a veterinarian if breathing difficulty or egg drop continues beyond a few days."
+      ],
+      "prevention": [
+        "Maintain consistent, adequate ventilation year-round.",
+        "Avoid sudden temperature changes and overcrowding.",
+        "Practice all-in/all-out flock management where possible.",
+        "Keep housing and equipment clean and disinfected regularly."
+      ],
+      "veterinaryGuidance": "Seek veterinary assessment if respiratory signs worsen, spread through the flock, or egg production does not recover within one to two weeks."
+    },
+    {
+      "id": "newcastle_disease",
+      "name": "Newcastle Disease (ND)",
+      "priorityOverride": "high",
+      "symptomWeights": {
+        "coughing": 70, "nasalDischarge": 60, "diarrhea": 75,
+        "eggProblems": 70, "lethargy": 40, "lameness": 55, "droppedWings": 60
+      },
+      "recommendedActions": [
+        "Isolate affected birds immediately and limit movement in and out of the coop.",
+        "Avoid bringing in new birds until the flock's health status is confirmed.",
+        "Contact your local Department of Agriculture / Bureau of Animal Industry office promptly.",
+        "Disinfect equipment, footwear, and housing to limit spread."
+      ],
+      "prevention": [
+        "Follow a Newcastle Disease vaccination schedule appropriate for your flock.",
+        "Practice strict biosecurity — limit visitors and disinfect before entering the coop.",
+        "Quarantine new or returning birds before introducing them to the flock.",
+        "Monitor the flock daily for early respiratory or nervous signs."
+      ],
+      "veterinaryGuidance": "Newcastle Disease is a notifiable disease in the Philippines. Contact your local DA/BAI veterinary office promptly — do not rely on home management alone."
+    },
+    {
+      "id": "infectious_coryza",
+      "name": "Infectious Coryza",
+      "priorityOverride": null,
+      "symptomWeights": {
+        "wateryEyes": 85, "nasalDischarge": 80, "sneezing": 60,
+        "swelling": 75, "reducedAppetite": 30
+      },
+      "recommendedActions": [
+        "Isolate affected birds to reduce spread within the flock.",
+        "Gently clean facial discharge before any veterinarian-guided treatment.",
+        "Improve coop ventilation and reduce overcrowding.",
+        "Consult a veterinarian for appropriate treatment and flock management."
+      ],
+      "prevention": [
+        "Avoid mixing birds of different ages or unknown health status.",
+        "Maintain good ventilation and reduce dust and ammonia buildup.",
+        "Practice regular coop sanitation and equipment disinfection.",
+        "Isolate and observe new birds before adding them to the flock."
+      ],
+      "veterinaryGuidance": "Consult a veterinarian if facial swelling worsens, spreads to more birds, or appetite does not improve."
+    },
+    {
+      "id": "fowl_cholera",
+      "name": "Fowl Cholera (Pasteurellosis)",
+      "priorityOverride": null,
+      "symptomWeights": {
+        "lethargy": 55, "diarrhea": 60, "swelling": 70,
+        "paleComb": 65, "lameness": 50, "droppedWings": 45
+      },
+      "recommendedActions": [
+        "Isolate affected birds — fowl cholera can spread and progress quickly.",
+        "Disinfect housing, feeders, and waterers thoroughly.",
+        "Monitor the rest of the flock closely for similar signs.",
+        "Seek prompt veterinary evaluation and guidance."
+      ],
+      "prevention": [
+        "Control rodents and wild bird contact, common sources of spread.",
+        "Avoid overcrowding and maintain good sanitation.",
+        "Remove and properly dispose of any deceased birds promptly.",
+        "Discuss vaccination options with a veterinarian if cholera is recurring in your area."
+      ],
+      "veterinaryGuidance": "Seek veterinary attention promptly — fowl cholera can progress rapidly and cause sudden losses if untreated."
+    },
+    {
+      "id": "coccidiosis",
+      "name": "Coccidiosis",
+      "priorityOverride": null,
+      "symptomWeights": {
+        "diarrhea": 90, "paleComb": 70, "lethargy": 55,
+        "reducedAppetite": 55, "droppedWings": 50, "featherLoss": 30
+      },
+      "recommendedActions": [
+        "Keep litter and bedding dry — coccidia spread readily in wet, dirty conditions.",
+        "Isolate visibly unwell birds and monitor droppings closely.",
+        "Ensure consistent access to clean water and feed.",
+        "Consult a veterinarian or feed supplier about appropriate anticoccidial support."
+      ],
+      "prevention": [
+        "Keep litter dry and replace wet or soiled bedding promptly.",
+        "Avoid overcrowding, which increases contamination risk.",
+        "Clean and disinfect feeders and waterers regularly.",
+        "Consider coccidiosis-resistant feed programs for young birds."
+      ],
+      "veterinaryGuidance": "Consult a veterinarian if bloody or persistent diarrhea, or noticeable weight loss, is observed."
+    },
+    {
+      "id": "fowl_pox",
+      "name": "Fowl Pox",
+      "priorityOverride": null,
+      "symptomWeights": {
+        "skinLesions": 95, "swelling": 45, "reducedAppetite": 25, "lethargy": 20
+      },
+      "recommendedActions": [
+        "Isolate affected birds to limit spread through direct contact or mosquitoes.",
+        "Keep lesions clean and dry; avoid picking at scabs.",
+        "Control mosquito populations around the coop.",
+        "Consult a veterinarian if lesions spread to the mouth or affect breathing."
+      ],
+      "prevention": [
+        "Reduce standing water and mosquito breeding sites near the coop.",
+        "Disinfect housing and equipment regularly.",
+        "Isolate new birds before introducing them to the flock.",
+        "Discuss fowl pox vaccination with a veterinarian if recurring in your area."
+      ],
+      "veterinaryGuidance": "Most cases are mild and self-resolving, but seek veterinary advice if lesions spread to the mouth/throat or breathing becomes difficult."
+    },
+    {
+      "id": "chronic_respiratory_disease",
+      "name": "Chronic Respiratory Disease (CRD)",
+      "priorityOverride": null,
+      "symptomWeights": {
+        "coughing": 80, "sneezing": 70, "nasalDischarge": 75,
+        "wateryEyes": 55, "reducedAppetite": 25, "eggProblems": 40
+      },
+      "recommendedActions": [
+        "Reduce stress factors such as overcrowding and poor ventilation.",
+        "Isolate affected birds to reduce spread.",
+        "Maintain clean, dust-reduced housing conditions.",
+        "Consult a veterinarian, especially if signs recur frequently."
+      ],
+      "prevention": [
+        "Minimize overcrowding and maintain good airflow.",
+        "Reduce dust and ammonia buildup through regular cleaning.",
+        "Avoid mixing birds from different sources.",
+        "Address stress factors like sudden temperature or feed changes."
+      ],
+      "veterinaryGuidance": "CRD tends to recur under stress. Consult a veterinarian if symptoms are frequent or persistent despite management changes."
+    },
+    {
+      "id": "fowl_typhoid",
+      "name": "Fowl Typhoid (Salmonella Gallinarum)",
+      "priorityOverride": null,
+      "symptomWeights": {
+        "diarrhea": 80, "lethargy": 60, "reducedAppetite": 50,
+        "paleComb": 55, "droppedWings": 40
+      },
+      "recommendedActions": [
+        "Isolate affected birds and disinfect housing and equipment.",
+        "Monitor the rest of the flock closely for similar signs.",
+        "Maintain clean feed and water sources to limit spread.",
+        "Seek prompt veterinary evaluation."
+      ],
+      "prevention": [
+        "Source birds and hatching eggs from reputable, disease-free suppliers.",
+        "Practice strict sanitation for feeders, waterers, and housing.",
+        "Control rodents, which can carry and spread Salmonella.",
+        "Quarantine new birds before adding them to the flock."
+      ],
+      "veterinaryGuidance": "Seek veterinary attention promptly, as fowl typhoid can cause rising mortality once birds become symptomatic."
+    },
+    {
+      "id": "infectious_synovitis",
+      "name": "Infectious Synovitis (Mycoplasma synoviae)",
+      "priorityOverride": null,
+      "symptomWeights": {
+        "lameness": 85, "swelling": 75, "droppedWings": 55, "paleComb": 35
+      },
+      "recommendedActions": [
+        "Isolate affected birds to reduce joint strain and spread.",
+        "Provide soft, clean bedding to ease movement and reduce injury.",
+        "Ensure feed and water are easily reachable for less mobile birds.",
+        "Consult a veterinarian for evaluation of joint swelling and lameness."
+      ],
+      "prevention": [
+        "Source birds from flocks with known clean health status.",
+        "Practice good sanitation to reduce secondary infection risk.",
+        "Avoid overcrowding, which increases contact-based spread.",
+        "Monitor young birds closely, as they are commonly affected."
+      ],
+      "veterinaryGuidance": "Consult a veterinarian if lameness worsens, affects multiple birds, or is accompanied by visible joint swelling."
+    },
+    {
+      "id": "external_parasites",
+      "name": "External Parasite Infestation (Mites / Lice)",
+      "priorityOverride": null,
+      "symptomWeights": {
+        "featherLoss": 90, "skinLesions": 50, "lethargy": 35, "reducedAppetite": 25
+      },
+      "recommendedActions": [
+        "Inspect birds closely, especially around the vent and under wings, for parasites.",
+        "Clean and disinfect housing, perches, and nesting areas thoroughly.",
+        "Provide a dust-bathing area, which helps birds naturally manage parasites.",
+        "Consult a veterinarian or poultry supplier for appropriate parasite control options."
+      ],
+      "prevention": [
+        "Clean and disinfect coops and equipment on a regular schedule.",
+        "Provide accessible dust-bathing areas for the flock.",
+        "Inspect new birds before introducing them to the flock.",
+        "Control wild bird access, which can introduce parasites."
+      ],
+      "veterinaryGuidance": "Consult a veterinarian or agricultural extension office if infestation is severe or feather loss is extensive."
+    },
+    {
+      "id": "avian_influenza",
+      "name": "Avian Influenza (HPAI)",
+      "priorityOverride": "high",
+      "symptomWeights": {
+        "swelling": 70, "paleComb": 80, "lethargy": 55,
+        "diarrhea": 45, "coughing": 40, "eggProblems": 60
+      },
+      "recommendedActions": [
+        "Stop handling birds beyond what is necessary and avoid moving them off the property.",
+        "Isolate the affected area and limit access to the coop.",
+        "Contact your local Department of Agriculture / Bureau of Animal Industry office immediately.",
+        "Avoid contact between the affected flock and other poultry or wild birds."
+      ],
+      "prevention": [
+        "Practice strict biosecurity, including limiting visitor and vehicle access.",
+        "Prevent contact between backyard flocks and wild birds or waterfowl.",
+        "Report unusual illness or sudden deaths to DA/BAI promptly.",
+        "Avoid bringing in birds from markets or sources of unknown health status."
+      ],
+      "veterinaryGuidance": "Avian Influenza is a notifiable, reportable disease in the Philippines. Report immediately to your local DA/BAI veterinary office — do not attempt home management."
+    }
+  ]
+}

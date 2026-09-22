@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Saved Recommendations</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="dashboard-body" onload="loadUserInfo()">
+
+  <aside class="sidebar">
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+      <a href="user.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a href="coop-planner.html">
+        <i data-lucide="box"></i>
+        Coop Planner
+      </a>
+
+      <a href="breed-recommendation.html">
+        <i data-lucide="sparkles"></i>
+        Breed Recommendation
+      </a>
+
+      <a href="saved-recommendations.html" class="active">
+        <i data-lucide="bookmark"></i>
+        Saved Recommendations
+      </a>
+
+      <a href="health-checker.html">
+        <i data-lucide="heart"></i>
+        Health Checker
+      </a>
+
+      <a href="ai-assistant.html">
+        <i data-lucide="message-square"></i>
+        AI Assistant
+      </a>
+
+      <a href="alerts.html">
+        <i data-lucide="bell"></i>
+        Alerts & Reminders
+      </a>
+
+      <a href="record-management.html">
+        <i data-lucide="file-text"></i>
+        Record Management
+      </a>
+
+      <a href="reports.html">
+        <i data-lucide="bar-chart"></i>
+        Reports
+      </a>
+
+      <a href="chicken-info.html">
+        <i data-lucide="bird"></i>
+        Chicken Info
+      </a>
+
+      <a href="settings.html">
+        <i data-lucide="settings"></i>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+        <i data-lucide="leaf"></i>
+        <span>Smart Poultry Planning and Management System</span>
+      </div>
+
+      <div class="top-profile">
+
+      <button
+        class="notif-btn"
+        type="button"
+        onclick="toggleNotificationMenu()">
+
+        <i data-lucide="bell"></i>
+        <span class="notif"></span>
+      </button>
+
+      <div
+        id="notificationDropdown"
+        class="notification-dropdown hidden">
+
+        <div class="notification-dropdown-header">
+          <div>
+            <strong>Notifications</strong>
+            <span id="notificationCount">0 active</span>
+          </div>
+        </div>
+
+        <div
+          id="notificationDropdownList"
+          class="notification-dropdown-list">
+        </div>
+
+      </div>
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()"
+        >
+          <div class="avatar" id="userAvatarTop">U</div>
+
+          <div class="top-profile-name">
+            <span id="topUsername">User</span>
+            <small>Farm Owner</small>
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+        </button>
+
+        <div id="profileDropdown" class="profile-dropdown hidden">
+
+          <div class="dropdown-user">
+            <strong id="dropdownName">User</strong>
+            <p id="dropdownEmail">user@smartcoop.com</p>
+          </div>
+
+        <button
+          type="button"
+          onclick="window.location.href='settings.html'">
+          Settings
+        </button>
+
+        <button
+          type="button"
+          onclick="window.location.href='admin-dashboard.html'">
+          Switch to Admin
+        </button>
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+            Logout
+          </button>
+
+
+        </div>
+
+      </div>
+
+    </header>
+
+    <section class="content saved-page">
+
+      <div class="saved-page-heading">
+
+        <div class="saved-heading-left">
+
+          <div class="saved-heading-icon">
+            <i data-lucide="bookmark"></i>
+          </div>
+
+          <div>
+            <h1>Saved Breed Recommendations</h1>
+            <p>
+              View and manage your favorite chicken breed recommendations.
+            </p>
+          </div>
+
+        </div>
+
+        <a
+          href="breed-recommendation.html"
+          class="saved-find-btn"
+        >
+          <i data-lucide="sparkles"></i>
+          Find More Breeds
+        </a>
+
+      </div>
+
+      <div class="saved-stats">
+
+        <div class="saved-stat saved-stat-total">
+
+          <div class="saved-stat-icon">
+            <i data-lucide="bookmark"></i>
+          </div>
+
+          <div>
+            <span>Total Saved</span>
+            <h2 id="savedCount">0</h2>
+            <p>Recommendations</p>
+          </div>
+
+        </div>
+
+        <div class="saved-stat">
+
+          <div class="saved-stat-icon saved-stat-egg">
+            <i data-lucide="egg"></i>
+          </div>
+
+          <div>
+            <span>Egg Production</span>
+            <h2 id="eggSavedCount">0</h2>
+            <p>Breeds</p>
+          </div>
+
+        </div>
+
+        <div class="saved-stat">
+
+          <div class="saved-stat-icon saved-stat-meat">
+            <i data-lucide="drumstick"></i>
+          </div>
+
+          <div>
+            <span>Meat Production</span>
+            <h2 id="meatSavedCount">0</h2>
+            <p>Breeds</p>
+          </div>
+
+        </div>
+
+        <div class="saved-stat">
+
+          <div class="saved-stat-icon saved-stat-dual">
+            <i data-lucide="scale"></i>
+          </div>
+
+          <div>
+            <span>Dual Purpose</span>
+            <h2 id="dualSavedCount">0</h2>
+            <p>Breeds</p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div
+        id="savedLoading"
+        class="saved-loading"
+      >
+        <div class="saved-loading-icon">
+          <i data-lucide="loader-circle"></i>
+        </div>
+
+        <h2>Loading Recommendations</h2>
+
+        <p>
+          Please wait while SmartCoop loads your saved breeds.
+        </p>
+      </div>
+
+      <div
+        id="emptySavedState"
+        class="saved-empty"
+        style="display: none;"
+      >
+
+        <div class="saved-empty-icon">
+          <i data-lucide="bookmark"></i>
+        </div>
+
+        <h2>No Saved Recommendations</h2>
+
+        <p>
+          Save breed recommendations first so you can easily access them here.
+        </p>
+
+        <a
+          href="breed-recommendation.html"
+          class="saved-find-btn"
+        >
+          <i data-lucide="sparkles"></i>
+          Find a Breed
+        </a>
+
+      </div>
+
+      <div
+        id="savedBreedGrid"
+        class="saved-breed-grid"
+      ></div>
+
+    </section>
+
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script src="js/saved-recommendations.js"></script>
+  <script src="js/alerts.js"></script>
+
+  <script>
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  </script>
+
+</body>
+</html>

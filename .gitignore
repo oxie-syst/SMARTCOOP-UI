@@ -1,4 +1,8 @@
 node_modules/
 .env
+.vscode/
 .DS_Store
 *.log
+
+public/Broilers/10x10 Broiler.glb
+public/Dual Purpose/10x10 Dual Purpose.glb

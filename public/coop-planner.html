@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Coop Planner | SmartCoop</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css">
+
+  <script
+    type="module"
+    src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+  </script>
+</head>
+
+<body class="dashboard-body" onload="loadUserInfo();">
+
+  <aside class="sidebar">
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+      <a href="user.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a href="coop-planner.html" class="active">
+        <i data-lucide="box"></i>
+        Coop Planner
+      </a>
+
+      <a href="breed-recommendation.html">
+        <i data-lucide="sparkles"></i>
+        Breed Recommendation
+      </a>
+
+      <a href="saved-recommendations.html">
+        <i data-lucide="star"></i>
+        Saved Recommendations
+      </a>
+
+      <a href="health-checker.html">
+        <i data-lucide="heart"></i>
+        Health Checker
+      </a>
+
+      <a href="ai-assistant.html">
+        <i data-lucide="message-square"></i>
+        AI Assistant
+      </a>
+
+      <a href="alerts.html">
+        <i data-lucide="bell"></i>
+        Alerts & Reminders
+      </a>
+
+      <a href="record-management.html">
+        <i data-lucide="file-text"></i>
+        Record Management
+      </a>
+
+      <a href="reports.html">
+        <i data-lucide="bar-chart"></i>
+        Reports
+      </a>
+
+      <a href="chicken-info.html">
+        <i data-lucide="bird"></i>
+        Chicken Info
+      </a>
+
+      <a href="settings.html">
+        <i data-lucide="settings"></i>
+        Settings
+      </a>
+    </nav>
+  </aside>
+
+ <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+        <i data-lucide="leaf"></i>
+        <span>Smart Poultry Planning and Management System</span>
+      </div>
+
+      <div class="top-profile">
+
+      <button
+        class="notif-btn"
+        type="button"
+        onclick="toggleNotificationMenu()">
+
+        <i data-lucide="bell"></i>
+        <span class="notif"></span>
+      </button>
+
+      <div
+        id="notificationDropdown"
+        class="notification-dropdown hidden">
+
+        <div class="notification-dropdown-header">
+          <div>
+            <strong>Notifications</strong>
+            <span id="notificationCount">0 active</span>
+          </div>
+        </div>
+
+        <div
+          id="notificationDropdownList"
+          class="notification-dropdown-list">
+        </div>
+
+      </div>
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()">
+
+          <div class="avatar" id="userAvatarTop">U</div>
+
+          <div class="top-profile-name">
+            <span id="topUsername">User</span>
+            <small>Farm Owner</small>
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+        </button>
+
+        <div id="profileDropdown" class="profile-dropdown hidden">
+
+          <div class="dropdown-user">
+            <strong id="dropdownName">User</strong>
+            <p id="dropdownEmail">user@smartcoop.com</p>
+          </div>
+
+        <button
+          type="button"
+          onclick="window.location.href='settings.html'">
+          Settings
+        </button>
+
+        <button
+          type="button"
+          onclick="window.location.href='admin-dashboard.html'">
+          Switch to Admin
+        </button>
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+            Logout
+          </button>
+
+        </div>
+      </div>
+    </header>
+
+    <section class="content smart-planner-page">
+
+      <div class="planner-page-heading">
+        <div>
+          <div class="planner-heading-badge">
+            <i data-lucide="box"></i>
+            Smart Planning Tool
+          </div>
+
+          <h1>Coop Planner</h1>
+
+          <p>
+            Design your poultry coop, preview it in 3D,
+            and calculate the estimated setup cost.
+          </p>
+        </div>
+      </div>
+
+      <div class="smart-planner-layout">
+
+        <section class="smart-config-card">
+
+          <div class="smart-card-heading">
+            <div class="smart-card-icon">
+              <i data-lucide="sliders-horizontal"></i>
+            </div>
+
+            <div>
+              <h2>Coop Configuration</h2>
+              <p>Enter your poultry housing requirements.</p>
+            </div>
+          </div>
+
+          <div class="smart-form-body">
+
+            <div class="input-group">
+              <label for="budget">
+                <i data-lucide="wallet"></i>
+                Available Budget
+              </label>
+
+              <div class="peso-input">
+                <span>₱</span>
+
+                <input
+                  id="budget"
+                  type="number"
+                  min="0"
+                  placeholder="Enter your budget"
+                  oninput="findSuitableSizes()">
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="smart-manual-btn"
+              onclick="useManualPlanning()">
+
+              <i data-lucide="pencil-ruler"></i>
+              I don't know my budget
+            </button>
+
+            <div id="budgetMessage" class="budget-message"></div>
+
+            <div class="smart-form-divider"></div>
+
+            <div class="input-group">
+              <label for="coopName">
+                <i data-lucide="tag"></i>
+                Coop Name
+              </label>
+
+              <input
+                id="coopName"
+                type="text"
+                value="New Coop"
+                placeholder="Enter coop name">
+            </div>
+
+            <div class="input-group">
+              <label for="coopSize">
+                <i data-lucide="ruler"></i>
+                Coop Size
+              </label>
+
+              <select
+                id="coopSize"
+                required
+                onchange="updateCapacity()">
+
+                <option value="" disabled selected>
+                  Enter your budget first
+                </option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="capacity">
+                <i data-lucide="bird"></i>
+                Recommended Capacity
+              </label>
+
+              <input
+                id="capacity"
+                type="text"
+                readonly
+                placeholder="Select a coop size first">
+            </div>
+
+            <div class="input-group">
+              <label for="type">
+                <i data-lucide="bird"></i>
+                Chicken Type
+              </label>
+
+              <select id="type">
+                <option value="" disabled selected>
+                  Select Chicken Type
+                </option>
+
+                <option>Layers (Egg Production)</option>
+                <option>Broilers</option>
+                <option>Dual Purpose</option>
+              </select>
+            </div>
+
+            <button
+              type="button"
+              class="smart-generate-btn"
+              onclick="generatePlan()">
+
+              <i data-lucide="box"></i>
+
+              <span>
+                <strong>Generate Coop Plan</strong>
+                <small>View 3D model & calculate costs</small>
+              </span>
+
+              <i data-lucide="arrow-right"></i>
+            </button>
+
+            <div
+              id="plannerActions"
+              class="planner-actions hidden">
+
+              <button
+                type="button"
+                class="smart-save-btn"
+                onclick="savePlan()">
+
+                <i data-lucide="save"></i>
+                Save Coop Plan
+              </button>
+
+              <button
+                type="button"
+                class="smart-reset-btn"
+                onclick="resetPlannerForm()">
+
+                <i data-lucide="rotate-ccw"></i>
+                Reset Form
+              </button>
+            </div>
+
+          </div>
+        </section>
+
+        <section class="smart-preview-card">
+
+          <div class="smart-card-heading preview-heading">
+            <div class="smart-card-icon">
+              <i data-lucide="scan"></i>
+            </div>
+
+            <div>
+              <h2>3D Coop Preview</h2>
+              <p>Interactive visualization of your selected coop.</p>
+            </div>
+
+            <span class="interactive-badge">
+              <i data-lucide="mouse-pointer-2"></i>
+              Interactive
+            </span>
+          </div>
+
+          <div class="preview-box">
+            <div class="preview-empty-state">
+              <div class="preview-empty-icon">
+                <i data-lucide="box"></i>
+              </div>
+
+              <h3>Your 3D Coop Will Appear Here</h3>
+
+              <p>
+                Configure your coop and click Generate Coop Plan
+                to view the interactive model.
+              </p>
+
+              <div class="preview-controls-hint">
+                <span>
+                  <i data-lucide="rotate-3d"></i>
+                  Rotate
+                </span>
+
+                <span>
+                  <i data-lucide="zoom-in"></i>
+                  Zoom
+                </span>
+
+                <span>
+                  <i data-lucide="move"></i>
+                  Pan
+                </span>
+              </div>
+            </div>
+
+            <div class="preview-info" id="previewInfo">
+              <pre id="output"></pre>
+            </div>
+          </div>
+
+          <div class="preview-footer">
+            <div>
+              <i data-lucide="mouse-pointer-2"></i>
+              Drag to rotate
+            </div>
+
+            <div>
+              <i data-lucide="search"></i>
+              Scroll to zoom
+            </div>
+
+            <div>
+              <i data-lucide="move"></i>
+              Explore the model
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+
+      <div id="costSection" class="cost-section hidden">
+
+        <div class="section-heading-row">
+          <div>
+            <span class="section-eyebrow">
+              PLAN ANALYSIS
+            </span>
+
+            <h2>Coop Overview</h2>
+
+            <p>
+              Review the recommended capacity, space usage,
+              and ventilation of your generated coop.
+            </p>
+          </div>
+
+          <span class="optimized-pill">
+            <i data-lucide="circle-check"></i>
+            Plan Generated
+          </span>
+        </div>
+
+        <div class="analysis-cards">
+
+          <article class="analysis-card capacity-analysis">
+            <div class="analysis-icon green-icon">
+              <i data-lucide="bird"></i>
+            </div>
+
+            <div class="analysis-label">Recommended Capacity</div>
+
+            <h2 id="capacityResult">0</h2>
+
+            <span id="capacityStatus">
+              Awaiting calculation...
+            </span>
+
+            <p id="spacePerChicken">
+              0m² per chicken
+            </p>
+          </article>
+
+          <article class="analysis-card space-analysis">
+            <div class="analysis-icon blue-icon">
+              <i data-lucide="maximize"></i>
+            </div>
+
+            <div class="analysis-label">Space Usage</div>
+
+            <h2 id="spaceUsageResult">0%</h2>
+
+            <div class="usage-bar">
+              <div id="usageBarFill"></div>
+            </div>
+
+            <p id="totalAreaText">
+              0m² total area
+            </p>
+          </article>
+
+          <article class="analysis-card ventilation-analysis">
+            <div class="analysis-icon teal-icon">
+              <i data-lucide="wind"></i>
+            </div>
+
+            <div class="analysis-label">Ventilation</div>
+
+            <h2 id="ventilationStatus">Good</h2>
+
+            <span class="good-badge">
+              <i data-lucide="circle-check"></i>
+              Adequate
+            </span>
+
+            <p id="climateText">
+              Climate optimized
+            </p>
+          </article>
+
+        </div>
+
+        <div class="smart-cost-layout">
+
+          <section class="smart-cost-card">
+
+            <div class="cost-card-header">
+              <div>
+                <span class="section-eyebrow">
+                  COST ESTIMATOR
+                </span>
+
+                <h2>
+                  <i data-lucide="calculator"></i>
+                  Estimated Setup Cost
+                </h2>
+
+                <p>
+                  Estimated expenses based on your selected
+                  coop size and recommended capacity.
+                </p>
+              </div>
+
+              <div class="cost-estimate-badge">
+                <i data-lucide="sparkles"></i>
+                Auto Calculated
+              </div>
+            </div>
+
+            <div class="cost-table-wrapper">
+              <table class="cost-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Estimated Cost</th>
+                  </tr>
+                </thead>
+
+                <tbody id="costTableBody"></tbody>
+              </table>
+            </div>
+
+            <div class="total-cost">
+              <div>
+                <small>TOTAL ESTIMATED COST</small>
+                <strong>Total Setup Investment</strong>
+              </div>
+
+              <strong id="totalCost">₱0</strong>
+            </div>
+
+            <div class="cost-disclaimer">
+              <i data-lucide="info"></i>
+
+              <p>
+                Estimated costs may vary depending on actual
+                material prices and availability in your area.
+              </p>
+            </div>
+
+          </section>
+
+          <aside class="cost-summary-card">
+
+            <div class="summary-icon">
+              <i data-lucide="wallet-cards"></i>
+            </div>
+
+            <h3>Budget Summary</h3>
+
+            <p>
+              SmartCoop automatically calculates the estimated
+              investment needed for your selected coop.
+            </p>
+
+            <div class="summary-benefits">
+
+              <div>
+                <span>
+                  <i data-lucide="check"></i>
+                </span>
+
+                <p>
+                  <strong>Automatic Calculation</strong>
+                  Costs update based on coop size.
+                </p>
+              </div>
+
+              <div>
+                <span>
+                  <i data-lucide="check"></i>
+                </span>
+
+                <p>
+                  <strong>Capacity Based</strong>
+                  Chicken stock cost uses recommended capacity.
+                </p>
+              </div>
+
+              <div>
+                <span>
+                  <i data-lucide="check"></i>
+                </span>
+
+                <p>
+                  <strong>Detailed Breakdown</strong>
+                  See where your estimated budget will be spent.
+                </p>
+              </div>
+
+            </div>
+
+            <div class="summary-tip">
+              <i data-lucide="lightbulb"></i>
+
+              <div>
+                <strong>Planning Tip</strong>
+
+                <p>
+                  Keep an extra allowance in your budget for
+                  unexpected material price changes.
+                </p>
+              </div>
+            </div>
+
+          </aside>
+
+        </div>
+
+      </div>
+
+      <section class="smart-saved-section">
+
+        <div class="saved-section-heading">
+
+          <div>
+            <span class="section-eyebrow">
+              YOUR PLANS
+            </span>
+
+            <h2>Saved Coop Plans</h2>
+
+            <p>
+              Access and manage your previously saved
+              coop configurations.
+            </p>
+          </div>
+
+          <div class="saved-heading-icon">
+            <i data-lucide="folder-heart"></i>
+          </div>
+
+        </div>
+
+        <div id="savedPlans" class="saved-grid"></div>
+
+      </section>
+
+    </section>
+
+  </main>
+
+  <div
+    id="viewPlanModal"
+    class="plan-modal hidden">
+
+    <div class="plan-modal-content">
+
+      <button
+        type="button"
+        class="plan-modal-close"
+        onclick="closeViewPlanModal()">
+
+        <i data-lucide="x"></i>
+      </button>
+
+      <div class="plan-modal-header">
+        <span class="section-eyebrow">
+          SAVED COOP PLAN
+        </span>
+
+        <h2 id="modalPlanName">
+          Coop Plan
+        </h2>
+
+        <p id="modalChickenType"></p>
+      </div>
+
+      <div class="plan-modal-preview">
+        <div id="modalModelContainer"></div>
+      </div>
+
+      <div class="plan-modal-details">
+
+        <div>
+          <span>Coop Size</span>
+          <strong id="modalPlanSize"></strong>
+        </div>
+
+        <div>
+          <span>Chickens</span>
+          <strong id="modalPlanChickens"></strong>
+        </div>
+
+        <div>
+          <span>Status</span>
+          <strong id="modalPlanStatus"></strong>
+        </div>
+
+      </div>
+
+      <button
+        type="button"
+        class="outline-btn"
+        onclick="closeViewPlanModal()">
+        Close
+      </button>
+
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/coop-planner.js"></script>
+  <script src="js/alerts.js"></script>
+
+</body>
+</html>

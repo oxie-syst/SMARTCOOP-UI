@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Health Checker</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="dashboard-body" onload="loadUserInfo();">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+
+      <a href="user.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a href="coop-planner.html">
+        <i data-lucide="box"></i>
+        Coop Planner
+      </a>
+
+      <a href="breed-recommendation.html">
+        <i data-lucide="sparkles"></i>
+        Breed Recommendation
+      </a>
+
+      <a href="saved-recommendations.html">
+        <i data-lucide="bookmark"></i>
+        Saved Recommendations
+      </a>
+
+      <a href="health-checker.html" class="active">
+        <i data-lucide="heart-pulse"></i>
+        Health Checker
+      </a>
+
+      <a href="ai-assistant.html">
+        <i data-lucide="message-square"></i>
+        AI Assistant
+      </a>
+
+      <a href="alerts.html">
+        <i data-lucide="bell"></i>
+        Alerts & Reminders
+      </a>
+
+      <a href="record-management.html">
+        <i data-lucide="file-text"></i>
+        Record Management
+      </a>
+
+      <a href="reports.html">
+        <i data-lucide="bar-chart-3"></i>
+        Reports
+      </a>
+
+      <a href="chicken-info.html">
+        <i data-lucide="bird"></i>
+        Chicken Info
+      </a>
+
+      <a href="settings.html">
+        <i data-lucide="settings"></i>
+        Settings
+      </a>
+
+    </nav>
+
+  </aside>
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+        <i data-lucide="leaf"></i>
+        <span>
+          Smart Poultry Planning and Management System
+        </span>
+      </div>
+
+      <div class="top-profile">
+
+      <button
+        class="notif-btn"
+        type="button"
+        onclick="toggleNotificationMenu()">
+
+        <i data-lucide="bell"></i>
+        <span class="notif"></span>
+      </button>
+
+      <div
+        id="notificationDropdown"
+        class="notification-dropdown hidden">
+
+        <div class="notification-dropdown-header">
+          <div>
+            <strong>Notifications</strong>
+            <span id="notificationCount">0 active</span>
+          </div>
+        </div>
+
+        <div
+          id="notificationDropdownList"
+          class="notification-dropdown-list">
+        </div>
+
+      </div>
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()"
+        >
+
+          <div
+            class="avatar"
+            id="userAvatarTop"
+          >
+            U
+          </div>
+
+          <div class="top-profile-name">
+            <span id="topUsername">
+              User
+            </span>
+            <small>
+              Farm Owner
+            </small>
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+
+        </button>
+
+        <div id="profileDropdown" class="profile-dropdown hidden">
+
+          <div class="dropdown-user">
+            <strong id="dropdownName">User</strong>
+            <p id="dropdownEmail">user@smartcoop.com</p>
+          </div>
+
+        <button
+          type="button"
+          onclick="window.location.href='settings.html'">
+          Settings
+        </button>
+
+        <button
+          type="button"
+          onclick="window.location.href='admin-dashboard.html'">
+          Switch to Admin
+        </button>
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+            Logout
+          </button>
+
+
+        </div>
+
+      </div>
+
+    </header>
+
+    <section class="content health-checker-page">
+
+      <div class="health-page-header">
+
+        <div>
+          <h1>AI Health Checker</h1>
+
+          <p>
+            Identify potential health concerns using
+            AI-powered symptom analysis.
+          </p>
+        </div>
+
+        <div class="health-ai-label">
+          <i data-lucide="sparkles"></i>
+
+          <div>
+            <strong>SmartCoop Health Analysis</strong>
+            <span>SmartCoop Health Assistant</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="health-modern-layout">
+
+        <div class="health-symptoms-panel">
+
+          <div class="health-section-title">
+
+            <div class="health-step">
+              1
+            </div>
+
+            <div>
+              <h2>Select Symptoms</h2>
+              <p>
+                Check all symptoms you observe in your chickens.
+              </p>
+            </div>
+
+          </div>
+
+          <div class="health-symptom-category respiratory">
+
+            <div class="health-category-icon">
+              <i data-lucide="wind"></i>
+            </div>
+
+            <div class="health-category-content">
+
+              <h3>Respiratory</h3>
+
+              <div class="health-checkbox-grid">
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="sneezing"
+                  >
+                  <span>Sneezing</span>
+                </label>
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="coughing"
+                  >
+                  <span>Coughing</span>
+                </label>
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="wateryEyes"
+                  >
+                  <span>Watery eyes</span>
+                </label>
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="nasalDischarge"
+                  >
+                  <span>Nasal discharge</span>
+                </label>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="health-symptom-category digestive">
+
+            <div class="health-category-icon">
+              <i data-lucide="activity"></i>
+            </div>
+
+            <div class="health-category-content">
+
+              <h3>Digestive</h3>
+
+              <div class="health-checkbox-grid">
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="diarrhea"
+                  >
+                  <span>Diarrhea</span>
+                </label>
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="reducedAppetite"
+                  >
+                  <span>Reduced appetite</span>
+                </label>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="health-symptom-category general">
+
+            <div class="health-category-icon">
+              <i data-lucide="shield-plus"></i>
+            </div>
+
+            <div class="health-category-content">
+
+              <h3>General</h3>
+
+              <div class="health-checkbox-grid">
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="lethargy"
+                  >
+                  <span>Lethargy / Weakness</span>
+                </label>
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="droppedWings"
+                  >
+                  <span>Dropped wings</span>
+                </label>
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="paleComb"
+                  >
+                  <span>Pale comb / wattles</span>
+                </label>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="health-symptom-category skin">
+
+            <div class="health-category-icon">
+              <i data-lucide="scan-line"></i>
+            </div>
+
+            <div class="health-category-content">
+
+              <h3>Skin & Feathers</h3>
+
+              <div class="health-checkbox-grid">
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="featherLoss"
+                  >
+                  <span>Unusual feather loss</span>
+                </label>
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="skinLesions"
+                  >
+                  <span>Skin lesions / sores</span>
+                </label>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="health-symptom-category physical">
+
+            <div class="health-category-icon">
+              <i data-lucide="heart-pulse"></i>
+            </div>
+
+            <div class="health-category-content">
+
+              <h3>Physical</h3>
+
+              <div class="health-checkbox-grid">
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="swelling"
+                  >
+                  <span>Swelling (face / legs)</span>
+                </label>
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="lameness"
+                  >
+                  <span>Lameness / Limping</span>
+                </label>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="health-symptom-category production">
+
+            <div class="health-category-icon">
+              <i data-lucide="egg"></i>
+            </div>
+
+            <div class="health-category-content">
+
+              <h3>Production</h3>
+
+              <div class="health-checkbox-grid">
+
+                <label>
+                  <input
+                    type="checkbox"
+                    value="eggProblems"
+                  >
+                  <span>Egg production issues</span>
+                </label>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="health-selected-summary">
+
+            <span>
+              <i data-lucide="list-checks"></i>
+              Selected Symptoms
+            </span>
+
+            <strong id="selectedSymptomCount">
+              0
+            </strong>
+
+          </div>
+
+          <button
+            id="analyzeHealthBtn"
+            class="health-analyze-btn"
+            type="button"
+            onclick="analyzeSymptoms()"
+          >
+            <i data-lucide="activity"></i>
+            Analyze Symptoms
+          </button>
+
+        </div>
+
+        <div class="health-right-column">
+
+          <div
+            class="health-analysis-panel"
+            id="healthResult"
+          >
+
+            <div class="health-analysis-heading">
+
+              <div class="health-step">
+                2
+              </div>
+
+              <div>
+                <h2>AI Health Analysis</h2>
+                <p>
+                  Your health assessment will appear here.
+                </p>
+              </div>
+
+            </div>
+
+            <div class="health-empty-state">
+
+              <div class="health-heart-visual">
+                <i data-lucide="heart-pulse"></i>
+              </div>
+
+              <h2>
+                SmartCoop Health Assessment
+              </h2>
+
+              <p>
+                Select the symptoms you observe in your
+                chickens and SmartCoop will analyze them
+                to identify possible health concerns and
+                provide care recommendations.
+              </p>
+
+              <div class="health-disclaimer-modern">
+
+                <i data-lucide="triangle-alert"></i>
+
+                <p>
+                  <strong>Important:</strong>
+                  This tool provides general guidance only
+                  and does not replace professional
+                  veterinary consultation. Contact a
+                  licensed veterinarian for serious,
+                  worsening, or uncertain conditions.
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="health-history-panel">
+
+            <div class="health-history-header">
+
+              <div class="health-section-title">
+
+                <div class="health-step">
+                  3
+                </div>
+
+                <div>
+                  <h2>Recent Health Checks</h2>
+                  <p>
+                    Your recently saved health assessments.
+                  </p>
+                </div>
+
+              </div>
+
+              <span
+                class="health-history-count"
+                id="healthHistoryCount"
+              >
+                0 Records
+              </span>
+
+            </div>
+
+            <div id="healthHistory"></div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script src="js/health-checker.js"></script>
+  <script src="js/alerts.js"></script>
+
+  <script>
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  </script>
+
+</body>
+</html>

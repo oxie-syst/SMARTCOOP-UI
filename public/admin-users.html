@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Manage Users | SmartCoop</title>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body
+  class="dashboard-body"
+  onload="checkAdmin(); loadAdminUsersPage(); loadUserInfo();">
+
+  <aside class="sidebar">
+
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+
+      <a href="admin-dashboard.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a
+        href="admin-users.html"
+        class="active">
+
+        <i data-lucide="users"></i>
+        Manage Users
+
+      </a>
+
+      <a href="admin-reports.html">
+        <i data-lucide="bar-chart-3"></i>
+        Reports & Analytics
+      </a>
+
+    </nav>
+
+  </aside>
+
+
+  <main class="main">
+
+    <header class="topbar">
+
+      <div class="topbar-brand">
+
+        <i data-lucide="users"></i>
+
+        <span id="topbarText">
+          Manage Users
+        </span>
+
+      </div>
+
+
+      <div class="top-profile">
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()">
+
+          <div
+            class="avatar"
+            id="userAvatarTop">
+
+            A
+
+          </div>
+
+          <div class="top-profile-name">
+
+            <span id="topUsername">
+              Admin
+            </span>
+
+            <small>
+              Administrator
+            </small>
+
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+
+        </button>
+
+
+        <div
+          id="profileDropdown"
+          class="profile-dropdown hidden">
+
+          <div class="dropdown-user">
+
+            <strong id="dropdownName">
+              Admin
+            </strong>
+
+            <p id="dropdownEmail">
+              admin@smartcoop.com
+            </p>
+
+            <small>
+              SmartCoop Administrator
+            </small>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+
+            <i data-lucide="log-out"></i>
+            Logout
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <section class="content admin-content">
+
+      <div class="admin-page-header">
+
+        <div>
+
+          <span class="admin-page-eyebrow">
+            USER MANAGEMENT
+          </span>
+
+          <h1>
+            Manage Users
+          </h1>
+
+          <p>
+            View and manage registered SmartCoop accounts.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="admin-users-kpis">
+
+        <div class="admin-users-card">
+
+          <p>
+            Total Users
+          </p>
+
+          <h2 id="manageTotalUsers">
+            0
+          </h2>
+
+          <small>
+            Registered farmer accounts
+          </small>
+
+        </div>
+
+
+        <div class="admin-users-card">
+
+          <p>
+            Active Users
+          </p>
+
+          <h2 id="manageActiveUsers">
+            0
+          </h2>
+
+          <small>
+            Currently active accounts
+          </small>
+
+        </div>
+
+
+        <div class="admin-users-card">
+
+          <p>
+            Inactive Users
+          </p>
+
+          <h2 id="manageInactiveUsers">
+            0
+          </h2>
+
+          <small>
+            Deactivated accounts
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <div class="admin-users-panel">
+
+        <div class="admin-users-head">
+
+          <div>
+
+            <h2>
+              User Accounts
+            </h2>
+
+            <p>
+              Search and review registered users.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="admin-users-tools">
+
+          <div class="admin-users-search">
+
+            <i data-lucide="search"></i>
+
+            <input
+              id="adminManageSearch"
+              type="text"
+              placeholder="Search name or email..."
+              oninput="renderAdminManageUsers()">
+
+          </div>
+
+
+          <select
+            id="adminManageStatusFilter"
+            onchange="renderAdminManageUsers()">
+
+            <option value="All">
+              All Status
+            </option>
+
+            <option value="Active">
+              Active
+            </option>
+
+            <option value="Inactive">
+              Inactive
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="admin-table-wrapper">
+
+          <table class="admin-users-table">
+
+            <thead>
+
+              <tr>
+
+            <th>Name</th>
+            <th>Email</th>
+            <th>Plan</th>
+            <th>Subscription</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Actions</th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody id="adminManageUsersTable">
+
+              <tr>
+
+                <td colspan="7">
+
+                  <div class="admin-table-loading">
+
+                    <i data-lucide="loader-circle"></i>
+
+                    <span>
+                      Loading users...
+                    </span>
+
+                  </div>
+
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <div
+    id="adminUserDetailsModal"
+    class="admin-modal hidden">
+
+    <div class="admin-modal-card">
+
+      <button
+        type="button"
+        class="admin-modal-close"
+        onclick="closeAdminUserDetails()">
+
+        ×
+
+      </button>
+
+
+      <h2>
+        User Details
+      </h2>
+
+
+      <div class="admin-user-details">
+
+        <div class="input-group">
+
+          <label>
+            Full Name
+          </label>
+
+          <input
+            id="detailsUserName"
+            type="text"
+            readonly>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Email
+          </label>
+
+          <input
+            id="detailsUserEmail"
+            type="email"
+            readonly>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Phone Number
+          </label>
+
+          <input
+            id="detailsUserPhone"
+            type="text"
+            readonly>
+
+        </div>
+
+        <div class="input-group">
+
+        <label>
+          Farm Name
+        </label>
+
+        <input
+          id="detailsUserFarmName"
+          type="text"
+          readonly>
+
+      </div>
+
+
+      <div class="input-group">
+
+        <label>
+          Farm Location
+        </label>
+
+        <input
+          id="detailsUserFarmLocation"
+          type="text"
+          readonly>
+
+      </div>
+
+
+      <div class="input-group">
+
+        <label>
+          Farm Size
+        </label>
+
+        <input
+          id="detailsUserFarmSize"
+          type="text"
+          readonly>
+
+      </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Role
+          </label>
+
+          <input
+            id="detailsUserRole"
+            type="text"
+            readonly>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Status
+          </label>
+
+          <input
+            id="detailsUserStatus"
+            type="text"
+            readonly>
+
+        </div>
+
+        <div class="input-group">
+
+          <label>
+            Plan
+          </label>
+
+          <input
+            id="detailsUserPlan"
+            type="text"
+            readonly>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Subscription Status
+          </label>
+
+          <input
+            id="detailsSubscriptionStatus"
+            type="text"
+            readonly>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Subscription Start
+          </label>
+
+          <input
+            id="detailsSubscriptionStart"
+            type="text"
+            readonly>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Subscription End
+          </label>
+
+          <input
+            id="detailsSubscriptionEnd"
+            type="text"
+            readonly>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Subscription Price
+          </label>
+
+          <input
+            id="detailsSubscriptionPrice"
+            type="text"
+            readonly>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Authentication
+          </label>
+
+          <input
+            id="detailsUserProvider"
+            type="text"
+            readonly>
+
+        </div>
+
+
+        <div class="input-group">
+
+          <label>
+            Joined
+          </label>
+
+          <input
+            id="detailsUserJoined"
+            type="text"
+            readonly>
+
+        </div>
+
+      </div>
+
+
+      <div class="admin-modal-actions">
+
+        <button
+          id="adminSubscriptionBtn"
+          type="button"
+          class="admin-action-btn"
+          onclick="updateAdminUserSubscription()">
+          Activate Premium
+        </button>
+
+        <button
+          type="button"
+          class="cancel-btn"
+          onclick="closeAdminUserDetails()">
+          Close
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <script src="js/auth.js"></script>
+
+  <script>
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+
+      }
+    );
+  </script>
+
+</body>
+
+</html>

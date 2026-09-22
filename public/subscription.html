@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Plans | SmartCoop</title>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link
+    rel="stylesheet"
+    href="css/style.css"
+  >
+</head>
+
+<body
+  class="dashboard-body sc-pricing-body"
+  onload="loadUserInfo(); loadSubscriptionData();"
+>
+
+  <main class="sc-pricing-main">
+
+    <header class="topbar sc-pricing-topbar">
+
+      <a
+        href="user.html"
+        class="sc-pricing-back"
+      >
+        <i data-lucide="arrow-left"></i>
+        <span>Back to SmartCoop</span>
+      </a>
+
+      <div class="top-profile">
+
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()"
+        >
+
+          <div
+            class="avatar"
+            id="userAvatarTop"
+          >
+            U
+          </div>
+
+          <div class="top-profile-name">
+
+            <span id="topUsername">
+              User
+            </span>
+
+            <small>
+              Farm Owner
+            </small>
+
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+
+        </button>
+
+        <div
+          id="profileDropdown"
+          class="profile-dropdown hidden"
+        >
+
+          <div class="dropdown-user">
+
+            <strong id="dropdownName">
+              User
+            </strong>
+
+            <p id="dropdownEmail">
+              user@smartcoop.com
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            onclick="window.location.href='settings.html'"
+          >
+            Settings
+          </button>
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()"
+          >
+            Logout
+          </button>
+
+        </div>
+
+      </div>
+
+    </header>
+
+    <section class="sc-pricing-page">
+
+      <div class="sc-pricing-heading">
+
+        <h1>
+          Choose your SmartCoop plan
+        </h1>
+
+        <p>
+          Start free or upgrade to Premium for
+          unlimited access to SmartCoop's planning,
+          AI, records, and analytics tools.
+        </p>
+
+      </div>
+
+      <div class="sc-pricing-grid">
+
+        <article class="sc-pricing-card">
+
+          <div class="sc-plan-top">
+
+            <h2>
+              Free
+            </h2>
+
+            <div class="sc-plan-price">
+
+              <span class="sc-currency">
+                ₱
+              </span>
+
+              <strong>
+                0
+              </strong>
+
+              <span class="sc-price-period">
+                PHP /<br>
+                forever
+              </span>
+
+            </div>
+
+            <p class="sc-plan-description">
+              Explore the essential SmartCoop tools
+              for poultry planning and management.
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            class="sc-plan-button sc-current-button"
+            id="freePlanButton"
+            disabled
+          >
+            Your current plan
+          </button>
+
+          <ul class="sc-plan-features">
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                3 Coop Planner generations per day
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                1 saved Coop Plan
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                3 Breed Recommendation attempts per day
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Save up to 3 Breed Recommendations
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                5 AI Assistant questions per day
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                3 Health Checker attempts per day
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Up to 10 records per category
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Basic Reports & Analytics
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Alerts & Reminders
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Chicken Information
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                1 active project
+              </span>
+            </li>
+
+          </ul>
+
+          <div class="sc-plan-footer">
+            Free forever with feature limits.
+          </div>
+
+        </article>
+
+        <article class="sc-pricing-card sc-premium-card">
+
+          <div class="sc-plan-top">
+
+            <h2>
+              Premium
+            </h2>
+
+            <div class="sc-plan-price">
+
+              <span class="sc-currency">
+                ₱
+              </span>
+
+              <strong>
+                649
+              </strong>
+
+              <span class="sc-price-period">
+                PHP /<br>
+                first month
+              </span>
+
+            </div>
+
+            <p class="sc-plan-description">
+              Unlock the full SmartCoop experience
+              with unlimited access and advanced tools.
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            class="sc-plan-button sc-premium-button"
+            id="premiumPlanButton"
+            onclick="upgradeToPremium()"
+          >
+            Get Premium
+          </button>
+
+          <div class="sc-premium-includes">
+            Everything in Free, plus
+          </div>
+
+          <ul class="sc-plan-features">
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Unlimited Coop Planner generations
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Unlimited saved Coop Plans
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Unlimited Breed Recommendations
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Unlimited saved Breed Recommendations
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Unlimited AI Assistant questions
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Unlimited Health Checker analysis
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Unlimited Record Management
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Full Reports & Analytics
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Advanced historical charts
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Export and download reports
+              </span>
+            </li>
+
+            <li>
+              <i data-lucide="check"></i>
+              <span>
+                Multiple active projects
+              </span>
+            </li>
+
+          </ul>
+
+          <div class="sc-plan-footer sc-renewal-text">
+
+            <i data-lucide="refresh-cw"></i>
+
+            <span>
+              Renews at
+              <strong>₱1,299/month</strong>
+              after your first month.
+            </span>
+
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="js/auth.js"></script>
+
+  <script>
+
+    let subscriptionUser = null;
+let subscriptionData = null;
+
+async function loadSubscriptionData() {
+  const storedUser =
+    localStorage.getItem("user");
+
+  if (!storedUser) {
+    return;
+  }
+
+  let user;
+
+  try {
+    user = JSON.parse(storedUser);
+  } catch (error) {
+    return;
+  }
+
+  const userId =
+    user.UserID ||
+    user.userId ||
+    user.id;
+
+  if (!userId) {
+    return;
+  }
+
+  try {
+    const response =
+      await fetch(
+        `/api/subscription/${userId}`
+      );
+
+    const result =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
+      throw new Error(
+        result.message ||
+        "Unable to load subscription."
+      );
+    }
+
+    subscriptionUser =
+      result.user;
+
+    subscriptionData =
+      result.subscription;
+
+  } catch (error) {
+    console.error(
+      "Subscription Load Error:",
+      error
+    );
+  }
+}
+
+async function upgradeToPremium() {
+  if (!subscriptionUser || !subscriptionData) {
+    await loadSubscriptionData();
+  }
+
+  if (!subscriptionUser || !subscriptionData) {
+    alert(
+      "Unable to load your account information."
+    );
+    return;
+  }
+
+  if (subscriptionData.isPremium) {
+    alert(
+      "Your SmartCoop Premium subscription is already active."
+    );
+    return;
+  }
+
+  const existing =
+    document.getElementById(
+      "premiumCheckoutOverlay"
+    );
+
+  if (existing) {
+    existing.remove();
+  }
+
+  const price =
+    Number(
+      subscriptionData.availablePrice || 649
+    );
+
+  const overlay =
+    document.createElement("div");
+
+  overlay.id =
+    "premiumCheckoutOverlay";
+
+  overlay.className =
+    "checkout-overlay";
+
+  overlay.innerHTML = `
+    <div class="checkout-modal">
+
+      <button
+        type="button"
+        class="checkout-close"
+        onclick="closePremiumCheckout()"
+      >
+        ×
+      </button>
+
+      <div class="checkout-header">
+
+        <div class="checkout-icon">
+          <i data-lucide="crown"></i>
+        </div>
+
+        <div>
+          <h2>Get SmartCoop Premium</h2>
+          <p>Review your account before continuing</p>
+        </div>
+
+      </div>
+
+      <div class="checkout-step-label">
+        <span>1</span>
+        Account Information
+      </div>
+
+      <div class="checkout-account">
+
+        <div class="checkout-account-row">
+          <span>Full Name</span>
+          <strong>
+            ${escapeCheckoutText(
+              subscriptionUser.fullName
+            )}
+          </strong>
+        </div>
+
+        <div class="checkout-account-row">
+          <span>Email</span>
+          <strong>
+            ${escapeCheckoutText(
+              subscriptionUser.email
+            )}
+          </strong>
+        </div>
+
+        <div class="checkout-account-row">
+          <span>Phone Number</span>
+          <strong>
+            ${escapeCheckoutText(
+              subscriptionUser.phoneNumber ||
+              "Not provided"
+            )}
+          </strong>
+        </div>
+
+        <div class="checkout-account-row">
+          <span>Farm Name</span>
+          <strong>
+            ${escapeCheckoutText(
+              subscriptionUser.farmName ||
+              "Not provided"
+            )}
+          </strong>
+        </div>
+
+        <div class="checkout-account-row">
+          <span>Farm Location</span>
+          <strong>
+            ${escapeCheckoutText(
+              subscriptionUser.farmLocation ||
+              "Not provided"
+            )}
+          </strong>
+        </div>
+
+      </div>
+
+      <div class="checkout-plan">
+
+        <div>
+          <strong>SmartCoop Premium</strong>
+
+          <span>
+            ${
+              subscriptionData.isFirstPremium
+                ? "First subscription offer"
+                : "Monthly subscription"
+            }
+          </span>
+        </div>
+
+        <div class="checkout-price">
+          ₱${price.toLocaleString()}
+        </div>
+
+      </div>
+
+      <div class="checkout-renewal">
+
+        <i data-lucide="refresh-cw"></i>
+
+        <span>
+          ${
+            subscriptionData.isFirstPremium
+              ? `₱${price.toLocaleString()} for your first month,
+                 then <strong>₱1,299/month</strong> on renewal.`
+              : `Your subscription renews at
+                 <strong>₱1,299/month</strong>.`
+          }
+        </span>
+
+      </div>
+
+      <button
+        type="button"
+        class="checkout-pay-btn"
+        onclick="showPaymentMethodStep()"
+      >
+        Continue to Payment
+        <i data-lucide="arrow-right"></i>
+      </button>
+
+      <p class="checkout-terms">
+        Your account information is loaded
+        automatically from your SmartCoop profile.
+      </p>
+
+    </div>
+  `;
+
+  document.body.appendChild(
+    overlay
+  );
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+}
+
+function escapeCheckoutText(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function showPaymentMethodStep() {
+  const overlay =
+    document.getElementById(
+      "premiumCheckoutOverlay"
+    );
+
+  if (!overlay) {
+    return;
+  }
+
+  const price =
+    Number(
+      subscriptionData?.availablePrice || 649
+    );
+
+  overlay.innerHTML = `
+    <div class="checkout-modal">
+
+      <button
+        type="button"
+        class="checkout-close"
+        onclick="closePremiumCheckout()"
+      >
+        ×
+      </button>
+
+      <div class="checkout-header">
+
+        <div class="checkout-icon">
+          <i data-lucide="wallet-cards"></i>
+        </div>
+
+        <div>
+          <h2>Payment Method</h2>
+          <p>Choose how you want to pay</p>
+        </div>
+
+      </div>
+
+      <div class="checkout-step-label">
+        <span>2</span>
+        Select Payment Method
+      </div>
+
+      <div class="checkout-methods">
+
+        <button
+          type="button"
+          class="checkout-method active"
+          onclick="selectPaymentMethod(this, 'GCash')"
+        >
+          <div class="checkout-method-logo">
+            <img
+              src="img/payments/GCash.png"
+              alt="GCash"
+            >
+          </div>
+
+          <span>
+            <strong>GCash</strong>
+            <small>Pay using your GCash account</small>
+          </span>
+
+          <i data-lucide="check-circle"></i>
+        </button>
+
+        <button
+          type="button"
+          class="checkout-method"
+          onclick="selectPaymentMethod(this, 'Maya')"
+        >
+          <div class="checkout-method-logo">
+            <img
+              src="img/payments/Maya.png"
+              alt="Maya"
+            >
+          </div>
+
+          <span>
+            <strong>Maya</strong>
+            <small>Pay using your Maya account</small>
+          </span>
+
+          <i data-lucide="circle"></i>
+        </button>
+
+        <button
+          type="button"
+          class="checkout-method"
+          onclick="selectPaymentMethod(this, 'MariBank')"
+        >
+          <div class="checkout-method-logo">
+            <img
+              src="img/payments/MariBank.png"
+              alt="MariBank"
+            >
+          </div>
+
+          <span>
+            <strong>MariBank</strong>
+            <small>Pay using your MariBank account</small>
+          </span>
+
+          <i data-lucide="circle"></i>
+        </button>
+
+        <button
+          type="button"
+          class="checkout-method"
+          onclick="selectPaymentMethod(this, 'GoTyme')"
+        >
+          <div class="checkout-method-logo">
+            <img
+              src="img/payments/GoTyme.png"
+              alt="GoTyme"
+            >
+          </div>
+
+          <span>
+            <strong>GoTyme</strong>
+            <small>Pay using your GoTyme account</small>
+          </span>
+
+          <i data-lucide="circle"></i>
+        </button>
+
+      </div>
+
+      <div class="checkout-summary">
+
+        <div>
+          <span>SmartCoop Premium</span>
+
+          <span>
+            ₱${price.toLocaleString(
+              "en-PH",
+              {
+                minimumFractionDigits: 2
+              }
+            )}
+          </span>
+        </div>
+
+        <div class="checkout-total">
+
+          <strong>Total due today</strong>
+
+          <strong>
+            ₱${price.toLocaleString(
+              "en-PH",
+              {
+                minimumFractionDigits: 2
+              }
+            )}
+          </strong>
+
+        </div>
+
+      </div>
+
+      <div class="checkout-navigation">
+
+        <button
+          type="button"
+          class="checkout-back-btn"
+          onclick="upgradeToPremium()"
+        >
+          <i data-lucide="arrow-left"></i>
+          Back
+        </button>
+
+        <button
+          type="button"
+          class="checkout-pay-btn"
+          id="checkoutPayButton"
+          onclick="showPaymentAccountStep()"
+        >
+          Continue with GCash
+          <i data-lucide="arrow-right"></i>
+        </button>
+
+      </div>
+
+      <p class="checkout-terms">
+        Demo payment only. Do not enter passwords,
+        PINs, MPINs, or OTPs.
+      </p>
+
+    </div>
+  `;
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+}
+
+function showPaymentAccountStep() {
+  const overlay =
+    document.getElementById(
+      "premiumCheckoutOverlay"
+    );
+
+  if (!overlay) {
+    return;
+  }
+
+  const method =
+    window.selectedPremiumPayment ||
+    "GCash";
+
+  const price =
+    Number(
+      subscriptionData?.availablePrice || 649
+    );
+
+  const logos = {
+    GCash:
+      "img/payments/GCash.png",
+
+    Maya:
+      "img/payments/Maya.png",
+
+    MariBank:
+      "img/payments/MariBank.png",
+
+    GoTyme:
+      "img/payments/GoTyme.png"
+  };
+
+  const logo =
+    logos[method] ||
+    logos.GCash;
+
+const savedPhone =
+  subscriptionUser?.phoneNumber || "";
+
+const isMobileWallet =
+  method === "GCash" ||
+  method === "Maya";
+
+const fieldLabel =
+  isMobileWallet
+    ? "Mobile Number"
+    : "Account Number";
+
+const placeholder =
+  isMobileWallet
+    ? "09XXXXXXXXX"
+    : "Enter account number";
+
+const defaultValue =
+  isMobileWallet
+    ? savedPhone
+    : "";
+
+  overlay.innerHTML = `
+    <div class="checkout-modal">
+
+      <button
+        type="button"
+        class="checkout-close"
+        onclick="closePremiumCheckout()"
+      >
+        ×
+      </button>
+
+            <div class="checkout-header">
+
+            <div class="checkout-icon">
+                <i
+                data-lucide="${
+                    isMobileWallet
+                    ? "smartphone"
+                    : "credit-card"
+                }"
+                ></i>
+            </div>
+
+            <div>
+                <h2>Payment Account</h2>
+
+                <p>
+                Enter the account you want to use
+                </p>
+            </div>
+
+            </div>
+
+      <div class="checkout-step-label">
+        <span>3</span>
+        Payment Details
+      </div>
+
+<div class="payment-account-field">
+
+  <label for="premiumPaymentAccount">
+    ${fieldLabel}
+  </label>
+
+  <div class="payment-input-wrap">
+
+    <i
+      data-lucide="${
+        isMobileWallet
+          ? "smartphone"
+          : "credit-card"
+      }"
+    ></i>
+
+    <input
+      type="text"
+      id="premiumPaymentAccount"
+      inputmode="numeric"
+      placeholder="${placeholder}"
+      value="${escapeCheckoutText(defaultValue)}"
+      oninput="
+        this.value =
+          this.value.replace(/[^0-9]/g, '')
+      "
+    >
+
+  </div>
+
+  <small>
+    ${
+      isMobileWallet
+        ? "Enter the mobile number linked to your demo account."
+        : "Enter a demo account number. Do not enter passwords, PINs, or OTPs."
+    }
+  </small>
+
+</div>
+        <div class="payment-demo-notice">
+        <i data-lucide="shield-check"></i>
+
+        <div>
+          <strong>Demo Payment</strong>
+
+          <p>
+            No real money will be charged.
+            Never enter a password, PIN, MPIN,
+            or OTP.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="checkout-summary">
+
+        <div>
+          <span>SmartCoop Premium</span>
+
+          <span>
+            ₱${price.toLocaleString(
+              "en-PH",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }
+            )}
+          </span>
+        </div>
+
+        <div class="checkout-total">
+
+          <strong>Total due today</strong>
+
+          <strong>
+            ₱${price.toLocaleString(
+              "en-PH",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }
+            )}
+          </strong>
+
+        </div>
+
+      </div>
+
+      <div class="checkout-navigation">
+
+        <button
+          type="button"
+          class="checkout-back-btn"
+          onclick="showPaymentMethodStep()"
+        >
+          <i data-lucide="arrow-left"></i>
+          Back
+        </button>
+
+        <button
+          type="button"
+          class="checkout-pay-btn"
+          onclick="continueToPaymentReview()"
+        >
+          Review Payment
+          <i data-lucide="arrow-right"></i>
+        </button>
+
+      </div>
+
+      <p class="checkout-terms">
+        Your payment account is used only for
+        this SmartCoop demo checkout.
+      </p>
+
+    </div>
+  `;
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+}
+
+function continueToPaymentReview() {
+  const input =
+    document.getElementById(
+      "premiumPaymentAccount"
+    );
+
+  if (!input) {
+    return;
+  }
+
+  const account =
+    input.value.trim();
+
+  const method =
+    window.selectedPremiumPayment ||
+    "GCash";
+
+  const isMobileWallet =
+    method === "GCash" ||
+    method === "Maya";
+
+  if (
+    isMobileWallet &&
+    !/^09\d{9}$/.test(account)
+  ) {
+    showPaymentFieldError(
+      "Please enter a valid 11-digit mobile number."
+    );
+
+    input.focus();
+    return;
+  }
+
+  if (
+    !isMobileWallet &&
+    !/^\d{6,20}$/.test(account)
+  ) {
+    showPaymentFieldError(
+      "Please enter a valid demo account number."
+    );
+
+    input.focus();
+    return;
+  }
+
+  window.premiumPaymentAccount =
+    account;
+
+  showPaymentReviewStep();
+}
+
+function showPaymentReviewStep() {
+  const overlay =
+    document.getElementById(
+      "premiumCheckoutOverlay"
+    );
+
+  if (!overlay) {
+    return;
+  }
+
+  const method =
+    window.selectedPremiumPayment ||
+    "GCash";
+
+  const account =
+    window.premiumPaymentAccount ||
+    "";
+
+  const price =
+    Number(
+      subscriptionData?.availablePrice || 649
+    );
+
+  const logos = {
+    GCash:
+      "img/payments/GCash.png",
+
+    Maya:
+      "img/payments/Maya.png",
+
+    MariBank:
+      "img/payments/MariBank.png",
+
+    GoTyme:
+      "img/payments/GoTyme.png"
+  };
+
+  const logo =
+    logos[method] ||
+    logos.GCash;
+
+  const lastFour =
+    account.slice(-4);
+
+  const maskedAccount =
+    "••••••" + lastFour;
+
+  const accountLabel =
+    method === "GCash" ||
+    method === "Maya"
+      ? "Mobile Number"
+      : "Account Number";
+
+  overlay.innerHTML = `
+    <div class="checkout-modal">
+
+      <button
+        type="button"
+        class="checkout-close"
+        onclick="closePremiumCheckout()"
+      >
+        ×
+      </button>
+
+      <div class="checkout-header">
+
+        <div class="checkout-icon">
+          <i data-lucide="clipboard-check"></i>
+        </div>
+
+        <div>
+          <h2>Review Payment</h2>
+          <p>
+            Check your details before confirming
+          </p>
+        </div>
+
+      </div>
+
+      <div class="checkout-step-label">
+        <span>4</span>
+        Review & Confirm
+      </div>
+
+      <div class="checkout-review-section">
+
+        <div class="checkout-review-title">
+          <i data-lucide="user"></i>
+          <span>Subscriber</span>
+        </div>
+
+        <div class="checkout-review-row">
+          <span>Full Name</span>
+
+          <strong>
+            ${escapeCheckoutText(
+              subscriptionUser?.fullName ||
+              "Not provided"
+            )}
+          </strong>
+        </div>
+
+        <div class="checkout-review-row">
+          <span>Email</span>
+
+          <strong>
+            ${escapeCheckoutText(
+              subscriptionUser?.email ||
+              "Not provided"
+            )}
+          </strong>
+        </div>
+
+      </div>
+
+      <div class="checkout-review-section">
+
+        <div class="checkout-review-title">
+          <i data-lucide="wallet-cards"></i>
+          <span>Payment</span>
+        </div>
+
+        <div class="checkout-review-payment">
+
+          <div class="checkout-method-logo">
+            <img
+              src="${logo}"
+              alt="${method}"
+            >
+          </div>
+
+          <div class="checkout-review-payment-info">
+
+            <strong>
+              ${method}
+            </strong>
+
+            <small>
+              ${accountLabel}
+              ${maskedAccount}
+            </small>
+
+          </div>
+
+          <i data-lucide="check-circle"></i>
+
+        </div>
+
+      </div>
+
+      <div class="checkout-review-section">
+
+        <div class="checkout-review-title">
+          <i data-lucide="crown"></i>
+          <span>Subscription</span>
+        </div>
+
+        <div class="checkout-review-row">
+
+          <span>Plan</span>
+
+          <strong>
+            SmartCoop Premium
+          </strong>
+
+        </div>
+
+        <div class="checkout-review-row">
+
+          <span>
+            ${
+              subscriptionData?.isFirstPremium
+                ? "First month"
+                : "Monthly subscription"
+            }
+          </span>
+
+          <strong>
+            ₱${price.toLocaleString(
+              "en-PH",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }
+            )}
+          </strong>
+
+        </div>
+
+        <div class="checkout-review-row">
+
+          <span>Next renewal</span>
+
+          <strong>
+            ₱1,299.00 / month
+          </strong>
+
+        </div>
+
+      </div>
+
+      <div class="checkout-review-total">
+
+        <div>
+          <span>Total due today</span>
+
+          <small>
+            SmartCoop Premium
+          </small>
+        </div>
+
+        <strong>
+          ₱${price.toLocaleString(
+            "en-PH",
+            {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            }
+          )}
+        </strong>
+
+      </div>
+
+      <div class="payment-demo-notice">
+
+        <i data-lucide="shield-check"></i>
+
+        <div>
+          <strong>Demo Payment</strong>
+
+          <p>
+            No real money will be charged.
+            Your account number is masked for display.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="checkout-navigation">
+
+        <button
+          type="button"
+          class="checkout-back-btn"
+          onclick="showPaymentAccountStep()"
+        >
+          <i data-lucide="arrow-left"></i>
+          Back
+        </button>
+
+        <button
+          type="button"
+          class="checkout-pay-btn"
+          id="checkoutPayButton"
+          onclick="processPremiumCheckout()"
+        >
+          <i data-lucide="lock"></i>
+          Confirm Demo Payment
+        </button>
+
+      </div>
+
+      <p class="checkout-terms">
+        By confirming, you agree to the SmartCoop
+        Premium subscription and recurring monthly billing.
+      </p>
+
+    </div>
+  `;
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+}
+
+function showPaymentFieldError(message) {
+  const oldError =
+    document.getElementById(
+      "paymentAccountError"
+    );
+
+  if (oldError) {
+    oldError.remove();
+  }
+
+  const field =
+    document.querySelector(
+      ".payment-account-field"
+    );
+
+  if (!field) {
+    return;
+  }
+
+  const error =
+    document.createElement("p");
+
+  error.id =
+    "paymentAccountError";
+
+  error.className =
+    "payment-account-error";
+
+  error.textContent =
+    message;
+
+  field.appendChild(error);
+}
+
+function closePremiumCheckout() {
+  const overlay =
+    document.getElementById(
+      "premiumCheckoutOverlay"
+    );
+
+  if (overlay) {
+    overlay.remove();
+  }
+}
+
+function selectPaymentMethod(
+  button,
+  method
+) {
+  document
+    .querySelectorAll(".checkout-method")
+    .forEach(item => {
+      item.classList.remove("active");
+
+      const icon =
+        item.querySelector("svg");
+
+      if (icon) {
+        icon.setAttribute(
+          "data-lucide",
+          "circle"
+        );
+      }
+    });
+
+  button.classList.add("active");
+
+  const selectedIcon =
+    button.querySelector("svg");
+
+  if (selectedIcon) {
+    selectedIcon.setAttribute(
+      "data-lucide",
+      "check-circle"
+    );
+  }
+
+  window.selectedPremiumPayment =
+    method;
+
+  const payButton =
+    document.getElementById(
+      "checkoutPayButton"
+    );
+
+if (payButton) {
+  payButton.innerHTML = `
+    Continue with ${method}
+    <i data-lucide="arrow-right"></i>
+  `;
+}
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+}
+function showPremiumSuccess(subscription) {
+  const overlay =
+    document.getElementById(
+      "premiumCheckoutOverlay"
+    );
+
+  if (!overlay) {
+    return;
+  }
+
+  const price =
+    Number(
+      subscription?.price ||
+      subscriptionData?.availablePrice ||
+      649
+    );
+
+  const startDate =
+    subscription?.start
+      ? new Date(subscription.start)
+      : new Date();
+
+  const endDate =
+    subscription?.end
+      ? new Date(subscription.end)
+      : new Date(
+          startDate.getFullYear(),
+          startDate.getMonth() + 1,
+          startDate.getDate()
+        );
+
+  const formatDate = date =>
+    date.toLocaleDateString(
+      "en-PH",
+      {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      }
+    );
+
+  overlay.innerHTML = `
+    <div class="checkout-modal premium-success-modal">
+
+      <div class="premium-success-icon">
+        <i data-lucide="crown"></i>
+      </div>
+
+      <div class="premium-success-heading">
+        <span>PAYMENT SUCCESSFUL</span>
+
+        <h2>
+          Welcome to SmartCoop Premium!
+        </h2>
+
+        <p>
+          Your subscription is now active.
+          Premium features are ready to use.
+        </p>
+      </div>
+
+      <div class="premium-success-user">
+
+        <div class="premium-success-avatar">
+          ${escapeCheckoutText(
+            (
+              subscriptionUser?.fullName ||
+              "U"
+            )
+              .charAt(0)
+              .toUpperCase()
+          )}
+        </div>
+
+        <div>
+          <strong>
+            ${escapeCheckoutText(
+              subscriptionUser?.fullName ||
+              "SmartCoop User"
+            )}
+          </strong>
+
+          <span>
+            ${escapeCheckoutText(
+              subscriptionUser?.email || ""
+            )}
+          </span>
+        </div>
+
+        <div class="premium-active-badge">
+          <i data-lucide="check"></i>
+          Active
+        </div>
+
+      </div>
+
+      <div class="premium-success-details">
+
+        <div>
+          <span>Plan</span>
+          <strong>SmartCoop Premium</strong>
+        </div>
+
+        <div>
+          <span>Amount Paid</span>
+
+          <strong>
+            ₱${price.toLocaleString(
+              "en-PH",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              }
+            )}
+          </strong>
+        </div>
+
+        <div>
+          <span>Payment Method</span>
+
+          <strong>
+            ${escapeCheckoutText(
+              window.selectedPremiumPayment ||
+              "GCash"
+            )}
+          </strong>
+        </div>
+
+        <div>
+          <span>Subscription Start</span>
+          <strong>${formatDate(startDate)}</strong>
+        </div>
+
+        <div>
+          <span>Next Renewal</span>
+          <strong>${formatDate(endDate)}</strong>
+        </div>
+
+        <div>
+          <span>Renewal Price</span>
+          <strong>₱1,299.00 / month</strong>
+        </div>
+
+      </div>
+
+      <div class="premium-success-note">
+
+        <i data-lucide="sparkles"></i>
+
+        <div>
+          <strong>Premium unlocked</strong>
+
+          <p>
+            You now have access to all SmartCoop
+            Premium features.
+          </p>
+        </div>
+
+      </div>
+
+      <button
+        type="button"
+        class="checkout-pay-btn premium-start-btn"
+        onclick="finishPremiumCheckout()"
+      >
+        Start Using Premium
+        <i data-lucide="arrow-right"></i>
+      </button>
+
+    </div>
+  `;
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+}
+
+function finishPremiumCheckout() {
+  closePremiumCheckout();
+
+  window.location.reload();
+}
+
+async function processPremiumCheckout() {
+  const storedUser =
+    localStorage.getItem("user");
+
+  if (!storedUser) {
+    alert(
+      "Please log in again before continuing."
+    );
+    return;
+  }
+
+  let user;
+
+  try {
+    user =
+      JSON.parse(storedUser);
+  } catch (error) {
+    alert(
+      "Unable to load your account. Please log in again."
+    );
+    return;
+  }
+
+  const userId =
+    user.UserID ||
+    user.userId ||
+    user.id;
+
+  if (!userId) {
+    alert(
+      "Unable to identify your account. Please log in again."
+    );
+    return;
+  }
+
+  const paymentMethod =
+    window.selectedPremiumPayment ||
+    "GCash";
+
+  const button =
+    document.getElementById(
+      "checkoutPayButton"
+    );
+
+  if (!button) {
+    return;
+  }
+
+  button.disabled = true;
+
+  button.innerHTML = `
+    <i data-lucide="loader-circle"></i>
+    Processing...
+  `;
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+
+  await new Promise(
+    resolve =>
+      setTimeout(resolve, 1500)
+  );
+
+  try {
+    const response =
+      await fetch(
+        "/api/subscription/activate",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            userId,
+            paymentMethod
+          })
+        }
+      );
+
+    const result =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
+      throw new Error(
+        result.message ||
+        "Unable to activate Premium."
+      );
+    }
+    subscriptionData = {
+  ...subscriptionData,
+  ...result.subscription,
+  isPremium: true,
+  status: "Active",
+  price:
+    result.subscription?.price ||
+    subscriptionData?.availablePrice
+};
+
+showPremiumSuccess(
+  result.subscription
+);
+
+return;
+
+  } catch (error) {
+    console.error(
+      "Premium Checkout Error:",
+      error
+    );
+
+    button.disabled = false;
+
+    button.innerHTML = `
+    <i data-lucide="lock"></i>
+    Confirm Demo Payment
+    `;
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+
+    alert(
+      error.message ||
+      "Something went wrong."
+    );
+  }
+}
+
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+);
+
+  </script> 
+
+</body>
+
+</html>
