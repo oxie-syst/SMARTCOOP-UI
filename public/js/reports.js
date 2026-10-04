@@ -360,8 +360,12 @@ function updateReportCoopFilter(
         "option"
       );
 
-    option.value = coop;
-    option.textContent = coop;
+    option.value =
+      String(coop.coopId);
+
+    option.textContent =
+      coop.coopName ||
+      `Coop ${coop.coopId}`;
 
     select.appendChild(option);
   });
@@ -372,15 +376,14 @@ function updateReportCoopFilter(
     ).some(
       option =>
         option.value ===
-        currentValue
+        String(currentValue)
     );
 
   select.value =
     optionExists
-      ? currentValue
+      ? String(currentValue)
       : "all";
 }
-
 function renderReportCharts(data) {
   destroyReportCharts();
 
@@ -770,10 +773,7 @@ function renderCoopPerformance(
             <button
               type="button"
               onclick="viewCoopReport(
-                '${encodeURIComponent(
-                  record.coopName ||
-                  ""
-                )}'
+                '${record.coopId}'
               )"
             >
               View
@@ -805,20 +805,13 @@ function clearCoopPerformance() {
   `;
 }
 
-function viewCoopReport(
-  encodedCoopName
-) {
+function viewCoopReport(coopId) {
   if (!currentReportIsPremium) {
     window.location.href =
       "subscription.html";
 
     return;
   }
-
-  const coopName =
-    decodeURIComponent(
-      encodedCoopName
-    );
 
   const coopFilter =
     document.getElementById(
@@ -830,7 +823,7 @@ function viewCoopReport(
   }
 
   coopFilter.value =
-    coopName;
+    String(coopId);
 
   loadReportsPage();
 
@@ -839,7 +832,6 @@ function viewCoopReport(
     behavior: "smooth"
   });
 }
-
 async function exportReport(
   type
 ) {

@@ -27,76 +27,82 @@ const recordConfig = {
   }
 };
 
-router.get("/user/:userId", (req, res) => {
+router.get("/user/:userId/coop/:coopId", (req, res) => {
   const userId = req.params.userId;
+  const coopId = req.params.coopId;
 
   const queries = {
     expenses: `
       SELECT
         ExpenseID AS id,
         RecordDate AS date,
+        RecordTime AS time,
         CoopName AS coop,
         Category AS category,
         Description AS description,
         Amount AS amount,
         CreatedAt AS createdAt
       FROM expense_records
-      WHERE UserID = ?
-      ORDER BY RecordDate DESC, ExpenseID DESC
+      WHERE UserID = ? AND CoopID = ?
+      ORDER BY RecordDate DESC, RecordTime DESC, ExpenseID DESC
     `,
 
     eggs: `
       SELECT
         EggRecordID AS id,
         RecordDate AS date,
+        RecordTime AS time,
         CoopName AS coop,
         EggCount AS eggs,
         Notes AS notes,
         CreatedAt AS createdAt
       FROM egg_records
-      WHERE UserID = ?
-      ORDER BY RecordDate DESC, EggRecordID DESC
+      WHERE UserID = ? AND CoopID = ?
+      ORDER BY RecordDate DESC, RecordTime DESC, EggRecordID DESC
     `,
 
     mortality: `
       SELECT
         MortalityID AS id,
         RecordDate AS date,
+        RecordTime AS time,
         CoopName AS coop,
         DeathCount AS deaths,
         Cause AS cause,
         Notes AS notes,
         CreatedAt AS createdAt
       FROM mortality_records
-      WHERE UserID = ?
-      ORDER BY RecordDate DESC, MortalityID DESC
+      WHERE UserID = ? AND CoopID = ?
+      ORDER BY RecordDate DESC, RecordTime DESC, MortalityID DESC
     `,
 
     chicken: `
       SELECT
         ChickenRecordID AS id,
         RecordDate AS date,
+        RecordTime AS time,
         CoopName AS coop,
         Quantity AS quantity,
         Stage AS stage,
         Days AS days,
         CreatedAt AS createdAt
       FROM chicken_records
-      WHERE UserID = ?
-      ORDER BY RecordDate DESC, ChickenRecordID DESC
+      WHERE UserID = ? AND CoopID = ?
+      ORDER BY RecordDate DESC, RecordTime DESC, ChickenRecordID DESC
     `,
 
     meat: `
       SELECT
         MeatRecordID AS id,
         HarvestDate AS date,
+        RecordTime AS time,
         CoopOrBatch AS coopOrBatch,
         BirdsCount AS birdsCount,
         TotalWeight AS weight,
         CreatedAt AS createdAt
       FROM meat_records
-      WHERE UserID = ?
-      ORDER BY HarvestDate DESC, MeatRecordID DESC
+      WHERE UserID = ? AND CoopID = ?
+      ORDER BY HarvestDate DESC, RecordTime DESC, MeatRecordID DESC
     `
   };
 
@@ -141,7 +147,7 @@ router.get("/user/:userId", (req, res) => {
 
       db.query(
         queries.expenses,
-        [userId],
+        [userId, coopId],
         (err, expenses) => {
 
           if (err) {
@@ -161,7 +167,7 @@ router.get("/user/:userId", (req, res) => {
 
           db.query(
             queries.eggs,
-            [userId],
+            [userId, coopId],
             (err, eggs) => {
 
               if (err) {
@@ -181,7 +187,7 @@ router.get("/user/:userId", (req, res) => {
 
               db.query(
                 queries.mortality,
-                [userId],
+                [userId, coopId],
                 (err, mortality) => {
 
                   if (err) {
@@ -202,7 +208,7 @@ router.get("/user/:userId", (req, res) => {
 
                   db.query(
                     queries.chicken,
-                    [userId],
+                    [userId, coopId],
                     (err, chicken) => {
 
                       if (err) {
@@ -223,7 +229,7 @@ router.get("/user/:userId", (req, res) => {
 
                       db.query(
                         queries.meat,
-                        [userId],
+                        [userId, coopId],
                         (err, meat) => {
 
                           if (err) {
@@ -280,24 +286,26 @@ router.get("/user/:userId", (req, res) => {
 router.post("/:type", (req, res) => {
   const type = req.params.type;
 
-  const {
-    userId,
-    date,
-    coop,
-    category,
-    description,
-    amount,
-    eggs,
-    notes,
-    deaths,
-    cause,
-    quantity,
-    stage,
-    days,
-    coopOrBatch,
-    birdsCount,
-    weight
-  } = req.body;
+const {
+  userId,
+  coopId,
+  date,
+  time,
+  coop,
+  category,
+  description,
+  amount,
+  eggs,
+  notes,
+  deaths,
+  cause,
+  quantity,
+  stage,
+  days,
+  coopOrBatch,
+  birdsCount,
+  weight
+} = req.body;
 
   if (!userId) {
     return res.status(400).json({
@@ -305,6 +313,12 @@ router.post("/:type", (req, res) => {
       message: "User ID is required."
     });
   }
+  if (!coopId) {
+  return res.status(400).json({
+    success: false,
+    message: "Coop ID is required."
+  });
+}
 
   const selected =
     recordConfig[type];
@@ -376,18 +390,22 @@ router.post("/:type", (req, res) => {
           sql = `
             INSERT INTO expense_records (
               UserID,
+              CoopID,
               RecordDate,
+              RecordTime,
               CoopName,
               Category,
               Description,
               Amount
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           `;
 
           values = [
             userId,
+            coopId,
             date,
+            time || null,
             coop,
             category,
             description || null,
@@ -408,17 +426,21 @@ router.post("/:type", (req, res) => {
           sql = `
             INSERT INTO egg_records (
               UserID,
+              CoopID,
               RecordDate,
+              RecordTime,
               CoopName,
               EggCount,
               Notes
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
           `;
 
           values = [
             userId,
+            coopId,
             date,
+            time || null,
             coop,
             Number(eggs) || 0,
             notes || null
@@ -438,18 +460,22 @@ router.post("/:type", (req, res) => {
           sql = `
             INSERT INTO mortality_records (
               UserID,
+              CoopID,
               RecordDate,
+              RecordTime,
               CoopName,
               DeathCount,
               Cause,
               Notes
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           `;
 
           values = [
             userId,
+            coopId,
             date,
+            time || null,
             coop,
             Number(deaths) || 0,
             cause || null,
@@ -474,18 +500,22 @@ router.post("/:type", (req, res) => {
           sql = `
             INSERT INTO chicken_records (
               UserID,
+              CoopID,
               RecordDate,
+              RecordTime,
               CoopName,
               Quantity,
               Stage,
               Days
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           `;
 
           values = [
             userId,
+            coopId,
             date,
+            time || null,
             coop,
             Number(quantity) || 0,
             stage,
@@ -509,17 +539,21 @@ router.post("/:type", (req, res) => {
           sql = `
             INSERT INTO meat_records (
               UserID,
+              CoopID,
               HarvestDate,
+              RecordTime,
               CoopOrBatch,
               BirdsCount,
               TotalWeight
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
           `;
 
           values = [
             userId,
+            coopId,
             date,
+            time || null,
             coopOrBatch,
             Number(birdsCount) || 0,
             Number(weight) || 0
@@ -623,7 +657,9 @@ router.put("/:type/:id", (req, res) => {
 
   const {
     userId,
+    coopId,
     date,
+    time,
     coop,
     category,
     description,
@@ -646,6 +682,12 @@ router.put("/:type/:id", (req, res) => {
       message: "User ID is required."
     });
   }
+  if (!coopId) {
+  return res.status(400).json({
+    success: false,
+    message: "Coop ID is required."
+  });
+}
 
   let sql = "";
   let values = [];
@@ -656,22 +698,26 @@ router.put("/:type/:id", (req, res) => {
       UPDATE expense_records
       SET
         RecordDate = ?,
+        RecordTime = ?,
         CoopName = ?,
         Category = ?,
         Description = ?,
         Amount = ?
-      WHERE ExpenseID = ?
-      AND UserID = ?
+        WHERE ExpenseID = ?
+        AND UserID = ?
+        AND CoopID = ?
     `;
 
     values = [
       date,
+      time || null,
       coop,
       category,
       description || null,
       Number(amount) || 0,
       id,
-      userId
+      userId,
+      coopId
     ];
   }
 
@@ -681,20 +727,24 @@ router.put("/:type/:id", (req, res) => {
       UPDATE egg_records
       SET
         RecordDate = ?,
+        RecordTime = ?,
         CoopName = ?,
         EggCount = ?,
         Notes = ?
       WHERE EggRecordID = ?
       AND UserID = ?
+      AND CoopID = ?
     `;
 
     values = [
       date,
+      time || null,
       coop,
       Number(eggs) || 0,
       notes || null,
       id,
-      userId
+      userId,
+      coopId
     ];
   }
 
@@ -704,22 +754,26 @@ router.put("/:type/:id", (req, res) => {
       UPDATE mortality_records
       SET
         RecordDate = ?,
+        RecordTime = ?,
         CoopName = ?,
         DeathCount = ?,
         Cause = ?,
         Notes = ?
       WHERE MortalityID = ?
       AND UserID = ?
+      AND CoopID = ?
     `;
 
     values = [
       date,
+      time || null,
       coop,
       Number(deaths) || 0,
       cause || null,
       notes || null,
       id,
-      userId
+      userId,
+      coopId
     ];
   }
 
@@ -729,22 +783,26 @@ router.put("/:type/:id", (req, res) => {
       UPDATE chicken_records
       SET
         RecordDate = ?,
+        RecordTime = ?,
         CoopName = ?,
         Quantity = ?,
         Stage = ?,
         Days = ?
       WHERE ChickenRecordID = ?
       AND UserID = ?
+      AND CoopID = ?
     `;
 
     values = [
       date,
+      time || null,
       coop,
       Number(quantity) || 0,
       stage,
       Number(days) || 0,
       id,
-      userId
+      userId,
+      coopId
     ];
   }
 
@@ -754,20 +812,24 @@ router.put("/:type/:id", (req, res) => {
       UPDATE meat_records
       SET
         HarvestDate = ?,
+        RecordTime = ?,
         CoopOrBatch = ?,
         BirdsCount = ?,
         TotalWeight = ?
       WHERE MeatRecordID = ?
       AND UserID = ?
+      AND CoopID = ?
     `;
 
     values = [
       date,
+      time || null,
       coopOrBatch,
       Number(birdsCount) || 0,
       Number(weight) || 0,
       id,
-      userId
+      userId,
+      coopId
     ];
   }
 
@@ -817,8 +879,8 @@ router.put("/:type/:id", (req, res) => {
 router.delete("/:type/:id", (req, res) => {
   const type = req.params.type;
   const id = req.params.id;
-  const userId =
-    req.query.userId;
+  const userId = req.query.userId;
+  const coopId = req.query.coopId;
 
   if (!userId) {
     return res.status(400).json({
@@ -826,6 +888,13 @@ router.delete("/:type/:id", (req, res) => {
       message: "User ID is required."
     });
   }
+
+  if (!coopId) {
+  return res.status(400).json({
+    success: false,
+    message: "Coop ID is required."
+  });
+}
 
   const selected =
     recordConfig[type];
@@ -841,11 +910,12 @@ router.delete("/:type/:id", (req, res) => {
     DELETE FROM ${selected.table}
     WHERE ${selected.idColumn} = ?
     AND UserID = ?
+    AND CoopID = ?
   `;
 
   db.query(
     sql,
-    [id, userId],
+    [id, userId, coopId],
     (err, result) => {
 
       if (err) {

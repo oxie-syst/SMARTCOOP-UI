@@ -471,121 +471,300 @@ async function loadDashboard() {
   }
 
   try {
-    const response = await fetch(
-      `/api/coops/active/${user.id || user.UserID}`
-    );
-
-    const data = await response.json();
-
-    const activeProject = data.coop;
-
-    window.dashboardActiveProject =
-      activeProject || null;
-
-    if (activeProject) {
-      setText(
-        "totalChickens",
-        activeProject.NumberOfChickens
-      );
-
-      setText("activeCoops", 1);
-
-      setText(
-        "activeCoopsText",
-        "1 Active Coop"
-      );
-
-      setText(
-        "monthlyCost",
-        `₱${Number(
-          activeProject.TotalCost || 0
-        ).toLocaleString()}`
-      );
-
-      const projectContainer =
-        document.getElementById(
-          "projectContainer"
+        const response = await fetch(
+          `/api/coops/active/${user.id || user.UserID}`
         );
 
-      if (projectContainer) {
-        projectContainer.innerHTML = `
-          <div class="project-card">
+        const data = await response.json();
 
-            <div class="project-header">
-              <div>
-                <h3>${activeProject.CoopName}</h3>
-                <p>
-                  ${activeProject.ChickenType}${
-                    activeProject.Climate
-                      ? ` • ${activeProject.Climate} Climate`
-                      : ""
-                  }
-                </p>
-              </div>
+        const coops =
+          data.success && Array.isArray(data.coops)
+            ? data.coops
+            : [];
 
-              <span class="status-badge">
-                Active
-              </span>
-            </div>
+        window.dashboardCoops = coops;
+        const projectContainer =
+        document.getElementById("projectContainer");
 
-            <div class="project-grid">
+      if (coops.length > 0) {
+        setText(
+          "activeCoops",
+          coops.length
+        );
 
-              <div class="project-item">
-                <small>Dimensions</small>
-                <strong>
-                  ${activeProject.CoopSize}
-                </strong>
-              </div>
+        setText(
+          "activeCoopsText",
+          `${coops.length} ${
+            coops.length === 1
+              ? "Active Coop"
+              : "Active Coops"
+          }`
+        );
+      
 
-              <div class="project-item">
-                <small>Chickens</small>
-                <strong>
-                  ${activeProject.NumberOfChickens}
-                </strong>
-              </div>
+        setText(
+          "activeCoopsText",
+          `${coops.length} ${
+            coops.length === 1
+              ? "Active Coop"
+              : "Active Coops"
+          }`
+        );
 
-              <div class="project-item">
-                <small>Capacity Usage</small>
-                <strong>85%</strong>
-              </div>
+let monthlyCost = 0;
 
-              <div class="project-item">
-                <small>Investment</small>
-                <strong>
-                  ₱${Number(
-                    activeProject.TotalCost || 0
-                  ).toLocaleString()}
-                </strong>
-              </div>
+const now = new Date();
+const currentMonth = now.getMonth();
+const currentYear = now.getFullYear();
 
-            </div>
+try {
+  const expenseResults = await Promise.all(
+    coops.map(async (coop) => {
+      const response = await fetch(
+        `/api/records/user/${user.id || user.UserID}/coop/${coop.CoopID}`
+      );
 
-            <div class="project-actions">
+      const result = await response.json();
 
-              <button
-                type="button"
-                class="model-btn"
-                onclick="openDashboardModel()"
-              >
-                <i data-lucide="box"></i>
-                View 3D Model
-              </button>
-
-              <button
-                type="button"
-                class="cost-btn"
-                onclick="openDashboardCosts()"
-              >
-                <i data-lucide="wallet"></i>
-                View Costs
-              </button>
-
-            </div>
-
-          </div>
-        `;
+      if (!response.ok || !result.success) {
+        return 0;
       }
+
+      const expenses =
+      result.records?.expenses || [];
+
+      return expenses.reduce(
+        (total, record) => {
+          const recordDate = new Date(
+            record.date ||
+            record.RecordDate
+          );
+
+          const isCurrentMonth =
+            recordDate.getFullYear() === currentYear &&
+            recordDate.getMonth() === currentMonth;
+
+          if (!isCurrentMonth) {
+            return total;
+          }
+
+          return (
+            total +
+            Number(
+              record.amount ||
+              record.Amount ||
+              0
+            )
+          );
+        },
+        0
+      );
+    })
+  );
+
+  monthlyCost = expenseResults.reduce(
+    (total, amount) =>
+      total + Number(amount || 0),
+    0
+  );
+
+} catch (error) {
+  console.error(
+    "Unable to load monthly expenses:",
+    error
+  );
+}
+
+setText(
+  "monthlyCost",
+  `₱${monthlyCost.toLocaleString(
+    "en-PH",
+    {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
     }
+  )}`
+);
+            if (projectContainer) {
+
+              let totalCurrentChickens = 0;
+
+              const coopCards = await Promise.all(
+              coops.map(async (coop) => {
+
+                let currentChickens = 0;
+
+                try {
+                  const recordResponse = await fetch(
+                    `/api/records/user/${user.id || user.UserID}/coop/${coop.CoopID}`
+                  );
+
+                  const recordResult =
+                    await recordResponse.json();
+
+                  if (
+                    recordResponse.ok &&
+                    recordResult.success
+                  ) {
+                    const chickenRecords =
+                      recordResult.records?.chicken || [];
+
+                    currentChickens =
+                      chickenRecords.reduce(
+                        (total, record) =>
+                          total +
+                          Number(record.quantity || 0),
+                        0
+                      );
+                  }
+
+                } catch (error) {
+                  console.error(
+                    `Unable to load chicken records for coop ${coop.CoopID}:`,
+                    error
+                  );
+                }
+
+                const maximumChickens =
+                  Number(coop.NumberOfChickens || 0);
+
+                const capacityUsage =
+                  maximumChickens > 0
+                    ? Math.min(
+                        (currentChickens / maximumChickens) * 100,
+                        100
+                      )
+                    : 0;
+
+                  totalCurrentChickens += currentChickens;
+
+                return `
+                  <div class="project-card">
+
+                    <div class="project-header">
+                      <div>
+                        <h3>${coop.CoopName}</h3>
+
+                        <p>
+                          ${coop.ChickenType}${
+                            coop.Climate
+                              ? ` • ${coop.Climate} Climate`
+                              : ""
+                          }
+                        </p>
+                      </div>
+
+                      <span class="status-badge">
+                        Active
+                      </span>
+                    </div>
+
+                    <div class="project-grid">
+
+                      <div class="project-item">
+                        <small>Dimensions</small>
+                        <strong>
+                          ${coop.CoopSize}
+                        </strong>
+                      </div>
+
+                      <div class="project-item">
+                        <small>Maximum Chickens</small>
+                        <strong>
+                          ${maximumChickens}
+                        </strong>
+                      </div>
+
+                      <div class="project-item">
+                        <small>Current Chickens</small>
+                        <strong>
+                          ${currentChickens}
+                        </strong>
+                      </div>
+
+                      <div class="project-item">
+                        <small>Capacity Usage</small>
+                        <strong>
+                          ${capacityUsage.toFixed(1)}%
+                        </strong>
+                      </div>
+
+                      <div class="project-item">
+                        <small>Investment</small>
+                        <strong>
+                          ₱${Number(
+                            coop.TotalCost || 0
+                          ).toLocaleString()}
+                        </strong>
+                      </div>
+
+                    </div>
+
+                    <div class="project-actions">
+
+                      <button
+                        type="button"
+                        class="model-btn"
+                        onclick="openDashboardModel(${coop.CoopID})"
+                      >
+                        <i data-lucide="box"></i>
+                        View 3D Model
+                      </button>
+
+                      <button
+                        type="button"
+                        class="cost-btn"
+                        onclick="openDashboardCosts(${coop.CoopID})"
+                      >
+                        <i data-lucide="wallet"></i>
+                        View Costs
+                      </button>
+
+                      <button
+                        type="button"
+                        class="records-btn"
+                        onclick="openCoopRecords(${coop.CoopID})"
+                      >
+                        <i data-lucide="clipboard-list"></i>
+                        Manage Records
+                      </button>
+
+                    </div>
+
+                  </div>
+                `;
+                })
+              );
+
+              setText(
+                "totalChickens",
+                totalCurrentChickens
+              );
+
+              projectContainer.innerHTML =
+                coopCards.join("");
+          }
+
+      } else {
+        setText("totalChickens", 0);
+        setText("activeCoops", 0);
+        setText(
+          "activeCoopsText",
+          "0 Active Coops"
+        );
+        setText("monthlyCost", "₱0");
+
+        if (projectContainer) {
+          projectContainer.innerHTML = `
+            <div class="empty-project">
+              <p>No coop projects yet.</p>
+              <a href="coop-planner.html">
+                Create Your First Coop
+              </a>
+            </div>
+          `;
+        }
+      }
 
     if (window.lucide) {
       lucide.createIcons();
@@ -597,6 +776,15 @@ async function loadDashboard() {
       error
     );
   }
+}
+function openCoopRecords(coopId) {
+  if (!coopId) {
+    alert("Unable to identify this coop.");
+    return;
+  }
+
+  window.location.href =
+    `record-management.html?coopId=${encodeURIComponent(coopId)}`;
 }
 
     function setText(id, value) {
@@ -3470,11 +3658,14 @@ function exportAdminReport(type) {
 
     });
 
-function openDashboardModel() {
-  const plan = window.dashboardActiveProject;
+function openDashboardModel(coopId) {
+  const plan = window.dashboardCoops?.find(
+    coop =>
+      Number(coop.CoopID) === Number(coopId)
+  );
 
   if (!plan) {
-    alert("No active coop project found.");
+    alert("Coop project not found.");
     return;
   }
 
@@ -3626,12 +3817,14 @@ function closeDashboardModel() {
   }
 }
 
-
-function openDashboardCosts() {
-  const plan = window.dashboardActiveProject;
+function openDashboardCosts(coopId) {
+  const plan = window.dashboardCoops?.find(
+    coop =>
+      Number(coop.CoopID) === Number(coopId)
+  );
 
   if (!plan) {
-    alert("No active coop project found.");
+    alert("Coop project not found.");
     return;
   }
 
@@ -3645,65 +3838,252 @@ function openDashboardCosts() {
   const chickens =
     Number(plan.NumberOfChickens) || 0;
 
-  const coopCosts = {
-    "1x1": 8000,
-    "2x2": 14000,
-    "3x3": 19000,
-    "4x4": 27000,
-    "5x5": 35000,
-    "6x6": 45000,
-    "7x7": 56000,
-    "8x8": 68000,
-    "9x9": 82000,
-    "10x10": 98000
+  const chickPrice = 60;
+  const chickenCost = chickens * chickPrice;
+
+  /* =========================================
+     DETAILED 1x1 BROILER COST
+  ========================================= */
+
+  const setupCostData = {
+    "1x1": {
+      construction: [
+        {
+          name: "Concrete Slab",
+          specification: "1.00m × 1.00m × 0.55m",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 1000
+        },
+        {
+          name: "Wood Posts",
+          specification: "1.80m × 0.05m × 0.05m",
+          quantity: 5,
+          unit: "pcs",
+          unitPrice: 125
+        },
+        {
+          name: "Ridge Board",
+          specification: "1.54m × 0.05m × 0.05m",
+          quantity: 1,
+          unit: "pc",
+          unitPrice: 110
+        },
+        {
+          name: "Front / Back Wall Plate",
+          specification: "1.47m × 0.05m × 0.05m",
+          quantity: 2,
+          unit: "pcs",
+          unitPrice: 105
+        },
+        {
+          name: "Side Wall Plate",
+          specification: "1.00m × 0.05m × 0.05m",
+          quantity: 2,
+          unit: "pcs",
+          unitPrice: 80
+        },
+        {
+          name: "Roof Rafters",
+          specification: "Wood roof framing",
+          quantity: 4,
+          unit: "pcs",
+          unitPrice: 100
+        },
+        {
+          name: "Roof Sheet",
+          specification: "3ft × 9ft • 0.4mm • divided into 3",
+          quantity: 2,
+          unit: "sections",
+          unitPrice: 180
+        },
+        {
+          name: "Wire Mesh",
+          specification: "0.025m openings • 0.0016m wire",
+          quantity: 6,
+          unit: "m²",
+          unitPrice: 100
+        },
+        {
+          name: "Door",
+          specification: "1.52m × 0.70m × 0.05m",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 450
+        }
+      ],
+
+      hardware: [
+        {
+          name: "Nails / Screws",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 150
+        },
+        {
+          name: "Door Hinges",
+          quantity: 2,
+          unit: "pcs",
+          unitPrice: 60
+        },
+        {
+          name: "Door Latch",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 100
+        }
+      ],
+
+      equipment: [
+        {
+          name: "Bell Waterer",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 300
+        },
+        {
+          name: "Brooder Lamp / Refractor",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 500
+        },
+        {
+          name: "Feeder",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 160
+        }
+      ],
+
+      bedding: [
+        {
+          name: "Rice Hull",
+          specification: "For 0.90m × 0.90m × 0.075m bedding area",
+          quantity: 2,
+          unit: "sacks",
+          unitPrice: 100
+        }
+      ]
+    }
   };
 
-  const coopCost = coopCosts[sizeKey];
+  const costData = setupCostData[sizeKey];
 
-  if (!coopCost) {
+  if (!costData) {
     alert(
-      `Cost information not available for ${sizeKey}.`
+      `Detailed cost information is not yet available for ${sizeKey}.`
     );
     return;
   }
 
-  const chickPrice = 60;
+  const getSubtotal = item =>
+    Number(item.quantity) * Number(item.unitPrice);
 
-  const construction =
-    Math.round(coopCost * 0.55);
+  const getCategoryTotal = items =>
+    items.reduce(
+      (total, item) =>
+        total + getSubtotal(item),
+      0
+    );
 
-  const feeders =
-    Math.round(coopCost * 0.10);
+  const constructionTotal =
+    getCategoryTotal(costData.construction);
 
-  const waterers =
-    Math.round(coopCost * 0.08);
+  const hardwareTotal =
+    getCategoryTotal(costData.hardware);
 
-  const perches =
-    Math.round(coopCost * 0.07);
+  const equipmentTotal =
+    getCategoryTotal(costData.equipment);
 
-  const lighting =
-    Math.round(coopCost * 0.08);
+  const beddingTotal =
+    getCategoryTotal(costData.bedding);
 
-  const ventilation =
-    Math.round(coopCost * 0.12);
-
-  const chickenCost =
-    chickens * chickPrice;
+  const setupTotal =
+    constructionTotal +
+    hardwareTotal +
+    equipmentTotal +
+    beddingTotal;
 
   const total =
-    coopCost + chickenCost;
+    setupTotal + chickenCost;
+
+  const createRows = (
+    title,
+    items,
+    categoryTotal
+  ) => {
+    const rows = items
+      .map(item => {
+        const subtotal = getSubtotal(item);
+
+        return `
+          <tr class="dashboard-cost-item-row">
+            <td>
+              <strong>${item.name}</strong>
+
+              ${
+                item.specification
+                  ? `<small>${item.specification}</small>`
+                  : ""
+              }
+            </td>
+
+            <td>
+              ${item.quantity} ${item.unit}
+            </td>
+
+            <td>
+              ₱${item.unitPrice.toLocaleString()}
+            </td>
+
+            <td>
+              <strong>
+                ₱${subtotal.toLocaleString()}
+              </strong>
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    return `
+      <tr class="dashboard-cost-category">
+        <td colspan="4">
+          ${title}
+        </td>
+      </tr>
+
+      ${rows}
+
+      <tr class="dashboard-cost-subtotal">
+        <td colspan="3">
+          ${title} Subtotal
+        </td>
+
+        <td>
+          ₱${categoryTotal.toLocaleString()}
+        </td>
+      </tr>
+    `;
+  };
 
   let modal =
-    document.getElementById("dashboardCostModal");
+    document.getElementById(
+      "dashboardCostModal"
+    );
 
   if (!modal) {
     modal = document.createElement("div");
 
     modal.id = "dashboardCostModal";
-    modal.className = "dashboard-view-modal hidden";
+    modal.className =
+      "dashboard-view-modal hidden";
 
     modal.innerHTML = `
-      <div class="dashboard-view-modal-card dashboard-cost-card">
+      <div class="
+        dashboard-view-modal-card
+        dashboard-cost-card
+      ">
 
         <div class="dashboard-modal-header">
 
@@ -3720,7 +4100,8 @@ function openDashboardCosts() {
           <button
             type="button"
             class="dashboard-modal-close"
-            onclick="closeDashboardCosts()">
+            onclick="closeDashboardCosts()"
+          >
             <i data-lucide="x"></i>
           </button>
 
@@ -3733,11 +4114,15 @@ function openDashboardCosts() {
             <thead>
               <tr>
                 <th>Item</th>
-                <th>Estimated Cost</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Subtotal</th>
               </tr>
             </thead>
 
-            <tbody id="dashboardCostTableBody"></tbody>
+            <tbody
+              id="dashboardCostTableBody">
+            </tbody>
 
           </table>
 
@@ -3746,8 +4131,13 @@ function openDashboardCosts() {
         <div class="dashboard-cost-total">
 
           <div>
-            <small>TOTAL ESTIMATED COST</small>
-            <strong>Total Setup Investment</strong>
+            <small>
+              TOTAL ESTIMATED COST
+            </small>
+
+            <strong>
+              Total Setup Investment
+            </strong>
           </div>
 
           <strong id="dashboardTotalCost">
@@ -3770,44 +4160,57 @@ function openDashboardCosts() {
   document.getElementById(
     "dashboardCostTableBody"
   ).innerHTML = `
-    <tr>
-      <td>Coop Construction</td>
-      <td>₱${construction.toLocaleString()}</td>
+
+    ${createRows(
+      "Coop Construction",
+      costData.construction,
+      constructionTotal
+    )}
+
+    ${createRows(
+      "Hardware",
+      costData.hardware,
+      hardwareTotal
+    )}
+
+    ${createRows(
+      "Equipment",
+      costData.equipment,
+      equipmentTotal
+    )}
+
+    ${createRows(
+      "Bedding",
+      costData.bedding,
+      beddingTotal
+    )}
+
+    <tr class="dashboard-cost-category">
+      <td colspan="4">
+        Livestock
+      </td>
     </tr>
 
-    <tr>
-      <td>Feeders</td>
-      <td>₱${feeders.toLocaleString()}</td>
-    </tr>
+    <tr class="dashboard-cost-item-row">
 
-    <tr>
-      <td>Waterers</td>
-      <td>₱${waterers.toLocaleString()}</td>
-    </tr>
-
-    <tr>
-      <td>Perches & Interior Setup</td>
-      <td>₱${perches.toLocaleString()}</td>
-    </tr>
-
-    <tr>
-      <td>Lighting System</td>
-      <td>₱${lighting.toLocaleString()}</td>
-    </tr>
-
-    <tr>
-      <td>Ventilation System</td>
-      <td>₱${ventilation.toLocaleString()}</td>
-    </tr>
-
-    <tr>
       <td>
-        Chicks (${chickens} × ₱${chickPrice})
+        <strong>Broiler Chicks</strong>
       </td>
 
       <td>
-        ₱${chickenCost.toLocaleString()}
+        ${chickens} chicks
       </td>
+
+      <td>
+        ₱${chickPrice.toLocaleString()}
+      </td>
+
+      <td>
+        <strong>
+          ₱${chickenCost.toLocaleString()}
+        </strong>
+      </td>
+
     </tr>
   `;
 
@@ -3821,8 +4224,6 @@ function openDashboardCosts() {
   if (window.lucide) {
     lucide.createIcons();
   }
-
-  console.log("Dashboard cost size:", sizeKey);
 }
 
 function closeDashboardCosts() {

@@ -17771,3 +17771,491 @@ body {
     transform: translateY(0);
   }
 }
+.record-coop-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.record-coop-selector label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.record-coop-selector select {
+  width: 260px;
+  padding: 10px 36px 10px 12px;
+  font-size: 14px;
+  color: #1f2937;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.record-coop-selector select:hover {
+  border-color: #9ca3af;
+}
+
+.record-coop-selector select:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
+@media (max-width: 600px) {
+  .record-coop-selector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .record-coop-selector select {
+    width: 100%;
+  }
+}
+
+/* =================================
+   DASHBOARD TOP METRICS - 3 CARDS
+================================= */
+
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.dashboard-metric-card {
+  width: 100%;
+  min-width: 0;
+}
+
+
+/* =================================
+   ACTIVE PROJECT BUTTONS
+================================= */
+
+.project-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.project-actions button {
+  width: 100%;
+  min-height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 12px 18px;
+
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.project-actions button i {
+  width: 20px;
+  height: 20px;
+}
+
+
+/* View 3D Model */
+.model-btn {
+  background: #059669;
+  color: #ffffff;
+  border: 1px solid #059669;
+}
+
+.model-btn:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
+
+
+/* View Costs */
+.cost-btn {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.cost-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+
+/* Manage Records - full second row */
+.records-btn {
+  grid-column: 1 / -1;
+
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.records-btn:hover {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #10b981;
+}
+
+
+
+@media (max-width: 1100px) {
+  .dashboard-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .dashboard-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .project-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .records-btn {
+    grid-column: auto;
+  }
+}
+
+
+.active-project-panel {
+  display: flex;
+  flex-direction: column;
+
+  height: 650px;
+  min-height: 650px;
+  max-height: 650px;
+
+  overflow: hidden;
+}
+
+
+.active-project-panel .dashboard-section-header {
+  flex-shrink: 0;
+  margin-bottom: 18px;
+}
+
+#projectContainer {
+  flex: 1;
+  min-height: 0;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding-right: 8px;
+
+  scroll-behavior: smooth;
+}
+
+
+
+#projectContainer .project-card {
+  width: 100%;
+  margin: 0 0 14px 0 !important;
+  padding: 22px !important;
+
+  border-radius: 14px;
+  background: #f8fafc;
+
+  box-sizing: border-box;
+}
+
+#projectContainer .project-card:last-child {
+  margin-bottom: 0 !important;
+}
+
+
+#projectContainer::-webkit-scrollbar {
+  width: 7px;
+}
+
+#projectContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#projectContainer::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 20px;
+}
+
+#projectContainer::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Firefox */
+#projectContainer {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+#projectContainer .project-header {
+  margin-bottom: 18px !important;
+}
+
+#projectContainer .project-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+
+  column-gap: 30px !important;
+  row-gap: 14px !important;
+
+  margin-bottom: 18px !important;
+}
+
+#projectContainer .project-item {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+#projectContainer .project-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+
+  gap: 10px !important;
+  margin-top: 18px !important;
+}
+
+#projectContainer .project-actions button {
+  width: 100% !important;
+  min-height: 44px !important;
+  margin: 0 !important;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  border-radius: 10px;
+}
+
+#projectContainer .records-btn {
+  grid-column: 1 / -1 !important;
+}
+
+
+@media (max-width: 700px) {
+
+  .active-project-panel {
+    height: 600px;
+    min-height: 600px;
+    max-height: 600px;
+  }
+
+  #projectContainer .project-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  #projectContainer .project-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  #projectContainer .records-btn {
+    grid-column: auto !important;
+  }
+}
+
+/* =========================================
+   DETAILED SETUP COST
+========================================= */
+
+.cost-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+.cost-table th {
+  padding: 12px 14px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.cost-table th:first-child {
+  text-align: left;
+}
+
+.cost-table th:last-child {
+  text-align: right;
+}
+
+.cost-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #edf2f7;
+  vertical-align: middle;
+}
+
+.cost-table td:first-child {
+  color: #0f172a;
+}
+
+.cost-table td:last-child {
+  text-align: right;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.cost-table td strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cost-table td small {
+  display: inline-block;
+  margin-top: 2px;
+  color: #64748b;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+
+/* CATEGORY HEADER */
+
+.cost-table .cost-category-row td {
+  padding: 9px 14px;
+  background: #f0fdf4;
+  color: #047857;
+  border-bottom: 1px solid #d1fae5;
+  text-align: left;
+}
+
+.cost-table .cost-category-row td strong {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+
+/* SUBTOTAL */
+
+.cost-table .cost-subtotal-row td {
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-weight: 700;
+}
+
+.cost-table .cost-subtotal-row td:first-child {
+  color: #475569;
+}
+
+.cost-table .cost-subtotal-row td:last-child {
+  color: #059669;
+  font-size: 13px;
+}
+
+
+/* ROW HOVER */
+
+.cost-table tr:not(.cost-category-row):not(.cost-subtotal-row):hover td {
+  background: #fafafa;
+}
+
+
+/* TOTAL BOX */
+
+.cost-total-box {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid #a7f3d0;
+  border-radius: 12px;
+  background: #ecfdf5;
+}
+
+.cost-total-box #totalCost {
+  color: #047857;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+  .cost-table {
+    font-size: 12px;
+  }
+
+  .cost-table th,
+  .cost-table td {
+    padding: 9px 10px;
+  }
+
+  .cost-table td strong {
+    font-size: 12px;
+  }
+
+  .cost-table td small {
+    font-size: 9px;
+  }
+}
+.cost-table th:nth-child(2),
+.cost-table th:nth-child(3),
+.cost-table th:nth-child(4) {
+  text-align: right;
+}
+
+.cost-table .cost-qty,
+.cost-table .cost-unit-price,
+.cost-table .cost-item-subtotal {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cost-table .cost-item-name {
+  width: 52%;
+}
+
+.cost-table .cost-qty {
+  width: 16%;
+  color: #475569;
+}
+
+.cost-table .cost-unit-price {
+  width: 16%;
+  color: #475569;
+}
+
+.cost-table .cost-item-subtotal {
+  width: 16%;
+  font-weight: 700;
+}
+
+.cost-table .cost-item-name small {
+  display: block;
+  margin-top: 3px;
+}

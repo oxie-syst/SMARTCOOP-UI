@@ -430,10 +430,12 @@ function createSavedBreedCard(data) {
 
       <div class="saved-card-actions">
 
-        <a
-          href="coop-planner.html"
-          class="saved-use-btn"
-        >
+          <a
+            href="coop-planner.html?type=${encodeURIComponent(
+              data.bestFor || ""
+            )}"
+            class="saved-use-btn"
+          >
           <i data-lucide="box"></i>
           Use in Planner
         </a>

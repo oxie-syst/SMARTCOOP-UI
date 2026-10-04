@@ -113,52 +113,111 @@ router.get(
           )
         );
 
-      const expenseParams = [userId];
-      const eggParams = [userId];
-      const mortalityParams = [userId];
-      const chickenParams = [userId];
-      const meatParams = [userId];
+  const coops =
+  await queryDatabase(
+    `
+      SELECT *
+      FROM coops
+      WHERE UserID = ?
+      AND Status = 'active'
+    `,
+    [userId]
+  );      
 
-      let expenseCoop = "";
-      let eggCoop = "";
-      let mortalityCoop = "";
-      let chickenCoop = "";
-      let meatCoop = "";
+  const activeCoopIds =
+  coops.map(record =>
+    Number(record.CoopID)
+  );
 
-      if (coop !== "all") {
+const expenseParams = [userId];
+const eggParams = [userId];
+const mortalityParams = [userId];
+const chickenParams = [userId];
+const meatParams = [userId];
 
-        expenseCoop =
-          " AND CoopName = ?";
+let expenseCoop = "";
+let eggCoop = "";
+let mortalityCoop = "";
+let chickenCoop = "";
+let meatCoop = "";
 
-        eggCoop =
-          " AND CoopName = ?";
+if (coop !== "all") {
+  const coopId = Number(coop);
 
-        mortalityCoop =
-          " AND CoopName = ?";
+  if (!coopId) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid coop ID."
+    });
+  }
 
-        chickenCoop =
-          " AND CoopName = ?";
+  if (!activeCoopIds.includes(coopId)) {
+    return res.status(400).json({
+      success: false,
+      message: "Coop is not active."
+    });
+  }
 
-        meatCoop =
-          " AND CoopOrBatch = ?";
+  expenseCoop = " AND CoopID = ?";
+  eggCoop = " AND CoopID = ?";
+  mortalityCoop = " AND CoopID = ?";
+  chickenCoop = " AND CoopID = ?";
+  meatCoop = " AND CoopID = ?";
 
-        expenseParams.push(coop);
-        eggParams.push(coop);
-        mortalityParams.push(coop);
-        chickenParams.push(coop);
-        meatParams.push(coop);
-      }
+  expenseParams.push(coopId);
+  eggParams.push(coopId);
+  mortalityParams.push(coopId);
+  chickenParams.push(coopId);
+  meatParams.push(coopId);
+
+} else if (activeCoopIds.length > 0) {
+
+  const placeholders =
+    activeCoopIds
+      .map(() => "?")
+      .join(", ");
+
+  expenseCoop =
+    ` AND CoopID IN (${placeholders})`;
+
+  eggCoop =
+    ` AND CoopID IN (${placeholders})`;
+
+  mortalityCoop =
+    ` AND CoopID IN (${placeholders})`;
+
+  chickenCoop =
+    ` AND CoopID IN (${placeholders})`;
+
+  meatCoop =
+    ` AND CoopID IN (${placeholders})`;
+
+  expenseParams.push(...activeCoopIds);
+  eggParams.push(...activeCoopIds);
+  mortalityParams.push(...activeCoopIds);
+  chickenParams.push(...activeCoopIds);
+  meatParams.push(...activeCoopIds);
+
+} else {
+
+  expenseCoop = " AND 1 = 0";
+  eggCoop = " AND 1 = 0";
+  mortalityCoop = " AND 1 = 0";
+  chickenCoop = " AND 1 = 0";
+  meatCoop = " AND 1 = 0";
+}
 
       const expenses =
         await queryDatabase(
           `
-            SELECT
-              ExpenseID AS id,
-              RecordDate AS date,
-              CoopName AS coop,
-              Category AS category,
-              Description AS description,
-              Amount AS amount
+          SELECT
+            ExpenseID AS id,
+            CoopID AS coopId,
+            RecordDate AS date,
+            CoopName AS coop,
+            Category AS category,
+            Description AS description,
+            Amount AS amount
             FROM expense_records
             WHERE UserID = ?
             ${getDateCondition(
@@ -174,12 +233,13 @@ router.get(
       const eggs =
         await queryDatabase(
           `
-            SELECT
-              EggRecordID AS id,
-              RecordDate AS date,
-              CoopName AS coop,
-              EggCount AS eggs,
-              Notes AS notes
+          SELECT
+            EggRecordID AS id,
+            CoopID AS coopId,
+            RecordDate AS date,
+            CoopName AS coop,
+            EggCount AS eggs,
+            Notes AS notes
             FROM egg_records
             WHERE UserID = ?
             ${getDateCondition(
@@ -194,14 +254,15 @@ router.get(
 
       const mortality =
         await queryDatabase(
-          `
-            SELECT
-              MortalityID AS id,
-              RecordDate AS date,
-              CoopName AS coop,
-              DeathCount AS deaths,
-              Cause AS cause,
-              Notes AS notes
+          `     
+          SELECT
+            MortalityID AS id,
+            CoopID AS coopId,
+            RecordDate AS date,
+            CoopName AS coop,
+            DeathCount AS deaths,
+            Cause AS cause,
+            Notes AS notes
             FROM mortality_records
             WHERE UserID = ?
             ${getDateCondition(
@@ -217,13 +278,14 @@ router.get(
       const chickens =
         await queryDatabase(
           `
-            SELECT
-              ChickenRecordID AS id,
-              RecordDate AS date,
-              CoopName AS coop,
-              Quantity AS quantity,
-              Stage AS stage,
-              Days AS days
+          SELECT
+            ChickenRecordID AS id,
+            CoopID AS coopId,
+            RecordDate AS date,
+            CoopName AS coop,
+            Quantity AS quantity,
+            Stage AS stage,
+            Days AS days
             FROM chicken_records
             WHERE UserID = ?
             ${getDateCondition(
@@ -239,12 +301,13 @@ router.get(
       const meat =
         await queryDatabase(
           `
-            SELECT
-              MeatRecordID AS id,
-              HarvestDate AS date,
-              CoopOrBatch AS coop,
-              BirdsCount AS birdsCount,
-              TotalWeight AS weight
+          SELECT
+            MeatRecordID AS id,
+            CoopID AS coopId,
+            HarvestDate AS date,
+            CoopOrBatch AS coop,
+            BirdsCount AS birdsCount,
+            TotalWeight AS weight
             FROM meat_records
             WHERE UserID = ?
             ${getDateCondition(
@@ -255,16 +318,6 @@ router.get(
             ORDER BY HarvestDate ASC
           `,
           meatParams
-        );
-
-      const coops =
-        await queryDatabase(
-          `
-            SELECT *
-            FROM coops
-            WHERE UserID = ?
-          `,
-          [userId]
         );
 
       const totalExpenses =
@@ -371,148 +424,117 @@ router.get(
           Number(record.deaths || 0);
       });
 
-      const coopNames =
-        new Set();
+const coopMap = new Map();
 
-      coops.forEach(record => {
-        if (record.CoopName) {
-          coopNames.add(
-            record.CoopName
+coops.forEach(record => {
+  if (record.CoopID) {
+    coopMap.set(
+      Number(record.CoopID),
+      {
+        coopId: Number(record.CoopID),
+        coopName:
+          record.CoopName ||
+          `Coop ${record.CoopID}`
+      }
+    );
+  }
+});
+
+const coopPerformance =
+  Array.from(coopMap.values()).map(
+    coopInfo => {
+
+      const coopId =
+        Number(coopInfo.coopId);
+
+      const savedCoop =
+        coops.find(
+          record =>
+            Number(record.CoopID) ===
+            coopId
+        ) || {};
+
+      const coopChickens =
+        chickens
+          .filter(
+            record =>
+              Number(record.coopId) ===
+              coopId
+          )
+          .reduce(
+            (total, record) =>
+              total +
+              Number(record.quantity || 0),
+            0
           );
-        }
-      });
 
-      expenses.forEach(record => {
-        if (record.coop) {
-          coopNames.add(
-            record.coop
+      const coopEggs =
+        eggs
+          .filter(
+            record =>
+              Number(record.coopId) ===
+              coopId
+          )
+          .reduce(
+            (total, record) =>
+              total +
+              Number(record.eggs || 0),
+            0
           );
-        }
-      });
 
-      eggs.forEach(record => {
-        if (record.coop) {
-          coopNames.add(
-            record.coop
+      const coopExpenses =
+        expenses
+          .filter(
+            record =>
+              Number(record.coopId) ===
+              coopId
+          )
+          .reduce(
+            (total, record) =>
+              total +
+              Number(record.amount || 0),
+            0
           );
-        }
-      });
 
-      mortality.forEach(record => {
-        if (record.coop) {
-          coopNames.add(
-            record.coop
-          );
-        }
-      });
+      return {
+        coopId,
 
-      chickens.forEach(record => {
-        if (record.coop) {
-          coopNames.add(
-            record.coop
-          );
-        }
-      });
+        coopName:
+          savedCoop.CoopName ||
+          coopInfo.coopName ||
+          `Coop ${coopId}`,
 
-      meat.forEach(record => {
-        if (record.coop) {
-          coopNames.add(
-            record.coop
-          );
-        }
-      });
+        chickens:
+          coopChickens ||
+          Number(
+            savedCoop.NumberOfChickens ||
+            0
+          ),
 
-      const coopPerformance =
-        Array.from(
-          coopNames
-        ).map(coopName => {
+        type:
+          savedCoop.ChickenType ||
+          "N/A",
 
-          const savedCoop =
-            coops.find(
-              record =>
-                record.CoopName ===
-                coopName
-            ) || {};
+        status:
+          savedCoop.Status ||
+          "Active",
 
-          const coopChickens =
-            chickens
-              .filter(
-                record =>
-                  record.coop ===
-                  coopName
-              )
-              .reduce(
-                (total, record) =>
-                  total +
-                  Number(
-                    record.quantity ||
-                    0
-                  ),
-                0
-              );
+        eggs:
+          coopEggs,
 
-          const coopEggs =
-            eggs
-              .filter(
-                record =>
-                  record.coop ===
-                  coopName
-              )
-              .reduce(
-                (total, record) =>
-                  total +
-                  Number(
-                    record.eggs ||
-                    0
-                  ),
-                0
-              );
+        expenses:
+          coopExpenses
+      };
+    }
+  );
 
-          const coopExpenses =
-            expenses
-              .filter(
-                record =>
-                  record.coop ===
-                  coopName
-              )
-              .reduce(
-                (total, record) =>
-                  total +
-                  Number(
-                    record.amount ||
-                    0
-                  ),
-                0
-              );
-
-          return {
-            coopName,
-
-            chickens:
-              coopChickens ||
-              Number(
-                savedCoop
-                  .NumberOfChickens ||
-                0
-              ),
-
-            type:
-              savedCoop
-                .ChickenType ||
-              "N/A",
-
-            status:
-              savedCoop
-                .Status ||
-              "Active",
-
-            eggs:
-              coopEggs,
-
-            expenses:
-              coopExpenses
-          };
-        });
+const coopOptions =
+  Array.from(coopMap.values()).map(
+    coopInfo => ({
+      coopId: Number(coopInfo.coopId),
+      coopName: coopInfo.coopName
+    })
+  );
 
       return res.json({
         success: true,
@@ -563,10 +585,7 @@ router.get(
             ? expenseBreakdown
             : {},
 
-        coops:
-          Array.from(
-            coopNames
-          ),
+        coops: coopOptions,
 
         coopPerformance:
           isPremium

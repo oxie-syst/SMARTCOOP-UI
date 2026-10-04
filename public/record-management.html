@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body class="dashboard-body" onload="loadUserInfo(); loadRecordsPage();">
+<body class="dashboard-body" onload="loadUserInfo();">
 
   <aside class="sidebar">
 
@@ -148,12 +148,6 @@
 
           <button
             type="button"
-            onclick="window.location.href='admin-dashboard.html'">
-            Switch to Admin
-          </button>
-
-          <button
-            type="button"
             class="logout-link"
             onclick="logout()">
             Logout
@@ -189,6 +183,21 @@
           <i data-lucide="bird"></i>
         </div>
 
+      </div>
+
+      <div class="record-coop-selector">
+        <label for="recordCoopSelect">
+          Active Coop
+        </label>
+
+        <select
+          id="recordCoopSelect"
+          onchange="changeRecordCoop()"
+        >
+          <option value="">
+            Select an active coop
+          </option>
+        </select>
       </div>
 
 

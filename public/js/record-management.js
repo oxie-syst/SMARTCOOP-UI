@@ -9,6 +9,13 @@ let recordData = {
   meat: []
 };
 
+const urlParams =
+  new URLSearchParams(window.location.search);
+
+let selectedCoopId =
+  urlParams.get("coopId");
+
+let selectedCoop = null;
 
 function getRecordUserId() {
   const storedUser =
@@ -41,7 +48,127 @@ function formatRecordDate(value) {
 
   return value;
 }
+function formatRecordDateTime(date, time) {
+  if (!date) return "-";
 
+  const cleanDate = formatRecordDate(date);
+
+  if (!time) {
+    return cleanDate;
+  }
+
+  const [year, month, day] =
+    cleanDate.split("-").map(Number);
+
+  const [hour, minute] =
+    String(time).split(":").map(Number);
+
+  const value = new Date(
+    year,
+    month - 1,
+    day,
+    hour || 0,
+    minute || 0
+  );
+
+  return value.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true
+  });
+}
+
+async function loadActiveCoopOptions() {
+  const userId = getRecordUserId();
+  const select =
+    document.getElementById("recordCoopSelect");
+
+  if (!userId || !select) return;
+
+  try {
+    const response =
+      await fetch(`/api/coops/user/${userId}`);
+
+    const result = await response.json();
+
+    const coops =
+      (result.coops || []).filter(
+        coop =>
+          String(coop.Status || "")
+            .toLowerCase() === "active"
+      );
+
+    select.innerHTML = `
+      <option value="">
+        Select an active coop
+      </option>
+    `;
+
+    coops.forEach(coop => {
+      const option =
+        document.createElement("option");
+
+      option.value = coop.CoopID;
+      option.textContent = coop.CoopName;
+
+      select.appendChild(option);
+    });
+
+    if (selectedCoopId) {
+      select.value = selectedCoopId;
+    }
+  } catch (error) {
+    console.error(
+      "Load Active Coops Error:",
+      error
+    );
+  }
+}
+
+function changeRecordCoop() {
+  const select =
+    document.getElementById("recordCoopSelect");
+
+  const coopId = select?.value;
+
+  if (!coopId) return;
+
+  window.location.href =
+    `record-management.html?coopId=${coopId}`;
+}
+
+async function loadSelectedCoop() {
+  const userId = getRecordUserId();
+
+  if (!userId || !selectedCoopId) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/coops/details/${selectedCoopId}/${userId}`
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success || !result.coop) {
+      throw new Error(
+        result.message || "Unable to load coop."
+      );
+    }
+
+    selectedCoop = result.coop;
+
+    return selectedCoop;
+
+  } catch (error) {
+    console.error("Load Selected Coop Error:", error);
+    return null;
+  }
+}
 
 async function loadRecordsPage() {
   const userId = getRecordUserId();
@@ -51,9 +178,31 @@ async function loadRecordsPage() {
     return;
   }
 
+  if (!selectedCoopId) {
+  recordData = {
+    expenses: [],
+    eggs: [],
+    mortality: [],
+    chicken: [],
+    meat: []
+  };
+
+  updateRecordStats();
+  renderActiveRecordTab();
+  return;
+}
+
+  const coop = await loadSelectedCoop();
+
+  if (!coop) {
+    alert("Unable to load the selected coop.");
+    window.location.href = "coop-planner.html";
+    return;
+  }
+
   try {
     const response = await fetch(
-      `/api/records/user/${userId}`
+      `/api/records/user/${userId}/coop/${selectedCoopId}`
     );
 
     const result = await response.json();
@@ -372,7 +521,11 @@ function loadExpenseRecords() {
   renderTableRows(
     filtered.map(item => `
       <tr>
-        <td>${escapeRecordHTML(item.date)}</td>
+        <td>
+        ${escapeRecordHTML(
+          formatRecordDateTime(item.date, item.time)
+        )}
+      </td>
         <td>${escapeRecordHTML(item.coop)}</td>
 
         <td>
@@ -439,7 +592,11 @@ function loadEggRecords() {
   renderTableRows(
     recordData.eggs.map(item => `
       <tr>
-        <td>${escapeRecordHTML(item.date)}</td>
+        <td>
+  ${escapeRecordHTML(
+    formatRecordDateTime(item.date, item.time)
+  )}
+</td>
 
         <td>
           ${escapeRecordHTML(item.coop)}
@@ -505,7 +662,11 @@ function loadMortalityRecords() {
   renderTableRows(
     recordData.mortality.map(item => `
       <tr>
-        <td>${escapeRecordHTML(item.date)}</td>
+        <td>
+  ${escapeRecordHTML(
+    formatRecordDateTime(item.date, item.time)
+  )}
+</td>
         <td>${escapeRecordHTML(item.coop)}</td>
         <td>${item.deaths}</td>
 
@@ -572,7 +733,11 @@ function loadChickenRecords() {
   renderTableRows(
     recordData.chicken.map(item => `
       <tr>
-        <td>${escapeRecordHTML(item.date)}</td>
+       <td>
+  ${escapeRecordHTML(
+    formatRecordDateTime(item.date, item.time)
+  )}
+</td>
         <td>${escapeRecordHTML(item.coop)}</td>
 
         <td>
@@ -635,7 +800,11 @@ function loadMeatRecords() {
   renderTableRows(
     recordData.meat.map(item => `
       <tr>
-        <td>${escapeRecordHTML(item.date)}</td>
+        <td>
+  ${escapeRecordHTML(
+    formatRecordDateTime(item.date, item.time)
+  )}
+</td>
 
         <td>
           ${escapeRecordHTML(
@@ -844,17 +1013,37 @@ function closeRecordModal() {
 }
 
 
-function getCoopDropdown(id) {
+function getSelectedCoopField() {
+  const coopName =
+    selectedCoop?.CoopName ||
+    "Selected Coop";
+
   return `
-    <select id="${id}">
-      <option value="Coop 1">Coop 1</option>
-      <option value="Coop 2">Coop 2</option>
-      <option value="Coop 3">Coop 3</option>
-      <option value="Coop 4">Coop 4</option>
-    </select>
+    <input
+      type="text"
+      value="${escapeRecordHTML(coopName)}"
+      readonly
+    >
   `;
 }
+function getCurrentRecordDate() {
+  const now = new Date();
 
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getCurrentRecordTime() {
+  const now = new Date();
+
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+
+  return `${hours}:${minutes}`;
+}
 
 function buildRecordForm(record = null) {
   const title =
@@ -876,17 +1065,31 @@ function buildRecordForm(record = null) {
         : "Add Expense";
 
     fields.innerHTML = `
-      <div class="form-group">
-        <label>Date</label>
-        <input
-          type="date"
-          id="expenseDate"
-          required>
-      </div>
+<div class="record-date-time-row">
+
+  <div class="form-group">
+    <label>Date</label>
+    <input
+      type="date"
+      id="expenseDate"
+      value="${getCurrentRecordDate()}"
+      required>
+  </div>
+
+  <div class="form-group">
+    <label>Time</label>
+    <input
+      type="time"
+      id="expenseTime"
+      value="${getCurrentRecordTime()}"
+      required>
+  </div>
+
+</div>
 
       <div class="form-group">
         <label>Coop</label>
-        ${getCoopDropdown("expenseCoop")}
+        ${getSelectedCoopField()}
       </div>
 
       <div class="form-group">
@@ -933,17 +1136,30 @@ function buildRecordForm(record = null) {
         : "Log Egg Collection";
 
     fields.innerHTML = `
-      <div class="form-group">
-        <label>Date</label>
-        <input
-          type="date"
-          id="eggDate"
-          required>
-      </div>
+<div class="record-date-time-row">
 
+  <div class="form-group">
+    <label>Date</label>
+    <input
+      type="date"
+      id="eggDate"
+      value="${getCurrentRecordDate()}"
+      required>
+  </div>
+
+  <div class="form-group">
+    <label>Time</label>
+    <input
+      type="time"
+      id="eggTime"
+      value="${getCurrentRecordTime()}"
+      required>
+  </div>
+
+</div>
       <div class="form-group">
         <label>Coop</label>
-        ${getCoopDropdown("eggCoop")}
+       ${getSelectedCoopField()}
       </div>
 
       <div class="form-group">
@@ -974,18 +1190,31 @@ function buildRecordForm(record = null) {
         : "Log Mortality";
 
     fields.innerHTML = `
-      <div class="form-group">
-        <label>Date</label>
+<div class="record-date-time-row">
 
-        <input
-          type="date"
-          id="mortalityDate"
-          required>
-      </div>
+  <div class="form-group">
+    <label>Date</label>
+    <input
+      type="date"
+      id="mortalityDate"
+      value="${getCurrentRecordDate()}"
+      required>
+  </div>
+
+  <div class="form-group">
+    <label>Time</label>
+    <input
+      type="time"
+      id="mortalityTime"
+      value="${getCurrentRecordTime()}"
+      required>
+  </div>
+
+</div>
 
       <div class="form-group">
         <label>Coop</label>
-        ${getCoopDropdown("mortalityCoop")}
+        ${getSelectedCoopField()}
       </div>
 
       <div class="form-group">
@@ -1025,18 +1254,31 @@ function buildRecordForm(record = null) {
         : "Add Chicken Batch";
 
     fields.innerHTML = `
-      <div class="form-group">
-        <label>Date</label>
+<div class="record-date-time-row">
 
-        <input
-          type="date"
-          id="chickenDate"
-          required>
-      </div>
+  <div class="form-group">
+    <label>Date</label>
+    <input
+      type="date"
+      id="chickenDate"
+      value="${getCurrentRecordDate()}"
+      required>
+  </div>
+
+  <div class="form-group">
+    <label>Time</label>
+    <input
+      type="time"
+      id="chickenTime"
+      value="${getCurrentRecordTime()}"
+      required>
+  </div>
+
+</div>
 
       <div class="form-group">
         <label>Coop</label>
-        ${getCoopDropdown("chickenCoop")}
+        ${getSelectedCoopField()}
       </div>
 
       <div class="form-group">
@@ -1050,14 +1292,26 @@ function buildRecordForm(record = null) {
       </div>
 
       <div class="form-group">
-        <label>Stage</label>
+        <label>Chicken Type</label>
 
-        <select id="chickenStage">
-          <option value="Chicks">Chicks</option>
-          <option value="Grower">Grower</option>
-          <option value="Layer">Layer</option>
-          <option value="Broiler">Broiler</option>
-        </select>
+        <input
+          type="text"
+          id="chickenStage"
+          value="${
+            String(selectedCoop?.ChickenType || "")
+              .toLowerCase()
+              .includes("broiler")
+                ? "Broiler"
+                : String(selectedCoop?.ChickenType || "")
+                    .toLowerCase()
+                    .includes("layer")
+                  ? "Layer"
+                  : escapeRecordHTML(
+                      selectedCoop?.ChickenType || "Not specified"
+                    )
+          }"
+          readonly
+        >
       </div>
 
       <div class="form-group">
@@ -1079,19 +1333,32 @@ function buildRecordForm(record = null) {
         : "Add Meat Production Log";
 
     fields.innerHTML = `
-      <div class="form-group">
-        <label>Harvest Date</label>
+<div class="record-date-time-row">
 
-        <input
-          type="date"
-          id="meatDate"
-          required>
-      </div>
+  <div class="form-group">
+    <label>Harvest Date</label>
+    <input
+      type="date"
+      id="meatDate"
+      value="${getCurrentRecordDate()}"
+      required>
+  </div>
+
+  <div class="form-group">
+    <label>Time</label>
+    <input
+      type="time"
+      id="meatTime"
+      value="${getCurrentRecordTime()}"
+      required>
+  </div>
+
+</div>
 
       <div class="form-group">
         <label>Coop / Batch Reference</label>
 
-        ${getCoopDropdown("meatCoop")}
+        ${getSelectedCoopField()}
       </div>
 
       <div class="form-group">
@@ -1129,11 +1396,10 @@ function fillRecordForm(record) {
       "expenseDate",
       record.date
     );
-
     setInputValue(
-      "expenseCoop",
-      record.coop
-    );
+    "expenseTime",
+    record.time
+  );
 
     setInputValue(
       "expenseCategory",
@@ -1156,11 +1422,10 @@ function fillRecordForm(record) {
       "eggDate",
       record.date
     );
-
     setInputValue(
-      "eggCoop",
-      record.coop
-    );
+  "eggTime",
+  record.time
+);
 
     setInputValue(
       "eggCount",
@@ -1178,11 +1443,10 @@ function fillRecordForm(record) {
       "mortalityDate",
       record.date
     );
-
     setInputValue(
-      "mortalityCoop",
-      record.coop
-    );
+  "mortalityTime",
+  record.time
+);
 
     setInputValue(
       "mortalityDeaths",
@@ -1205,11 +1469,10 @@ function fillRecordForm(record) {
       "chickenDate",
       record.date
     );
-
     setInputValue(
-      "chickenCoop",
-      record.coop
-    );
+  "chickenTime",
+  record.time
+);
 
     setInputValue(
       "chickenQty",
@@ -1232,11 +1495,10 @@ function fillRecordForm(record) {
       "meatDate",
       record.date
     );
-
     setInputValue(
-      "meatCoop",
-      record.coopOrBatch
-    );
+  "meatTime",
+  record.time
+);
 
     setInputValue(
       "meatBirdsCount",
@@ -1294,10 +1556,12 @@ function getRecordFormData() {
           "expenseDate"
         )?.value,
 
-      coop:
+        time:
         document.getElementById(
-          "expenseCoop"
+          "expenseTime"
         )?.value,
+
+      coop: selectedCoop?.CoopName || "",
 
       category:
         document.getElementById(
@@ -1325,10 +1589,12 @@ function getRecordFormData() {
           "eggDate"
         )?.value,
 
-      coop:
+        time:
         document.getElementById(
-          "eggCoop"
+          "eggTime"
         )?.value,
+
+      coop: selectedCoop?.CoopName || "",
 
       eggs:
         Number(
@@ -1351,10 +1617,12 @@ function getRecordFormData() {
           "mortalityDate"
         )?.value,
 
-      coop:
+        time:
         document.getElementById(
-          "mortalityCoop"
+          "mortalityTime"
         )?.value,
+
+      coop: selectedCoop?.CoopName || "",
 
       deaths:
         Number(
@@ -1382,10 +1650,12 @@ function getRecordFormData() {
           "chickenDate"
         )?.value,
 
-      coop:
+        time:
         document.getElementById(
-          "chickenCoop"
+          "chickenTime"
         )?.value,
+
+      coop: selectedCoop?.CoopName || "",
 
       quantity:
         Number(
@@ -1415,10 +1685,12 @@ function getRecordFormData() {
           "meatDate"
         )?.value,
 
-      coopOrBatch:
+        time:
         document.getElementById(
-          "meatCoop"
+          "meatTime"
         )?.value,
+
+      coopOrBatch: selectedCoop?.CoopName || "",
 
       birdsCount:
         Number(
@@ -1459,6 +1731,7 @@ async function saveRecord() {
 
   const payload = {
     userId,
+    coopId: selectedCoopId,
     ...formData
   };
 
@@ -1527,29 +1800,30 @@ async function saveRecord() {
 
 
 async function deleteRecord(id) {
-  const userId =
-    getRecordUserId();
+  const userId = getRecordUserId();
 
   if (!userId) return;
 
-  const confirmed =
-    confirm(
-      "Are you sure you want to delete this record?"
-    );
+  if (!selectedCoopId) {
+    alert("No coop selected.");
+    return;
+  }
+
+  const confirmed = confirm(
+    "Are you sure you want to delete this record?"
+  );
 
   if (!confirmed) return;
 
   try {
-    const response =
-      await fetch(
-        `/api/records/${activeRecordTab}/${id}?userId=${userId}`,
-        {
-          method: "DELETE"
-        }
-      );
+    const response = await fetch(
+      `/api/records/${activeRecordTab}/${id}?userId=${userId}&coopId=${selectedCoopId}`,
+      {
+        method: "DELETE"
+      }
+    );
 
-    const result =
-      await response.json();
+    const result = await response.json();
 
     if (!response.ok || !result.success) {
       throw new Error(
@@ -1596,7 +1870,7 @@ function escapeRecordHTML(value) {
 
 document.addEventListener(
   "DOMContentLoaded",
-  function () {
+  async function () {
     const searchInput =
       document.getElementById(
         "recordSearchInput"
@@ -1616,6 +1890,9 @@ document.addEventListener(
       categoryFilter.onchange =
         renderActiveRecordTab;
     }
+
+    await loadActiveCoopOptions();
+    await loadRecordsPage();
 
     if (window.lucide) {
       lucide.createIcons();

@@ -328,141 +328,84 @@ router.get(
 router.put(
   "/set-active/:coopId",
   (req, res) => {
+    const { coopId } = req.params;
+    const { userId } = req.body;
 
-    console.log(
-      "===== SET ACTIVE ====="
-    );
-
-    console.log(
-      "Params:",
-      req.params
-    );
-
-    console.log(
-      "Body:",
-      req.body
-    );
-
-
-    const {
-      coopId
-    } = req.params;
-
-    const {
-      userId
-    } = req.body;
-
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required."
+      });
+    }
 
     db.query(
       `
         UPDATE coops
-        SET Status = 'inactive'
-        WHERE UserID = ?
+        SET Status = 'active'
+        WHERE CoopID = ?
+        AND UserID = ?
       `,
-      [
-        userId
-      ],
-      (err) => {
-
-        console.log(
-          "First update error:",
-          err
-        );
-
-
+      [coopId, userId],
+      (err, result) => {
         if (err) {
+          console.error(
+            "SET ACTIVE ERROR:",
+            err
+          );
 
-          return res.json({
+          return res.status(500).json({
             success: false,
-            message:
-              err.message
+            message: "Database Error"
           });
-
         }
 
+        if (result.affectedRows === 0) {
+          return res.status(404).json({
+            success: false,
+            message: "Coop not found."
+          });
+        }
 
-        db.query(
-          `
-            UPDATE coops
-            SET Status = 'active'
-            WHERE CoopID = ?
-          `,
-          [
-            coopId
-          ],
-          (err2) => {
-
-            console.log(
-              "Second update error:",
-              err2
-            );
-
-
-            if (err2) {
-
-              return res.json({
-                success: false,
-                message:
-                  err2.message
-              });
-
-            }
-
-
-            res.json({
-              success: true,
-              message:
-                "Active coop updated!"
-            });
-
-          }
-        );
-
+        return res.json({
+          success: true,
+          message: "Coop is now active."
+        });
       }
     );
-
   }
 );
-
 
 router.get(
   "/active/:userId",
   (req, res) => {
-
     db.query(
       `
         SELECT *
         FROM coops
         WHERE UserID = ?
         AND Status = 'active'
-        LIMIT 1
+        ORDER BY CoopID DESC
       `,
-      [
-        req.params.userId
-      ],
+      [req.params.userId],
       (err, results) => {
-
         if (err) {
+          console.error(
+            "GET ACTIVE COOPS ERROR:",
+            err
+          );
 
-          console.log(err);
-
-          return res.json({
+          return res.status(500).json({
             success: false,
-            coop: null
+            coops: []
           });
-
         }
 
-
-        res.json({
+        return res.json({
           success: true,
-          coop:
-            results[0] || null
+          coops: results
         });
-
       }
     );
-
   }
 );
 
@@ -509,7 +452,42 @@ router.put(
 
   }
 );
+router.get("/details/:coopId/:userId", (req, res) => {
+  const { coopId, userId } = req.params;
 
+  db.query(
+    `
+      SELECT *
+      FROM coops
+      WHERE CoopID = ?
+      AND UserID = ?
+      LIMIT 1
+    `,
+    [coopId, userId],
+    (err, results) => {
+      if (err) {
+        console.error("GET COOP DETAILS ERROR:", err);
+
+        return res.status(500).json({
+          success: false,
+          message: "Database Error"
+        });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Coop not found."
+        });
+      }
+
+      return res.json({
+        success: true,
+        coop: results[0]
+      });
+    }
+  );
+});
 
 router.delete(
   "/:coopId",
@@ -601,4 +579,3 @@ router.delete(
 
 
 module.exports = router;
-

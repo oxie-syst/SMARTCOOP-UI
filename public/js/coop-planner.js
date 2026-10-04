@@ -1321,6 +1321,145 @@ const hotspotPositions = {
     roof: "2.9970m 3.4778m 0m"
   }
 };
+
+const setupCostData = {
+  broiler: {
+    "1x1": {
+      construction: [
+          {
+            name: "Concrete Slab",
+            specification: "1.00m × 1.00m × 0.55m",
+            quantity: 1,
+            unit: "set",
+            unitPrice: 1000
+          },
+          {
+            name: "Wood Posts",
+            specification: "1.80m × 0.05m × 0.05m",
+            quantity: 5,
+            unit: "pcs",
+            unitPrice: 125
+          },
+          {
+            name: "Ridge Board",
+            specification: "1.54m × 0.05m × 0.05m",
+            quantity: 1,
+            unit: "pc",
+            unitPrice: 110
+          },
+          {
+            name: "Front / Back Wall Plate",
+            specification: "1.47m × 0.05m × 0.05m",
+            quantity: 2,
+            unit: "pcs",
+            unitPrice: 105
+          },
+          {
+            name: "Side Wall Plate",
+            specification: "1.00m × 0.05m × 0.05m",
+            quantity: 2,
+            unit: "pcs",
+            unitPrice: 80
+          },
+          {
+            name: "Roof Rafters",
+            specification: "Wood roof framing",
+            quantity: 4,
+            unit: "pcs",
+            unitPrice: 100
+          },
+          {
+            name: "Roof Sheet",
+            specification: "3ft × 9ft • 0.4mm • divided into 3",
+            quantity: 2,
+            unit: "sections",
+            unitPrice: 180
+          },
+          {
+            name: "Wire Mesh",
+            specification: "0.025m × 0.025m openings • 0.0016m wire",
+            quantity: 6,
+            unit: "m²",
+            unitPrice: 100
+          },
+          {
+            name: "Door",
+            specification: "1.52m × 0.70m × 0.05m",
+            quantity: 1,
+            unit: "set",
+            unitPrice: 450
+          }
+      ],
+
+      hardware: [
+        {
+          name: "Nails / Screws",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 150
+        },
+        {
+          name: "Door Hinges",
+          quantity: 2,
+          unit: "pcs",
+          unitPrice: 60
+        },
+        {
+          name: "Door Latch",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 100
+        }
+      ],
+
+      equipment: [
+        {
+          name: "Bell Waterer",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 300
+        },
+        {
+          name: "Brooder Lamp / Refractor",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 500
+        },
+        {
+          name: "Feeder",
+          quantity: 1,
+          unit: "set",
+          unitPrice: 160
+        }
+      ],
+
+      bedding: [
+        {
+          name: "Rice Hull",
+          specification: "For 0.90m × 0.90m × 0.075m bedding area",
+          quantity: 2,
+          unit: "sacks",
+          unitPrice: 100
+        }
+      ]
+    }
+  }
+};
+function calculateMaterialSubtotal(item) {
+  const quantity = Number(item.quantity || 0);
+  const unitPrice = Number(item.unitPrice || 0);
+
+  return quantity * unitPrice;
+}
+
+function calculateCategoryTotal(items = []) {
+  return items.reduce(
+    (total, item) =>
+      total + calculateMaterialSubtotal(item),
+    0
+  );
+}
+
 function populateSizeDropdown() {
   const sizeSelect = document.getElementById("coopSize");
 
@@ -1616,50 +1755,56 @@ try {
     return;
   }
 
-  const chickens =
-    selectedCoop.capacity;
+const chickens =
+  selectedCoop.capacity;
 
-  const coopCost =
-    selectedCoop.cost;
+const costData =
+  setupCostData.broiler?.[sizeKey];
 
-  const chickenCost =
-    chickens * chickPrice;
+// Detailed costing is currently available for 1x1 Broiler
+let constructionTotal = 0;
+let hardwareTotal = 0;
+let equipmentTotal = 0;
+let beddingTotal = 0;
 
-  const total =
-    coopCost + chickenCost;
-
-  const spacePerChicken =
-    area / chickens;
-
-  const construction =
-    Math.round(
-      coopCost * 0.55
+if (costData) {
+  constructionTotal =
+    calculateCategoryTotal(
+      costData.construction
     );
 
-  const feeders =
-    Math.round(
-      coopCost * 0.10
+  hardwareTotal =
+    calculateCategoryTotal(
+      costData.hardware
     );
 
-  const waterers =
-    Math.round(
-      coopCost * 0.08
+  equipmentTotal =
+    calculateCategoryTotal(
+      costData.equipment
     );
 
-  const perches =
-    Math.round(
-      coopCost * 0.07
+  beddingTotal =
+    calculateCategoryTotal(
+      costData.bedding
     );
+}
 
-  const lighting =
-    Math.round(
-      coopCost * 0.08
-    );
+const coopCost =
+  costData
+    ? constructionTotal +
+      hardwareTotal +
+      equipmentTotal +
+      beddingTotal
+    : selectedCoop.cost;
 
-  const ventilation =
-    Math.round(
-      coopCost * 0.12
-    );
+const chickenCost =
+  chickens * chickPrice;
+
+const total =
+  coopCost + chickenCost;
+
+const spacePerChicken =
+  area / chickens;
 
   const previewBox =
     document.querySelector(
@@ -2048,66 +2193,125 @@ try {
       "Based on recommended coop capacity";
   }
 
-  const costTableBody =
-    document.getElementById(
-      "costTableBody"
-    );
+if (costTableBody) {
+  if (costData) {
+const createMaterialRows = (title, items, categoryTotal) => {
+  const rows = items
+    .map(item => {
+      const subtotal =
+        calculateMaterialSubtotal(item);
 
-  if (costTableBody) {
+      return `
+        <tr class="cost-item-row">
+          <td class="cost-item-name">
+            <strong>${item.name}</strong>
+            ${
+              item.specification
+                ? `<small>${item.specification}</small>`
+                : ""
+            }
+          </td>
+
+          <td class="cost-qty">
+            ${item.quantity} ${item.unit}
+          </td>
+
+          <td class="cost-unit-price">
+            ₱${item.unitPrice.toLocaleString()}
+          </td>
+
+          <td class="cost-item-subtotal">
+            ₱${subtotal.toLocaleString()}
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  return `
+    <tr class="cost-category-row">
+      <td colspan="4">
+        <strong>${title}</strong>
+      </td>
+    </tr>
+
+    ${rows}
+
+    <tr class="cost-subtotal-row">
+      <td colspan="3">
+        <strong>${title} Subtotal</strong>
+      </td>
+
+      <td>
+        <strong>
+          ₱${categoryTotal.toLocaleString()}
+        </strong>
+      </td>
+    </tr>
+  `;
+};
+
+    costTableBody.innerHTML = `
+      ${createMaterialRows(
+        "Coop Construction",
+        costData.construction,
+        constructionTotal
+      )}
+
+      ${createMaterialRows(
+        "Hardware",
+        costData.hardware,
+        hardwareTotal
+      )}
+
+      ${createMaterialRows(
+        "Equipment",
+        costData.equipment,
+        equipmentTotal
+      )}
+
+      ${createMaterialRows(
+        "Bedding",
+        costData.bedding,
+        beddingTotal
+      )}
+
+      <tr class="cost-category-row">
+        <td colspan="4">
+          <strong>Livestock</strong>
+        </td>
+      </tr>
+
+      <tr class="cost-item-row">
+        <td class="cost-item-name">
+          <strong>Broiler Chicks</strong>
+          <small>
+            Recommended capacity for ${sizeKey} coop
+          </small>
+        </td>
+
+        <td class="cost-qty">
+          ${chickens} chicks
+        </td>
+
+        <td class="cost-unit-price">
+          ₱${chickPrice.toLocaleString()}
+        </td>
+
+        <td class="cost-item-subtotal">
+          ₱${chickenCost.toLocaleString()}
+        </td>
+      </tr>
+    `;
+  } else {
     costTableBody.innerHTML = `
       <tr>
         <td>
-          Coop Construction
+          Coop Construction & Equipment
         </td>
 
         <td>
-          ₱${construction.toLocaleString()}
-        </td>
-      </tr>
-
-      <tr>
-        <td>Feeders</td>
-
-        <td>
-          ₱${feeders.toLocaleString()}
-        </td>
-      </tr>
-
-      <tr>
-        <td>Waterers</td>
-
-        <td>
-          ₱${waterers.toLocaleString()}
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Perches & Interior Setup
-        </td>
-
-        <td>
-          ₱${perches.toLocaleString()}
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Lighting System
-        </td>
-
-        <td>
-          ₱${lighting.toLocaleString()}
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          Ventilation System
-        </td>
-
-        <td>
-          ₱${ventilation.toLocaleString()}
+          ₱${coopCost.toLocaleString()}
         </td>
       </tr>
 
@@ -2122,6 +2326,7 @@ try {
       </tr>
     `;
   }
+}
 
   const totalCost =
     document.getElementById(
@@ -2679,6 +2884,31 @@ async function deletePlan(id) {
 document.addEventListener("DOMContentLoaded", function () {
   populateSizeDropdown();
   loadPlans();
+
+  const params = new URLSearchParams(window.location.search);
+  const recommendedType = (params.get("type") || "").toLowerCase();
+
+  const typeSelect = document.getElementById("type");
+
+if (typeSelect && recommendedType) {
+  if (
+    recommendedType.includes("meat") ||
+    recommendedType.includes("broiler")
+  ) {
+    typeSelect.value = "Broilers";
+  }
+  else if (
+    recommendedType.includes("egg") ||
+    recommendedType.includes("layer")
+  ) {
+    typeSelect.value = "Layers (Egg Production)";
+  }
+  else if (
+    recommendedType.includes("dual")
+  ) {
+    typeSelect.value = "Dual Purpose";
+  }
+}
 
   if (window.lucide) {
     lucide.createIcons();
