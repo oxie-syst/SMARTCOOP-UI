@@ -485,7 +485,7 @@ const coopData = {
   }
 };
 
-const materialSizes = {
+const broilerMaterialSizes = {
   "1x1": {
     concrete: {
       name:
@@ -1230,7 +1230,147 @@ const materialSizes = {
   }
 };
 
-const hotspotPositions = {
+const dualPurposeMaterialSizes = {
+  "1x1": {
+    concrete: {
+      name: "Concrete Slab",
+      size: "1.00m × 1.00m",
+      height: "0.55m"
+    },
+
+    posts: {
+      name: "Wood Posts",
+      size: "1.80m × 0.05m × 0.05m"
+    },
+
+    ridgeBoard: {
+      name: "Ridge Board",
+      size: "1.54m × 0.05m × 0.05m"
+    },
+
+    frontBackPlate: {
+      name: "Front / Back Wall Plate",
+      size: "1.47m × 0.05m × 0.05m"
+    },
+
+    sidePlate: {
+      name: "Side Wall Plate",
+      size: "1.00m × 0.05m × 0.05m"
+    },
+
+    door: {
+      name: "Door",
+      size: "1.52m × 0.70m × 0.05m"
+    },
+
+    riceHull: {
+      name: "Rice Hull Area",
+      size: "0.90m × 0.90m × 0.075m"
+    },
+
+    roof: {
+      name: "Roof Sheet",
+      size: "3ft × 9ft • divided into 3",
+      thickness: "0.4mm"
+    },
+
+    wireMesh: {
+      name: "Wire Mesh",
+      specification: "0.025m × 0.025m openings • 0.0016m wire"
+    },
+
+    waterer: {
+      name: "Bell Waterer",
+      size: "Approx. 0.20m diameter"
+    },
+
+    brooderLamp: {
+      name: "Brooder Lamp / Refractor",
+      size: "Approx. 0.45m × 0.29m × 0.79m assembly"
+    },
+
+    nestingBox: {
+      name: "Nesting Box",
+      size: "Approx. 0.38m × 0.38m × 0.47m"
+    },
+
+    perch: {
+      name: "Perch",
+      size: "0.36m × 0.04m × 0.04m"
+    }
+  },
+  "2x2": {
+  concrete: {
+    name: "Concrete Slab",
+    size: "2.00m × 2.00m",
+    height: "0.55m"
+  },
+
+  posts: {
+    name: "Wood Posts",
+    size: "1.80m × 0.05m × 0.05m"
+  },
+
+  ridgeBoard: {
+    name: "Ridge Board",
+    size: "2.37m × 0.05m × 0.05m"
+  },
+
+  frontBackPlate: {
+    name: "Front / Back Wall Plate",
+    size: "2.00m × 0.05m × 0.05m"
+  },
+
+  sidePlate: {
+    name: "Side Wall Plate",
+    size: "1.99m × 0.05m × 0.05m"
+  },
+
+  door: {
+    name: "Door",
+    size: "1.52m × 0.70m × 0.05m"
+  },
+
+  riceHull: {
+    name: "Rice Hull Area",
+    size: "1.89m × 1.80m × 0.075m"
+  },
+
+  roof: {
+    name: "Roof Sheet",
+    size: "0.9m × 6m • divided into 4",
+    thickness: "0.4mm"
+  },
+
+  wireMesh: {
+    name: "Wire Mesh",
+    specification:
+      "0.025m × 0.025m openings • 0.0016m wire"
+  },
+
+  waterer: {
+    name: "Bell Waterer",
+    size: "Approx. 0.20m diameter"
+  },
+
+  brooderLamp: {
+    name: "Brooder Lamp / Refractor",
+    size: "Approx. 0.45m × 0.29m × 0.79m assembly"
+  },
+
+  nestingBox: {
+    name: "Nesting Box",
+    size: "Approx. 0.38m × 0.38m × 0.47m"
+  },
+
+  perch: {
+    name: "Perch",
+    size: "Approx. 0.68m × 0.04m × 0.04m"
+  }
+}
+};
+
+const broilerHotspotPositions = {
   "1x1": {
     concrete: "-0.45m 0.18m 0.35m",
     post: "-0.47m 1.05m 0.45m",
@@ -1322,6 +1462,32 @@ const hotspotPositions = {
   }
 };
 
+const dualPurposeHotspotPositions = {
+  "1x1": {
+    concrete: "0m 0.225m 0m",
+    post: "-0.4732m 0.850m -0.4749m",
+    door: "0.4750m 0.8871m 0.0984m",
+    mesh: "-0.4760m 1.1513m -0.0005m",
+    riceHull: "0m 0.0875m 0.0046m",
+    roof: "0.4046m 1.8586m 0.0008m",
+    nestingBox: "-0.2590m 0.7401m -0.2780m",
+    perch: "-0.2603m 0.5700m 0.1800m",
+    waterer: "0.2272m 0.2890m 0.2181m",
+    brooderLamp: "0m 1.5285m -0.0019m"
+  },
+"2x2": {
+    concrete: "0m 0.225m 0m",
+    post: "-0.4732m 0.850m -0.4749m",
+    door: "0.4750m 0.8871m 0.0984m",
+    mesh: "-0.4760m 1.1513m -0.0005m",
+    riceHull: "0m 0.0875m 0.0046m",
+    roof: "0.4046m 1.8586m 0.0008m",
+    nestingBox: "-0.2590m 0.7401m -0.2780m",
+    perch: "-0.2603m 0.5700m 0.1800m",
+    waterer: "0.2272m 0.2890m 0.2181m",
+    brooderLamp: "0m 1.5285m -0.0019m"
+}
+};
 const setupCostData = {
   broiler: {
     "1x1": {
@@ -1445,6 +1611,219 @@ const setupCostData = {
     }
   }
 };
+
+const broilerCostConfig = {
+  "2x2":  { posts: 6,  rafters: 6,  roof: 4,  mesh: 12,  waterers: 1, lamps: 1, feeders: 1, riceHull: 5 },
+  "3x3":  { posts: 8,  rafters: 8,  roof: 6,  mesh: 18,  waterers: 2, lamps: 2, feeders: 2, riceHull: 10 },
+  "4x4":  { posts: 10, rafters: 10, roof: 8,  mesh: 24,  waterers: 2, lamps: 2, feeders: 2, riceHull: 18 },
+  "5x5":  { posts: 12, rafters: 12, roof: 10, mesh: 30,  waterers: 3, lamps: 3, feeders: 3, riceHull: 28 },
+  "6x6":  { posts: 14, rafters: 14, roof: 12, mesh: 36,  waterers: 4, lamps: 4, feeders: 4, riceHull: 40 },
+  "7x7":  { posts: 16, rafters: 16, roof: 14, mesh: 42,  waterers: 5, lamps: 5, feeders: 5, riceHull: 54 },
+  "8x8":  { posts: 18, rafters: 18, roof: 16, mesh: 48,  waterers: 6, lamps: 6, feeders: 6, riceHull: 70 },
+  "9x9":  { posts: 20, rafters: 20, roof: 18, mesh: 54,  waterers: 7, lamps: 7, feeders: 7, riceHull: 88 },
+  "10x10": { posts: 22, rafters: 22, roof: 20, mesh: 60, waterers: 8, lamps: 8, feeders: 8, riceHull: 108 }
+};
+
+
+function buildBroilerSetupCost(sizeKey) {
+
+  const materials = broilerMaterialSizes[sizeKey];
+  const config = broilerCostConfig[sizeKey];
+
+  if (!materials || !config) {
+    return null;
+  }
+
+  const sizeNumber =
+    Number(sizeKey.split("x")[0]);
+
+  const area =
+    sizeNumber * sizeNumber;
+
+
+  return {
+
+    construction: [
+
+      {
+        name: "Concrete Slab",
+        specification:
+          `${materials.concrete.size} × ${materials.concrete.height}`,
+        quantity: area,
+        unit: "m²",
+        unitPrice: 1000
+      },
+
+      {
+        name: "Wood Posts",
+        specification:
+          materials.posts.size,
+        quantity: config.posts,
+        unit: "pcs",
+        unitPrice:
+          sizeNumber >= 9 ? 220 :
+          sizeNumber >= 5 ? 180 : 125
+      },
+
+      {
+        name: "Ridge Board",
+        specification:
+          materials.ridgeBoard.size,
+        quantity: 1,
+        unit: "pc",
+        unitPrice:
+          Math.round(110 * sizeNumber)
+      },
+
+      {
+        name: "Front / Back Wall Plate",
+        specification:
+          materials.frontBackPlate.size,
+        quantity: 2,
+        unit: "pcs",
+        unitPrice:
+          Math.round(105 * sizeNumber)
+      },
+
+      {
+        name: "Side Wall Plate",
+        specification:
+          materials.sidePlate.size,
+        quantity: 2,
+        unit: "pcs",
+        unitPrice:
+          Math.round(80 * sizeNumber)
+      },
+
+      {
+        name: "Roof Rafters",
+        specification:
+          "Wood roof framing",
+        quantity: config.rafters,
+        unit: "pcs",
+        unitPrice: 130
+      },
+
+      {
+        name: "Roof Sheet",
+        specification:
+          `${materials.roof.size} • ${materials.roof.thickness}`,
+        quantity: config.roof,
+        unit: "sheets",
+        unitPrice: 535
+      },
+
+      {
+        name: "Wire Mesh",
+        specification:
+          materials.wireMesh.specification,
+        quantity: config.mesh,
+        unit: "m²",
+        unitPrice: 135
+      },
+
+      {
+        name: "Door",
+        specification:
+          materials.door.size,
+        quantity: 1,
+        unit: "set",
+        unitPrice: 600
+      }
+
+    ],
+
+
+    hardware: [
+
+      {
+        name: "Nails / Screws",
+        quantity:
+          Math.max(
+            1,
+            Math.ceil(area / 10)
+          ),
+        unit: "kg",
+        unitPrice: 100
+      },
+
+      {
+        name: "Door Hinges",
+        quantity: 2,
+        unit: "pcs",
+        unitPrice: 60
+      },
+
+      {
+        name: "Door Latch",
+        quantity: 1,
+        unit: "set",
+        unitPrice: 100
+      }
+
+    ],
+
+
+    equipment: [
+
+      {
+        name: "Bell Waterer",
+        specification:
+          materials.waterer.size,
+        quantity:
+          config.waterers,
+        unit: "set",
+        unitPrice: 300
+      },
+
+      {
+        name: "Brooder Lamp / Refractor",
+        specification:
+          materials.brooderLamp.size,
+        quantity:
+          config.lamps,
+        unit: "set",
+        unitPrice: 500
+      },
+
+      {
+        name: "Feeder",
+        quantity:
+          config.feeders,
+        unit: "set",
+        unitPrice: 160
+      }
+
+    ],
+
+
+    bedding: [
+
+      {
+        name: "Rice Hull",
+        specification:
+          `For ${materials.riceHull.size} bedding area`,
+        quantity:
+          config.riceHull,
+        unit: "sacks",
+        unitPrice: 100
+      }
+
+    ]
+
+  };
+
+}
+
+Object.keys(broilerCostConfig)
+  .forEach(sizeKey => {
+
+    setupCostData.broiler[sizeKey] =
+      buildBroilerSetupCost(sizeKey);
+
+  });
+
+
 function calculateMaterialSubtotal(item) {
   const quantity = Number(item.quantity || 0);
   const unitPrice = Number(item.unitPrice || 0);
@@ -1820,7 +2199,7 @@ const spacePerChicken =
 
       "Layers (Egg Production)": {
         folder: "Layers",
-        name: "Layer"
+        name: "Layers"
       },
 
       "Dual Purpose": {
@@ -1836,11 +2215,24 @@ const spacePerChicken =
       const modelPath =
         `${typeData.folder}/${sizeKey} ${typeData.name}.glb`;
 
-      const materials =
-        materialSizes[sizeKey];
+let materials = null;
+let positions = null;
 
-      const positions =
-        hotspotPositions[sizeKey];
+if (type === "Broilers") {
+  materials =
+    broilerMaterialSizes[sizeKey];
+
+  positions =
+    broilerHotspotPositions[sizeKey];
+}
+
+else if (type === "Dual Purpose") {
+  materials =
+    dualPurposeMaterialSizes[sizeKey];
+
+  positions =
+    dualPurposeHotspotPositions[sizeKey];
+}
 
       previewBox.innerHTML = `
         <div class="model-view-controls">
@@ -1986,6 +2378,78 @@ const spacePerChicken =
               </span>
             </span>
           </button>
+
+          ${
+  materials.nestingBox && positions.nestingBox
+    ? `
+      <button
+        class="model-hotspot material-marker nesting-marker"
+        slot="hotspot-nestingbox"
+        data-position="${positions.nestingBox}"
+        data-normal="0m 1m 0m"
+      >
+        <span class="hotspot-label">
+          <strong>${materials.nestingBox.name}</strong>
+          <span>${materials.nestingBox.size}</span>
+        </span>
+      </button>
+    `
+    : ""
+}
+
+${
+  materials.perch && positions.perch
+    ? `
+      <button
+        class="model-hotspot material-marker perch-marker"
+        slot="hotspot-perch"
+        data-position="${positions.perch}"
+        data-normal="0m 1m 0m"
+      >
+        <span class="hotspot-label">
+          <strong>${materials.perch.name}</strong>
+          <span>${materials.perch.size}</span>
+        </span>
+      </button>
+    `
+    : ""
+}
+
+${
+  materials.waterer && positions.waterer
+    ? `
+      <button
+        class="model-hotspot material-marker waterer-marker"
+        slot="hotspot-waterer"
+        data-position="${positions.waterer}"
+        data-normal="0m 1m 0m"
+      >
+        <span class="hotspot-label">
+          <strong>${materials.waterer.name}</strong>
+          <span>${materials.waterer.size}</span>
+        </span>
+      </button>
+    `
+    : ""
+}
+
+${
+  materials.brooderLamp && positions.brooderLamp
+    ? `
+      <button
+        class="model-hotspot material-marker lamp-marker"
+        slot="hotspot-brooderlamp"
+        data-position="${positions.brooderLamp}"
+        data-normal="0m 1m 0m"
+      >
+        <span class="hotspot-label">
+          <strong>${materials.brooderLamp.name}</strong>
+          <span>${materials.brooderLamp.size}</span>
+        </span>
+      </button>
+    `
+    : ""
+}
           `
               : ""
           }
@@ -2745,7 +3209,7 @@ function viewPlan(id) {
 
     "Layers (Egg Production)": {
       folder: "Layers",
-      name: "Layer"
+      name: "Layers"
     },
 
     "Dual Purpose": {

@@ -54,6 +54,7 @@ function hideSignupError() {
   errorBox.classList.add("hidden");
 }
 
+
 async function loginUser(email, password) {
   const response = await fetch("/api/auth/login", {
     method: "POST",
@@ -180,6 +181,25 @@ function setupSignupPage() {
       document.getElementById("signupBtn");
 
     hideSignupError();
+
+    if (!/^09\d{9}$/.test(phoneNumber)) {
+      showSignupError(
+        "Phone number must be exactly 11 digits and start with 09."
+      );
+      return;
+    }
+
+    const invalidPhoneNumbers = [
+      "09123456789",
+      "09876543210"
+    ];
+
+    if (invalidPhoneNumbers.includes(phoneNumber)) {
+      showSignupError(
+        "Please enter a valid phone number."
+      );
+      return;
+    }
 
     if (password !== confirmPassword) {
       showSignupError("Passwords do not match.");

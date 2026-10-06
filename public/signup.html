@@ -96,13 +96,17 @@
             Phone Number
           </label>
 
-          <input
-            id="phoneNumber"
-            type="tel"
-            placeholder="Enter your phone number"
-            autocomplete="tel"
-            required>
-
+            <input
+              id="phoneNumber"
+              type="tel"
+              placeholder="09XXXXXXXXX"
+              autocomplete="tel"
+              inputmode="numeric"
+              maxlength="11"
+              pattern="09[0-9]{9}"
+              title="Phone number must be exactly 11 digits and start with 09."
+              oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)"
+              required>
         </div>
 
 

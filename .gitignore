@@ -6,3 +6,4 @@ node_modules/
 
 public/Broilers/10x10 Broiler.glb
 public/Dual Purpose/10x10 Dual Purpose.glb
+public/Layers/*.glb

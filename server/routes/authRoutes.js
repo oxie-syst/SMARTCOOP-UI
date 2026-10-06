@@ -33,15 +33,36 @@ router.post("/signup", async (req, res) => {
     phoneNumber
   } = req.body;
 
-  if (!fullName || !email || !password) {
-    return res.status(400).json({
-      success: false,
-      message: "Please complete all required fields."
-    });
-  }
+    if (!fullName || !email || !password || !phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "Please complete all required fields."
+      });
+    }
 
-  db.query(
-    "SELECT UserID FROM users WHERE Email = ?",
+    if (!/^09\d{9}$/.test(phoneNumber)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Phone number must be exactly 11 digits and start with 09."
+      });
+    }
+    const invalidPhoneNumbers = [
+      "09123456789",
+      "09876543210"
+    ];
+
+    if (invalidPhoneNumbers.includes(phoneNumber)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Please enter a valid phone number."
+      });
+    }
+
+
+    db.query(
+      "SELECT UserID FROM users WHERE Email = ?",
     [email],
     async (err, result) => {
       if (err) {
