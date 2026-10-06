@@ -2212,14 +2212,14 @@ const spacePerChicken =
       modelFolders[type];
 
     if (typeData) {
-let modelPath =
-  `${typeData.folder}/${sizeKey} ${typeData.name}.glb`;
+const blobBaseURL =
+  "https://hryetl1inpkpkg3j.public.blob.vercel-storage.com";
 
-if (type === "Broilers" && sizeKey === "1x1") {
-  modelPath =
-    "https://hryetl1inpkpkg3j.public.blob.vercel-storage.com/1x1%20Broiler.glb";
-}
-
+const modelPath =
+  `${blobBaseURL}/${encodeURIComponent(
+    `${sizeKey} ${typeData.name}.glb`
+  )}`;
+  
 let materials = null;
 let positions = null;
 
@@ -3229,16 +3229,13 @@ function viewPlan(id) {
     ];
 
   if (typeData) {
-let modelPath =
-  `${typeData.folder}/${sizeKey} ${typeData.name}.glb`;
+const blobBaseURL =
+  "https://hryetl1inpkpkg3j.public.blob.vercel-storage.com";
 
-if (
-  plan.ChickenType === "Broilers" &&
-  sizeKey === "1x1"
-) {
-  modelPath =
-    "https://hryetl1inpkpkg3j.public.blob.vercel-storage.com/1x1%20Broiler.glb";
-}
+const modelPath =
+  `${blobBaseURL}/${encodeURIComponent(
+    `${sizeKey} ${typeData.name}.glb`
+  )}`;
 
     modelContainer.innerHTML = `
       <model-viewer
