@@ -17,6 +17,40 @@ let selectedCoopId =
 
 let selectedCoop = null;
 
+function isBroilerCoop() {
+  const chickenType =
+    String(selectedCoop?.ChickenType || "")
+      .trim()
+      .toLowerCase();
+
+  return chickenType.includes("broiler");
+}
+function updateRecordFeaturesByChickenType() {
+  const broiler = isBroilerCoop();
+
+  const eggCard =
+    document.getElementById("recordEggStatCard");
+
+  const eggTab =
+    document.getElementById("recordEggTab");
+
+  if (eggCard) {
+    eggCard.style.display =
+      broiler ? "none" : "";
+  }
+
+  if (eggTab) {
+    eggTab.style.display =
+      broiler ? "none" : "";
+  }
+
+  if (
+    broiler &&
+    activeRecordTab === "eggs"
+  ) {
+    activeRecordTab = "expenses";
+  }
+}
 function getRecordUserId() {
   const storedUser =
     localStorage.getItem("user") ||
@@ -192,15 +226,17 @@ async function loadRecordsPage() {
   return;
 }
 
-  const coop = await loadSelectedCoop();
+const coop = await loadSelectedCoop();
 
-  if (!coop) {
-    alert("Unable to load the selected coop.");
-    window.location.href = "coop-planner.html";
-    return;
-  }
+if (!coop) {
+  alert("Unable to load the selected coop.");
+  window.location.href = "coop-planner.html";
+  return;
+}
 
-  try {
+updateRecordFeaturesByChickenType();
+
+try {
     const response = await fetch(
       `/api/records/user/${userId}/coop/${selectedCoopId}`
     );
@@ -386,6 +422,9 @@ function updateRecordStats() {
 
 
 function switchRecordTab(tab) {
+   if (tab === "eggs" && isBroilerCoop()) {
+    return;
+  }
   activeRecordTab = tab;
 
   document
@@ -988,6 +1027,13 @@ function updateRecordEmptyState() {
 
 
 function openRecordModal() {
+  if (
+    activeRecordTab === "eggs" &&
+    isBroilerCoop()
+  ) {
+    return;
+  }
+
   editRecordId = null;
 
   buildRecordForm();

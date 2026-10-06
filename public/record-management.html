@@ -231,11 +231,14 @@
         </article>
 
 
-        <article class="records-stat-card">
+          <article
+            class="records-stat-card"
+            id="recordEggStatCard"
+          >
 
-          <div class="records-stat-top">
+            <div class="records-stat-top">
 
-            <div class="records-stat-icon eggs">
+              <div class="records-stat-icon eggs">
               <i data-lucide="egg"></i>
             </div>
 
@@ -344,7 +347,9 @@
 
         </button>
 
-        <button onclick="switchRecordTab('eggs')">
+        <button
+          id="recordEggTab" 
+          onclick="switchRecordTab('eggs')">
           <i data-lucide="egg"></i>
           Egg Collection
         </button>
