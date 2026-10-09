@@ -492,28 +492,26 @@
 
               <div class="settings-field">
 
-                <label for="settingsFarmSize">
-                  Farm Size
-                </label>
+            <div class="settings-field">
+              <label for="settingsFarmSize">
+                Available Farm Space
+              </label>
 
-                <div class="settings-input-wrap">
+              <div class="settings-input-wrap">
+                <i data-lucide="maximize"></i>
 
-                  <i data-lucide="maximize"></i>
+                <input
+                  id="settingsFarmSize"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="Example: 25">
 
-                  <input
-                    id="settingsFarmSize"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="Example: 0.5">
-
-                  <span class="settings-input-suffix">
-                    hectares
-                  </span>
-
-                </div>
-
+                <span class="settings-input-suffix">
+                  m²
+                </span>
               </div>
+            </div>
 
             </div>
 

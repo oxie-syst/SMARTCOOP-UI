@@ -25,6 +25,53 @@ function isBroilerCoop() {
 
   return chickenType.includes("broiler");
 }
+
+function requiresActiveChickens() {
+  return ["eggs", "mortality", "meat"].includes(activeRecordTab);
+}
+
+
+function getTotalUsedChickens() {
+  const totalDeaths = (recordData.mortality || []).reduce(
+    (total, item) => total + (Number(item.deaths) || 0),
+    0
+  );
+
+  const totalHarvested = (recordData.meat || []).reduce(
+    (total, item) => total + (Number(item.birdsCount) || 0),
+    0
+  );
+
+  return totalDeaths + totalHarvested;
+}
+
+function getTotalInventoryChickens() {
+  return (recordData.chicken || []).reduce(
+    (total, item) => total + (Number(item.quantity) || 0),
+    0
+  );
+}
+
+
+function getActiveChickenCount() {
+  const totalChickens = (recordData.chicken || []).reduce(
+    (total, item) => total + (Number(item.quantity) || 0),
+    0
+  );
+
+  const totalDeaths = (recordData.mortality || []).reduce(
+    (total, item) => total + (Number(item.deaths) || 0),
+    0
+  );
+
+  const totalHarvested = (recordData.meat || []).reduce(
+    (total, item) => total + (Number(item.birdsCount) || 0),
+    0
+  );
+
+  return Math.max(0, totalChickens - totalDeaths - totalHarvested);
+}
+
 function updateRecordFeaturesByChickenType() {
   const broiler = isBroilerCoop();
 
@@ -391,10 +438,10 @@ function updateRecordStats() {
     }`
   );
 
-  setRecordText(
-    "recordTotalChickens",
-    totalChickens.toLocaleString()
-  );
+setRecordText(
+  "recordTotalChickens",
+  getActiveChickenCount().toLocaleString()
+);
 
   setRecordText(
     "recordChickenCount",
@@ -758,16 +805,12 @@ function loadChickenRecords() {
     </tr>
   `);
 
-  setRecordText(
-    "runningTotal",
-    `Total Active Chickens: ${recordData.chicken
-      .reduce(
-        (sum, item) =>
-          sum + item.quantity,
-        0
-      )
-      .toLocaleString()} heads`
-  );
+
+setRecordText(
+  "runningTotal",
+  `Total Active Chickens: ${getActiveChickenCount().toLocaleString()} heads`
+);
+
 
   renderTableRows(
     recordData.chicken.map(item => `
@@ -1026,11 +1069,16 @@ function updateRecordEmptyState() {
 }
 
 
+
 function openRecordModal() {
-  if (
-    activeRecordTab === "eggs" &&
-    isBroilerCoop()
-  ) {
+  if (activeRecordTab === "eggs" && isBroilerCoop()) {
+    return;
+  }
+
+  if (requiresActiveChickens() && getActiveChickenCount() <= 0) {
+    alert(
+      "Cannot add record. There are no active chickens in this coop. Please add chickens first."
+    );
     return;
   }
 
@@ -1038,13 +1086,13 @@ function openRecordModal() {
 
   buildRecordForm();
 
-  const modal =
-    document.getElementById("recordModal");
+  const modal = document.getElementById("recordModal");
 
   if (modal) {
     modal.classList.remove("hidden");
   }
 }
+
 
 
 function closeRecordModal() {
@@ -1770,6 +1818,90 @@ async function saveRecord() {
   const formData =
     getRecordFormData();
 
+    
+
+if (requiresActiveChickens()) {
+  const activeChickens = getActiveChickenCount();
+
+  const originalRecord = editRecordId
+    ? (recordData[activeRecordTab] || []).find(
+        item => Number(item.id) === Number(editRecordId)
+      )
+    : null;
+
+  const availableChickens =
+    activeChickens +
+    (activeRecordTab === "mortality"
+      ? Number(originalRecord?.deaths || 0)
+      : activeRecordTab === "meat"
+        ? Number(originalRecord?.birdsCount || 0)
+        : 0);
+
+  if (activeRecordTab === "eggs" && activeChickens <= 0 && !editRecordId) {
+    alert("Cannot save egg record. No active chickens available.");
+    return;
+  }
+
+      if (
+        activeRecordTab === "mortality" &&
+        (
+          !Number.isInteger(formData.deaths) ||
+          formData.deaths <= 0 ||
+          formData.deaths > availableChickens
+        )
+      ) {
+        alert(`Mortality must be between 1 and ${availableChickens} chickens.`);
+        return;
+      }
+
+  if (activeRecordTab === "meat" &&
+      (!Number.isInteger(formData.birdsCount) ||
+       formData.birdsCount <= 0 ||
+       formData.birdsCount > availableChickens)) {
+    alert(`Harvest must be between 1 and ${availableChickens} chickens.`);
+    return;
+  }
+}
+
+if (activeRecordTab === "eggs") {
+  if (!Number.isInteger(formData.eggs) || formData.eggs <= 0) {
+    alert("Number of eggs must be a positive whole number.");
+    return;
+  }
+}
+
+if (activeRecordTab === "chicken") {
+  const quantity = formData.quantity;
+
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    alert("Chicken quantity must be a positive whole number.");
+    return;
+  }
+
+  const originalRecord = editRecordId
+    ? recordData.chicken.find(
+        item => Number(item.id) === Number(editRecordId)
+      )
+    : null;
+
+  if (editRecordId && !originalRecord) {
+    alert("Chicken record not found. Please refresh the page.");
+    return;
+  }
+
+  const originalQuantity = Number(originalRecord?.quantity || 0);
+
+  const updatedTotal =
+    getTotalInventoryChickens() - originalQuantity + quantity;
+
+  if (updatedTotal < getTotalUsedChickens()) {
+    alert(
+      `Cannot update chicken inventory. ${getTotalUsedChickens()} chickens are already recorded as dead or harvested.`
+    );
+    return;
+  }
+}
+
   if (!formData.date) {
     alert("Please select a date.");
     return;
@@ -1854,6 +1986,27 @@ async function deleteRecord(id) {
     alert("No coop selected.");
     return;
   }
+  
+if (activeRecordTab === "chicken") {
+  const chickenRecord = recordData.chicken.find(
+    item => Number(item.id) === Number(id)
+  );
+
+  if (!chickenRecord) {
+    alert("Chicken record not found. Please refresh the page.");
+    return;
+  }
+
+  const remainingInventory =
+    getTotalInventoryChickens() - Number(chickenRecord.quantity);
+
+  if (remainingInventory < getTotalUsedChickens()) {
+    alert(
+      `Cannot delete this chicken record. ${getTotalUsedChickens()} chickens are already recorded as dead or harvested.`
+    );
+    return;
+  }
+}
 
   const confirmed = confirm(
     "Are you sure you want to delete this record?"
@@ -1981,7 +2134,7 @@ function showRecordUpgradePopup(message) {
 
       <h2>Free Limit Reached</h2>
 
-      <p>${message}</p>
+      <p>${escapeRecordHTML(message)}</p>
 
       <div class="upgrade-actions">
 

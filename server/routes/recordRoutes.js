@@ -3,6 +3,53 @@ const router = express.Router();
 const db = require("../db");
 
 const FREE_RECORD_LIMIT = 10;
+function getCoopChickenStock(userId, coopId, callback) {
+  const sql = `
+    SELECT
+      COALESCE((
+        SELECT SUM(Quantity)
+        FROM chicken_records
+        WHERE UserID = ? AND CoopID = ?
+      ), 0) AS totalInventory,
+
+      COALESCE((
+        SELECT SUM(DeathCount)
+        FROM mortality_records
+        WHERE UserID = ? AND CoopID = ?
+      ), 0) AS totalDeaths,
+
+      COALESCE((
+        SELECT SUM(BirdsCount)
+        FROM meat_records
+        WHERE UserID = ? AND CoopID = ?
+      ), 0) AS totalHarvested
+  `;
+
+  db.query(
+    sql,
+    [userId, coopId, userId, coopId, userId, coopId],
+    (error, results) => {
+      if (error) {
+        return callback(error);
+      }
+
+      const stock = results[0];
+
+      const totalInventory = Number(stock.totalInventory) || 0;
+      const totalDeaths = Number(stock.totalDeaths) || 0;
+      const totalHarvested = Number(stock.totalHarvested) || 0;
+
+      callback(null, {
+        totalInventory,
+        totalDeaths,
+        totalHarvested,
+        totalUsed: totalDeaths + totalHarvested,
+        activeChickens:
+          totalInventory - totalDeaths - totalHarvested
+      });
+    }
+  );
+}
 
 const recordConfig = {
   expenses: {
@@ -593,10 +640,70 @@ const {
         );
       };
 
-      if (isPremium) {
-        continueAddRecord();
-        return;
-      }
+const validateAndAddRecord = () => {
+  if (type === "expenses") {
+    return continueAddRecord();
+  }
+
+const countField = {
+  eggs,
+  mortality: deaths,
+  chicken: quantity,
+  meat: birdsCount
+};
+
+const value = Number(countField[type]);
+
+  if (!Number.isInteger(value) || value <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Record quantity must be a positive whole number."
+    });
+  }
+
+  if (type === "chicken") {
+    return continueAddRecord();
+  }
+
+  getCoopChickenStock(userId, coopId, (error, stock) => {
+    if (error) {
+      console.error("Chicken Stock Check Error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to check available chickens."
+      });
+    }
+
+    if (stock.activeChickens <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No active chickens available in this coop."
+      });
+    }
+
+    if (type === "mortality" && value > stock.activeChickens) {
+      return res.status(400).json({
+        success: false,
+        message: `Only ${stock.activeChickens} chickens are available for mortality.`
+      });
+    }
+
+    if (type === "meat" && value > stock.activeChickens) {
+      return res.status(400).json({
+        success: false,
+        message: `Only ${stock.activeChickens} chickens are available for harvest.`
+      });
+    }
+
+    continueAddRecord();
+  });
+};
+
+if (isPremium) {
+  validateAndAddRecord();
+  return;
+}
 
       db.query(
         `
@@ -644,7 +751,7 @@ const {
             });
           }
 
-          continueAddRecord();
+          validateAndAddRecord();
         }
       );
     }
@@ -840,40 +947,128 @@ router.put("/:type/:id", (req, res) => {
     });
   }
 
-  db.query(
-    sql,
-    values,
-    (err, result) => {
+const executeUpdate = () => {
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("Update Record Error:", err);
 
-      if (err) {
-        console.error(
-          "Update Record Error:",
-          err
-        );
+      return res.status(500).json({
+        success: false,
+        message: "Failed to update record."
+      });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Record not found."
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Record updated successfully."
+    });
+  });
+};
+
+if (type === "expenses") {
+  return executeUpdate();
+}
+
+const countField = {
+  eggs,
+  mortality: deaths,
+  chicken: quantity,
+  meat: birdsCount
+};
+
+const value = Number(countField[type]);
+
+if (!Number.isInteger(value) || value <= 0) {
+  return res.status(400).json({
+    success: false,
+    message: "Record quantity must be a positive whole number."
+  });
+}
+
+if (type === "eggs") {
+  return executeUpdate();
+}
+
+const selected = recordConfig[type];
+
+const originalColumn = {
+  mortality: "DeathCount",
+  chicken: "Quantity",
+  meat: "BirdsCount"
+}[type];
+
+db.query(
+  `SELECT ${originalColumn} AS originalQuantity
+   FROM ${selected.table}
+   WHERE ${selected.idColumn} = ?
+   AND UserID = ?
+   AND CoopID = ?
+   LIMIT 1`,
+  [id, userId, coopId],
+  (recordError, records) => {
+    if (recordError) {
+      console.error("Original Record Check Error:", recordError);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to check original record."
+      });
+    }
+
+    if (records.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Record not found."
+      });
+    }
+
+    const originalQuantity = Number(records[0].originalQuantity);
+
+    getCoopChickenStock(userId, coopId, (stockError, stock) => {
+      if (stockError) {
+        console.error("Chicken Stock Check Error:", stockError);
 
         return res.status(500).json({
           success: false,
-          message:
-            "Failed to update record."
+          message: "Failed to check available chickens."
         });
       }
 
-      if (
-        result.affectedRows === 0
-      ) {
-        return res.status(404).json({
-          success: false,
-          message: "Record not found."
-        });
+      if (type === "chicken") {
+        const updatedInventory =
+          stock.totalInventory - originalQuantity + value;
+
+        if (updatedInventory < stock.totalUsed) {
+          return res.status(400).json({
+            success: false,
+            message: `Cannot reduce inventory. ${stock.totalUsed} chickens are already dead or harvested.`
+          });
+        }
       }
 
-      res.json({
-        success: true,
-        message:
-          "Record updated successfully."
-      });
-    }
-  );
+      if (type === "mortality" || type === "meat") {
+        const availableChickens =
+          stock.activeChickens + originalQuantity;
+
+        if (value > availableChickens) {
+          return res.status(400).json({
+            success: false,
+            message: `Only ${availableChickens} chickens are available for this update.`
+          });
+        }
+      }
+
+      executeUpdate();
+    });
+  }
+);
 });
 
 router.delete("/:type/:id", (req, res) => {
@@ -913,40 +1108,89 @@ router.delete("/:type/:id", (req, res) => {
     AND CoopID = ?
   `;
 
-  db.query(
-    sql,
-    [id, userId, coopId],
-    (err, result) => {
 
-      if (err) {
-        console.error(
-          "Delete Record Error:",
-          err
-        );
+const executeDelete = () => {
+  db.query(sql, [id, userId, coopId], (err, result) => {
+    if (err) {
+      console.error("Delete Record Error:", err);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to delete record."
+      });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Record not found."
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Record deleted successfully."
+    });
+  });
+};
+
+if (type !== "chicken") {
+  return executeDelete();
+}
+
+db.query(
+  `SELECT Quantity
+   FROM chicken_records
+   WHERE ChickenRecordID = ?
+   AND UserID = ?
+   AND CoopID = ?
+   LIMIT 1`,
+  [id, userId, coopId],
+  (recordError, records) => {
+    if (recordError) {
+      console.error("Chicken Record Check Error:", recordError);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to check chicken record."
+      });
+    }
+
+    if (records.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Record not found."
+      });
+    }
+
+    const originalQuantity = Number(records[0].Quantity);
+
+    getCoopChickenStock(userId, coopId, (stockError, stock) => {
+      if (stockError) {
+        console.error("Chicken Stock Check Error:", stockError);
 
         return res.status(500).json({
           success: false,
-          message:
-            "Failed to delete record."
+          message: "Failed to check available chickens."
         });
       }
 
-      if (
-        result.affectedRows === 0
-      ) {
-        return res.status(404).json({
+      const remainingInventory =
+        stock.totalInventory - originalQuantity;
+
+      if (remainingInventory < stock.totalUsed) {
+        return res.status(400).json({
           success: false,
-          message: "Record not found."
+          message:
+            `Cannot delete this chicken record. ${stock.totalUsed} chickens are already recorded as dead or harvested.`
         });
       }
 
-      res.json({
-        success: true,
-        message:
-          "Record deleted successfully."
-      });
-    }
-  );
+      executeDelete();
+    });
+  }
+);
+
 });
 
 module.exports = router;

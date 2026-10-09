@@ -429,18 +429,17 @@ async function saveFarmInfo() {
   }
 
 
-  if (
-    farmSize &&
-    Number(farmSize) < 0
-  ) {
-    showSettingsToast(
-      "Farm size cannot be negative.",
-      "error"
-    );
+if (
+  farmSize !== "" &&
+  (!Number.isFinite(Number(farmSize)) || Number(farmSize) <= 0)
+) {
+  showSettingsToast(
+    "Farm size must be greater than 0 m².",
+    "error"
+  );
 
-    return;
-  }
-
+  return;
+}
 
   try {
     const response =
@@ -453,15 +452,14 @@ async function saveFarmInfo() {
             "Content-Type":
               "application/json"
           },
-
-          body: JSON.stringify({
-            farmName,
-            farmLocation,
-            farmSize:
-              farmSize === ""
-                ? null
-                : Number(farmSize)
-          })
+        body: JSON.stringify({
+          farmName,
+          farmLocation,
+          farmSize:
+            farmSize === ""
+              ? null
+              : Number(farmSize)
+        })
         }
       );
 

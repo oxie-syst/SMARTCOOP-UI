@@ -2216,9 +2216,7 @@ const blobBaseURL =
   "https://hryetl1inpkpkg3j.public.blob.vercel-storage.com";
 
 const modelPath =
-  `${blobBaseURL}/${encodeURIComponent(
-    `${sizeKey} ${typeData.name}.glb`
-  )}`;
+  `/${encodeURIComponent(typeData.folder)}/${encodeURIComponent(`${sizeKey} ${typeData.name}.glb`)}`;
   
 let materials = null;
 let positions = null;
@@ -2916,9 +2914,11 @@ function resetPlannerForm() {
     capacity.value = "";
   }
 
-  if (chickenType) {
-    chickenType.selectedIndex = 0;
-  }
+
+    if (chickenType && !chickenType.disabled) {
+      chickenType.selectedIndex = 0;
+    }
+
 
   if (previewBox) {
     previewBox.innerHTML = `
@@ -3233,9 +3233,7 @@ const blobBaseURL =
   "https://hryetl1inpkpkg3j.public.blob.vercel-storage.com";
 
 const modelPath =
-  `${blobBaseURL}/${encodeURIComponent(
-    `${sizeKey} ${typeData.name}.glb`
-  )}`;
+  `/${encodeURIComponent(typeData.folder)}/${encodeURIComponent(`${sizeKey} ${typeData.name}.glb`)}`;
 
     modelContainer.innerHTML = `
       <model-viewer
@@ -3360,27 +3358,39 @@ document.addEventListener("DOMContentLoaded", function () {
   loadPlans();
 
   const params = new URLSearchParams(window.location.search);
-  const recommendedType = (params.get("type") || "").toLowerCase();
 
-  const typeSelect = document.getElementById("type");
+const recommendedType = (params.get("type") || "").toLowerCase();
+const recommendedBreed = params.get("breed") || "";
+const fromSaved = params.get("fromSaved") === "1";
+
+const typeSelect = document.getElementById("type");
 
 if (typeSelect && recommendedType) {
-  if (
+  let selectedType = "";
+
+  if (recommendedType.includes("dual")) {
+    selectedType = "Dual Purpose";
+  } else if (
     recommendedType.includes("meat") ||
     recommendedType.includes("broiler")
   ) {
-    typeSelect.value = "Broilers";
-  }
-  else if (
+    selectedType = "Broilers";
+  } else if (
     recommendedType.includes("egg") ||
     recommendedType.includes("layer")
   ) {
-    typeSelect.value = "Layers (Egg Production)";
+    selectedType = "Layers (Egg Production)";
   }
-  else if (
-    recommendedType.includes("dual")
-  ) {
-    typeSelect.value = "Dual Purpose";
+
+  if (selectedType) {
+    typeSelect.value = selectedType;
+
+    if (fromSaved) {
+      typeSelect.disabled = true;
+      typeSelect.title = recommendedBreed
+        ? `Recommended breed: ${recommendedBreed}`
+        : "Selected from Saved Recommendations";
+    }
   }
 }
 

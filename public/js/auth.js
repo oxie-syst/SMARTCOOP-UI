@@ -626,16 +626,39 @@ setText(
                     recordResponse.ok &&
                     recordResult.success
                   ) {
-                    const chickenRecords =
-                      recordResult.records?.chicken || [];
 
-                    currentChickens =
-                      chickenRecords.reduce(
-                        (total, record) =>
-                          total +
-                          Number(record.quantity || 0),
-                        0
-                      );
+                  const chickenRecords =
+                    recordResult.records?.chicken || [];
+
+                  const mortalityRecords =
+                    recordResult.records?.mortality || [];
+
+                  const meatRecords =
+                    recordResult.records?.meat || [];
+
+                  const totalInventory = chickenRecords.reduce(
+                    (total, record) =>
+                      total + Number(record.quantity ?? record.Quantity ?? 0),
+                    0
+                  );
+
+                  const totalDeaths = mortalityRecords.reduce(
+                    (total, record) =>
+                      total + Number(record.deaths ?? record.DeathCount ?? 0),
+                    0
+                  );
+
+                  const totalHarvested = meatRecords.reduce(
+                    (total, record) =>
+                      total + Number(record.birdsCount ?? record.BirdsCount ?? 0),
+                    0
+                  );
+
+                  currentChickens = Math.max(
+                    0,
+                    totalInventory - totalDeaths - totalHarvested
+                  );
+
                   }
 
                 } catch (error) {
@@ -3640,24 +3663,103 @@ function exportAdminReport(type) {
         title: 'Smart Alerts',
         desc: 'Stay on top of your farm tasks. Receive real-time reminders for feeding schedules, coop cleaning, and vital vaccination dates to ensure zero missed tasks.',
         img: 'img/Alerts.png'
-      }
+      },
+      'records': {
+        title: 'Record Management',
+        desc: 'Manage poultry farm expenses, egg collection, mortality, chicken inventory, and meat production.',
+        img: 'img/Reports.png'
+    },
+    'chicken': {
+        title: 'Chicken Information',
+        desc: 'Explore poultry breeds, growth stages, feeding, housing, sanitation, and production guides.',
+        img: 'img/ChickenInfo.png'
+    },
     };
 
-    function showFeature(key) {
-      const display = document.getElementById('feature-display');
-      const title = document.getElementById('feat-title');
-      const desc = document.getElementById('feat-desc');
-      const img = document.getElementById('feat-img');
 
-      if (featureInfo[key]) {
-        title.innerText = featureInfo[key].title;
-        desc.innerText = featureInfo[key].desc;
-        img.src = featureInfo[key].img;
+function showFeature(key) {
+  const display = document.getElementById('feature-display');
+  const title = document.getElementById('feat-title');
+  const desc = document.getElementById('feat-desc');
+  const img = document.getElementById('feat-img');
+  const demo = document.getElementById('landing-3d-demo');
+  const interactiveDemo = document.getElementById('landing-interactive-demo');
 
-        display.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-      }
+  if (!featureInfo[key] || !display) return;
+
+  const isCoop = key === 'coop';
+  const isEstimator = key === 'estimator';
+  const isHealth = key === 'health';
+  const isRecords = key === 'records';
+  const isBreed = key === 'breed';
+  const isReports = key === 'reports';
+  const isAlerts = key === 'alerts';
+  const isChicken = key === 'chicken';
+
+const isInteractive =
+  isEstimator || isHealth || isRecords || isBreed || isReports || isAlerts || isChicken;
+
+  if (title) {
+    title.innerText = featureInfo[key].title;
+  }
+
+  if (desc) {
+    desc.innerText = featureInfo[key].desc;
+  }
+
+  if (img) {
+    img.src = featureInfo[key].img;
+    img.style.display =
+      (isCoop && demo) ||
+      (isInteractive && interactiveDemo)
+        ? 'none'
+        : 'block';
+  }
+
+  if (demo) {
+    demo.style.display = isCoop ? 'block' : 'none';
+  }
+
+  if (interactiveDemo) {
+    interactiveDemo.style.display =
+      isInteractive ? 'block' : 'none';
+
+    if (!isInteractive) {
+      interactiveDemo.innerHTML = '';
     }
+  }
+
+  display.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  if (isCoop && demo) {
+    updateLandingCoopModel();
+  }
+
+  if (isEstimator && interactiveDemo) {
+    renderLandingCostEstimator();
+  }
+
+  if (isHealth && interactiveDemo) {
+    renderLandingHealthChecker();
+  }
+
+  if (isRecords && interactiveDemo) {
+    renderLandingRecordManagement();
+  }
+  if (isBreed && interactiveDemo) {
+  renderLandingBreedRecommendation();
+}
+if (isReports && interactiveDemo) {
+  renderLandingReports();
+}
+if (isAlerts && interactiveDemo) {
+  renderLandingSmartAlerts();
+}
+if (isChicken && interactiveDemo) {
+  renderLandingChickenInfo();
+}
+}
 
     function closeFeature() {
       const display = document.getElementById('feature-display');
@@ -3710,7 +3812,7 @@ function openDashboardModel(coopId) {
   } else if (chickenType.includes("layer")) {
     typeData = {
       folder: "Layers",
-      name: "Layer"
+      name: "Layers"
     };
   } else if (chickenType.includes("dual")) {
     typeData = {
@@ -3729,8 +3831,8 @@ function openDashboardModel(coopId) {
     return;
   }
 
-  const modelPath =
-    `${typeData.folder}/${sizeKey} ${typeData.name}.glb`;
+const modelPath =
+  `/${encodeURIComponent(typeData.folder)}/${encodeURIComponent(`${sizeKey} ${typeData.name}.glb`)}`;
 
   let modal =
     document.getElementById("dashboardModelModal");
@@ -4390,4 +4492,42 @@ function showGoogleAuthError(message) {
 
 
   alert(message);
+}
+
+function updateLandingCoopModel() {
+  const select = document.getElementById("landingCoopSize");
+  const model = document.getElementById("landingCoopModel");
+  const area = document.getElementById("landingCoopArea");
+
+  if (!select || !model) return;
+
+  const size = Number(select.value);
+
+  model.src = `/Broilers/${encodeURIComponent(`${size}x${size} Broiler.glb`)}`;
+
+  if (area) {
+    area.textContent = `Floor Area: ${size * size} m²`;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const select = document.getElementById("landingCoopSize");
+
+  if (select) {
+    select.addEventListener("change", updateLandingCoopModel);
+  }
+});
+function updateLandingCost() {
+  const count = Math.max(0, Number(document.getElementById("demoChickenCount")?.value) || 0);
+  const price = Math.max(0, Number(document.getElementById("demoChickenPrice")?.value) || 0);
+  const feed = Math.max(0, Number(document.getElementById("demoFeedCost")?.value) || 0);
+  const materials = Math.max(0, Number(document.getElementById("demoMaterialCost")?.value) || 0);
+
+  const total = count * price + feed + materials;
+
+  const result = document.getElementById("demoTotalCost");
+
+  if (result) {
+    result.textContent = `₱${total.toLocaleString("en-PH")}`;
+  }
 }
