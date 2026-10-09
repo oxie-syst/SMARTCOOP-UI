@@ -2212,11 +2212,14 @@ const spacePerChicken =
       modelFolders[type];
 
     if (typeData) {
-const blobBaseURL =
-  "https://hryetl1inpkpkg3j.public.blob.vercel-storage.com";
+const modelBaseURL =
+  "https://smartcoop-models.porcallaramuel179.workers.dev";
+
+const modelFilename =
+  `${sizeKey}.${typeData.name.replaceAll(" ", ".")}.glb`;
 
 const modelPath =
-  `/${encodeURIComponent(typeData.folder)}/${encodeURIComponent(`${sizeKey} ${typeData.name}.glb`)}`;
+  `${modelBaseURL}/${modelFilename}`;
   
 let materials = null;
 let positions = null;
@@ -3229,11 +3232,14 @@ function viewPlan(id) {
     ];
 
   if (typeData) {
-const blobBaseURL =
-  "https://hryetl1inpkpkg3j.public.blob.vercel-storage.com";
+const modelBaseURL =
+  "https://smartcoop-models.porcallaramuel179.workers.dev";
+
+const modelFilename =
+  `${sizeKey}.${typeData.name.replaceAll(" ", ".")}.glb`;
 
 const modelPath =
-  `/${encodeURIComponent(typeData.folder)}/${encodeURIComponent(`${sizeKey} ${typeData.name}.glb`)}`;
+  `${modelBaseURL}/${modelFilename}`;
 
     modelContainer.innerHTML = `
       <model-viewer
