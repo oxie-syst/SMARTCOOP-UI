@@ -9,6 +9,9 @@ function saveRegisteredUsers(users) {
   localStorage.setItem(SMARTCOOP_USERS_KEY, JSON.stringify(users));
 }
 
+
+let toastTimeout;
+
 function showToast(message) {
   const toast = document.getElementById("toast");
 
@@ -17,13 +20,16 @@ function showToast(message) {
     return;
   }
 
+  clearTimeout(toastTimeout);
+
   toast.textContent = message;
   toast.classList.remove("hidden");
 
-  setTimeout(() => {
+  toastTimeout = setTimeout(() => {
     toast.classList.add("hidden");
-  }, 2500);
+  }, 4000);
 }
+
 
 function setLoading(button, loading, text) {
   if (!button) return;
@@ -883,21 +889,67 @@ function openCoopRecords(coopId) {
       window.location.href = "login.html";
     }
 
-    function setupLandingPage() {
-      const form = document.getElementById("newsletterForm");
-      if (!form) return;
 
-      form.addEventListener("submit", event => {
-        event.preventDefault();
+function setupLandingPage() {
+  const form = document.getElementById("newsletterForm");
+  const emailInput = document.getElementById("newsletterEmail");
 
-        const emailInput = document.getElementById("newsletterEmail");
+  if (!form || !emailInput) return;
 
-        if (emailInput && emailInput.value.trim()) {
-          showToast("Successfully subscribed to newsletter!");
-          emailInput.value = "";
-        }
-      });
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const email = emailInput.value.trim();
+
+    if (!emailInput.checkValidity() || !email) {
+      emailInput.reportValidity();
+      return;
     }
+
+    const button = form.querySelector('button[type="submit"]');
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Sending...";
+    }
+
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        showToast(
+          result.message || "Unable to subscribe. Please try again."
+        );
+        return;
+      }
+
+      showToast(
+        result.message || "Please check your email to confirm your subscription."
+      );
+
+      emailInput.value = "";
+
+    } catch (error) {
+      console.error("Newsletter error:", error);
+      showToast("Unable to connect to the server.");
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = "Subscribe";
+      }
+    }
+  });
+}
+
+
     
 function loadUserInfo() {
   const storedUser =
@@ -978,20 +1030,12 @@ function loadUserInfo() {
       if (dropdown) dropdown.classList.toggle("hidden");
     }
 
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
-    setupLoginPage();
-    setupAdminLoginPage();
-
-    if (
-      typeof setupSignupPage ===
-      "function"
-    ) {
-      setupSignupPage();
-    }
-  }
-);
+document.addEventListener("DOMContentLoaded", () => {
+  setupLoginPage();
+  setupAdminLoginPage();
+  setupSignupPage();
+  setupLandingPage();
+});
    
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -3641,7 +3685,7 @@ function exportAdminReport(type) {
       },
       'estimator': {
         title: 'Cost Estimator',
-        desc: 'Avoid financial surprises. Our system automatically calculates the estimated budget for materials, bird stocks, and initial feed requirements based on your plan.',
+        desc: 'Avoid unexpected expenses. SmartCoop automatically estimates the costs of coop construction materials, hardware, equipment, bedding, and chicken stocks based on your selected coop size.',
         img: 'img/Cost Estimator.png'
       },
       'health': {
@@ -3651,7 +3695,7 @@ function exportAdminReport(type) {
       },
       'breed': {
         title: 'Breed Recommendation',
-        desc: 'Not sure which chicken to raise? Our system suggests the best breeds based on your climate, available space, and production goals—whether for eggs or meat.',
+        desc: 'SmartCoop helps users discover suitable chicken breeds based on their production goal, whether for egg production, meat production, or both. The system provides breed recommendations along with useful information about their characteristics and management needs.',
         img: 'img/Breed Recommendation.png'
       },
       'reports': {
@@ -3962,10 +4006,6 @@ function openDashboardCosts(coopId) {
 
   const chickPrice = 60;
   const chickenCost = chickens * chickPrice;
-
-  /* =========================================
-     DETAILED 1x1 BROILER COST
-  ========================================= */
 
   const setupCostData = {
     "1x1": {

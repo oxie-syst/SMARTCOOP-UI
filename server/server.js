@@ -14,8 +14,16 @@ const path = require("path");
 const app = express();
 
 app.use(cors());
-app.use(express.json());
 
+const resendWebhookRoutes = require("./routes/resendWebhookRoutes");
+
+app.use(
+  "/api/resend/webhook",
+  express.raw({ type: "application/json" }),
+  resendWebhookRoutes
+);
+
+app.use(express.json());
 app.use(
   express.static(
     path.join(__dirname, "../public")
@@ -34,6 +42,7 @@ const settingsRoutes = require("./routes/settingsRoutes");
 const aiAssistantRoutes = require("./routes/aiAssistantRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
+const newsletterRoutes = require("./routes/newsletterRoutes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/coops", coopRoutes);
@@ -47,6 +56,8 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/ai-assistant", aiAssistantRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/newsletter", newsletterRoutes);
+
 
 app.get("/", (req, res) => {
   res.sendFile(
