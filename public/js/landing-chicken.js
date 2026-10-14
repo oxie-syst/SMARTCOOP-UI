@@ -1,3 +1,4 @@
+
 (() => {
   const guides = {
     breeds: {
@@ -7,9 +8,9 @@
       subtitle: "Compare general poultry types based on their main production purpose and management characteristics.",
       headers: ["Poultry Type", "Main Purpose", "General Space", "Production Focus", "Best For"],
       rows: [
-        ["Layers", "Egg Production", "About 2–3 sq.ft per bird", "Consistent egg production", "Farmers focused mainly on eggs"],
-        ["Broilers", "Meat Production", "About 1.5–2 sq.ft per bird", "Fast growth for meat", "Farmers focused mainly on meat"],
-        ["Dual Purpose", "Eggs and Meat", "About 2–4 sq.ft per bird", "Balanced production", "Small farms wanting both eggs and meat"]
+        ["Layers", "Egg Production", "About 3.6 sq.ft per bird", "Consistent egg production", "Farmers focused mainly on eggs"],
+        ["Broilers", "Meat Production", "About 2.1–2.7 sq.ft per bird", "Fast growth for meat", "Farmers focused mainly on meat"],
+        ["Dual Purpose", "Eggs and Meat", "About 2.7 sq.ft per bird", "Balanced production", "Small farms wanting both eggs and meat"]
       ]
     },
 
@@ -95,6 +96,46 @@
     }
   };
 
+  const chickenReferences = {
+    breeds: [
+      {
+        title: "FAO - Small-scale Poultry Production (Chapter 4, Table 4.1)",
+        url: "https://www.fao.org/4/y5169e/y5169e05.htm"
+      }
+    ],
+    stages: [
+      {
+        title: "FAO - Small-scale Poultry Production (Chapter 4: General Management)",
+        url: "https://www.fao.org/4/y5169e/y5169e05.htm"
+      }
+    ],
+    feeding: [
+      {
+        title: "FAO - Small-scale Poultry Production (Chapter 3: Feed Resources)",
+        url: "https://www.fao.org/4/y5169e/y5169e04.htm"
+      }
+    ],
+    housing: [
+      {
+        title: "FAO - Small-scale Poultry Production (Chapter 4: General Management)",
+        url: "https://www.fao.org/4/y5169e/y5169e05.htm"
+      }
+    ],
+    sanitation: [
+      {
+        title: "USDA APHIS - Defend the Flock: Biosecurity",
+        url: "https://www.aphis.usda.gov/livestock-poultry-disease/avian/defend-the-flock"
+      }
+    ],
+    production: [
+      {
+        title: "FAO - Small-scale Poultry Production (Chapter 8: Production Economics)",
+        url: "https://www.fao.org/4/y5169e/y5169e09.htm"
+      }
+    ]
+    };
+
+
   const escapeHTML = value =>
     String(value ?? "")
       .replaceAll("&", "&amp;")
@@ -136,8 +177,10 @@
     if (!app || !currentView) return;
 
     const guide = guides[currentView];
+
     const search = app.querySelector("#lcSearch").value
-      .trim().toLowerCase();
+      .trim()
+      .toLowerCase();
 
     const rows = guide.rows.filter(row =>
       row.some(value =>
@@ -160,9 +203,9 @@
             if (currentView === "sanitation" && index === 3) {
               return `
                 <td>
-                  <span class="lc-priority ${escapeHTML(
-                    value.toLowerCase()
-                  )}">${escapeHTML(value)}</span>
+                  <span class="lc-priority ${escapeHTML(value.toLowerCase())}">
+                    ${escapeHTML(value)}
+                  </span>
                 </td>
               `;
             }
@@ -188,6 +231,42 @@
       `${rows.length} of ${guide.rows.length} entries`;
   }
 
+  function renderChickenReferences(key) {
+    const app = root();
+    if (!app) return;
+
+    const container = app.querySelector("#lcReferences");
+    if (!container) return;
+
+    const references = chickenReferences[key] || [];
+
+    container.innerHTML = `
+      <h4 style="margin:0 0 8px;color:#166534;">
+        📚 References & Further Reading
+      </h4>
+
+      <p style="margin:0 0 12px;font-size:13px;color:#475569;">
+        These sources provide general poultry information.
+        Specific space and age figures still require validation.
+      </p>
+
+      <ul style="margin:0;padding-left:20px;">
+        ${references.map(ref => `
+          <li style="margin-bottom:8px;">
+            <a
+              href="${escapeHTML(ref.url)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="color:#15803d;text-decoration:underline;overflow-wrap:anywhere;"
+            >
+              ${escapeHTML(ref.title)} ↗
+            </a>
+          </li>
+        `).join("")}
+      </ul>
+    `;
+  }
+
   function openGuide(key) {
     const app = root();
     const guide = guides[key];
@@ -206,6 +285,7 @@
     app.querySelector("#lcSearch").value = "";
 
     renderTable();
+    renderChickenReferences(key);
 
     app.scrollIntoView({
       behavior: "smooth",
@@ -253,8 +333,11 @@
           </div>
 
           <div class="lc-search-bar">
-            <input type="search" id="lcSearch"
-              placeholder="Search information...">
+            <input
+              type="search"
+              id="lcSearch"
+              placeholder="Search information..."
+            >
             <span id="lcResultCount"></span>
           </div>
 
@@ -270,6 +353,18 @@
             <h4>No matching information</h4>
             <p>Try a different search term.</p>
           </div>
+
+          <div
+            id="lcReferences"
+            class="lc-references"
+            style="
+              margin-top:24px;
+              padding:20px;
+              background:#f0fdf4;
+              border:1px solid #bbf7d0;
+              border-radius:12px;
+            "
+          ></div>
         </div>
 
         <p class="lc-disclaimer">
@@ -288,7 +383,6 @@
     };
 
     app.querySelector("#lcBack").onclick = renderCards;
-
     app.querySelector("#lcSearch").oninput = renderTable;
 
     renderCards();

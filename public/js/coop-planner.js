@@ -58,10 +58,11 @@ function setupCoopPlannerPage() {
       const area =
         length * width;
 
-      const estimatedCapacity =
-        Math.floor(
-          area * 2.5
-        );
+const sizeKey = `${length}x${width}`;
+
+const estimatedCapacity =
+  coopData[sizeKey]?.capacity ??
+  Math.floor(area * 2.5);
 
       const usage =
         Math.round(

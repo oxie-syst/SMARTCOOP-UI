@@ -1037,41 +1037,50 @@ button {
 
 .steps-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
 }
 
+
 .steps-grid article {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 28px 20px;
   text-align: center;
-  cursor: pointer;
-  transition: .2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .steps-grid article:hover {
-  transform: scale(1.05);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
 }
 
 .steps-grid span {
-  width: 68px;
-  height: 68px;
-  border-radius: 999px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
   background: #16a34a;
   color: white;
   display: grid;
   place-items: center;
   margin: 0 auto 18px;
-  font-size: 28px;
-  font-weight: 900;
+  font-size: 24px;
+  font-weight: 800;
 }
 
 .steps-grid h3 {
-  margin-bottom: 8px;
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #111827;
 }
 
 .steps-grid p {
-  color: var(--gray-600);
+  color: #6b7280;
   font-size: 14px;
+  line-height: 1.6;
 }
+
 
 .benefits-grid {
   display: grid;
@@ -20672,5 +20681,81 @@ body {
 
   .lc-search-bar input {
     max-width: none;
+  }
+}
+
+
+#features {
+  scroll-margin-top: 80px;
+}
+
+.features-section {
+  padding-top: 72px;
+  padding-bottom: 90px;
+}
+
+.feature-grid {
+  align-items: stretch;
+}
+
+.feature-grid .feature-card {
+  height: 100%;
+  min-width: 0;
+}
+
+.feature-grid .feature-card p {
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  #features {
+    scroll-margin-top: 72px;
+  }
+
+  .features-section {
+    padding-top: 56px;
+    padding-bottom: 64px;
+  }
+}
+
+/* Newsletter notification */
+#toast.toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  left: auto;
+  bottom: auto;
+
+  width: max-content;
+  max-width: min(360px, calc(100vw - 32px));
+  height: auto;
+  min-height: 0;
+  max-height: none;
+
+  padding: 14px 20px;
+  margin: 0;
+
+  background: #1f3328;
+  color: #ffffff;
+
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+  z-index: 9999;
+  box-sizing: border-box;
+}
+
+#toast.toast.hidden {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  #toast.toast {
+    top: 16px;
+    right: 16px;
+    max-width: calc(100vw - 32px);
   }
 }

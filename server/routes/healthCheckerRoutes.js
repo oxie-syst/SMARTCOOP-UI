@@ -3,9 +3,6 @@ const db = require("../db");
 const HealthCheckerEngine = require("../health-checker-engine/healthCheckerEngine");
 
 const router = express.Router();
-
-// Loaded once at server startup: reads symptoms.json, diseases.json, and
-// ml_weights.json into memory a single time, not on every request.
 const engine = new HealthCheckerEngine();
 
 router.post("/analyze", (req, res) => {
