@@ -1,28 +1,50 @@
-const nodemailer = require("nodemailer");
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER?.trim(),
-    pass: process.env.EMAIL_APP_PASSWORD?.replace(/\s/g, "")
-  }
-});
-
 async function sendVerificationEmail(email, verificationUrl) {
-  await transporter.sendMail({
-    from: `"SmartCoop" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: "Verify Your SmartCoop Newsletter Subscription",
-    text: `Thank you for subscribing to SmartCoop!
+  const {
+    EMAILJS_SERVICE_ID,
+    EMAILJS_TEMPLATE_ID,
+    EMAILJS_PUBLIC_KEY,
+    EMAILJS_PRIVATE_KEY
+  } = process.env;
 
-Please confirm your email address by opening this link:
+  // Debug: Check EmailJS IDs
+  console.log("Service ID:", JSON.stringify(EMAILJS_SERVICE_ID));
+  console.log("Template ID:", JSON.stringify(EMAILJS_TEMPLATE_ID));
 
-${verificationUrl}
+  if (
+    !EMAILJS_SERVICE_ID ||
+    !EMAILJS_TEMPLATE_ID ||
+    !EMAILJS_PUBLIC_KEY ||
+    !EMAILJS_PRIVATE_KEY
+  ) {
+    throw new Error("Missing EmailJS configuration");
+  }
 
-If you did not request this subscription, you can ignore this email.`
-  });
+  const response = await fetch(
+    "https://api.emailjs.com/api/v1.0/email/send",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        service_id: EMAILJS_SERVICE_ID,
+        template_id: EMAILJS_TEMPLATE_ID,
+        user_id: EMAILJS_PUBLIC_KEY,
+        accessToken: EMAILJS_PRIVATE_KEY,
+        template_params: {
+          to_email: email,
+          verification_url: verificationUrl
+        }
+      })
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`EmailJS error ${response.status}: ${error}`);
+  }
+
+  console.log("SmartCoop verification email sent successfully");
 }
 
 module.exports = { sendVerificationEmail };
