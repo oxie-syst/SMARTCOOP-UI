@@ -59,12 +59,27 @@ router.post("/signup", async (req, res) => {
           "Please enter a valid phone number."
       });
     }
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}$/;
+
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password must contain at least 8 characters, " +
+          "1 uppercase letter, 1 lowercase letter, " +
+          "1 number, and 1 special character."
+      });
+    }
 
 
     db.query(
-      "SELECT UserID FROM users WHERE Email = ?",
-    [email],
-    async (err, result) => {
+      `SELECT Email, PhoneNumber
+      FROM users
+      WHERE LOWER(Email) = LOWER(?)
+          OR PhoneNumber = ?`,
+      [email.trim(), phoneNumber],
+      async (err, result) => {
       if (err) {
         console.error("SIGNUP CHECK ERROR:", err);
 
@@ -74,10 +89,25 @@ router.post("/signup", async (req, res) => {
         });
       }
 
-      if (result.length > 0) {
-        return res.status(400).json({
+      const emailExists = result.some(
+        user => user.Email.toLowerCase() === email.trim().toLowerCase()
+      );
+
+      const phoneExists = result.some(
+        user => user.PhoneNumber === phoneNumber
+      );
+
+      if (emailExists) {
+        return res.status(409).json({
           success: false,
-          message: "Email already registered."
+          message: "Email address is already registered."
+        });
+      }
+
+      if (phoneExists) {
+        return res.status(409).json({
+          success: false,
+          message: "Phone number is already registered."
         });
       }
 
@@ -114,6 +144,13 @@ router.post("/signup", async (req, res) => {
                 insertErr
               );
 
+              if (insertErr.code === "ER_DUP_ENTRY") {
+                return res.status(409).json({
+                  success: false,
+                  message: "Email or phone number is already registered."
+                });
+              }
+
               return res.status(500).json({
                 success: false,
                 message: "Database Error"
@@ -141,7 +178,8 @@ router.post("/signup", async (req, res) => {
 router.post("/login", (req, res) => {
   const {
     email,
-    password
+    password,
+    remember = false
   } = req.body;
 
   console.log("\n===== LOGIN ATTEMPT =====");
@@ -243,11 +281,46 @@ router.post("/login", (req, res) => {
 
         console.log("=========================\n");
 
-        return res.json({
-          success: true,
-          message: "Login successful.",
-          user: userResponse
-        });
+const rememberMe = remember === true;
+const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+
+
+req.session.regenerate((sessionError) => {
+  if (sessionError) {
+    console.error("SESSION ERROR:", sessionError);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to create login session."
+    });
+  }
+
+  req.session.userId = user.UserID;
+  req.session.rememberMe = rememberMe;
+
+    if (rememberMe) {
+      req.session.cookie.maxAge = thirtyDays;
+    } else {
+      req.session.cookie.maxAge = null;
+    }
+
+  req.session.save((saveError) => {
+    if (saveError) {
+      console.error("SESSION SAVE ERROR:", saveError);
+
+      return res.status(500).json({
+        success: false,
+        message: "Unable to save login session."
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Login successful.",
+      user: userResponse
+    });
+  });
+});
 
       } catch (error) {
         console.error(
@@ -334,12 +407,34 @@ router.post("/admin-login", (req, res) => {
           });
         }
 
-        return res.json({
-          success: true,
-          message:
-            "Administrator login successful.",
-          user:
-            createUserResponse(user)
+        req.session.regenerate((sessionError) => {
+          if (sessionError) {
+            console.error("ADMIN SESSION ERROR:", sessionError);
+            return res.status(500).json({
+              success: false,
+              message: "Unable to create admin session."
+            });
+          }
+
+          req.session.userId = user.UserID;
+          req.session.rememberMe = false;
+          req.session.cookie.maxAge = null;
+
+          req.session.save((saveError) => {
+            if (saveError) {
+              console.error("ADMIN SESSION SAVE ERROR:", saveError);
+              return res.status(500).json({
+                success: false,
+                message: "Unable to save admin session."
+              });
+            }
+
+            return res.json({
+              success: true,
+              message: "Administrator login successful.",
+              user: createUserResponse(user)
+            });
+          });
         });
 
       } catch (error) {
@@ -356,6 +451,41 @@ router.post("/admin-login", (req, res) => {
     }
   );
 });
+
+function createGoogleSession(req, res, user, isNewUser) {
+  req.session.regenerate((err) => {
+    if (err) {
+      console.error("GOOGLE SESSION ERROR:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Unable to create Google session."
+      });
+    }
+
+    req.session.userId = user.UserID;
+    req.session.rememberMe = false;
+    req.session.cookie.maxAge = null;
+
+    req.session.save((saveErr) => {
+      if (saveErr) {
+        console.error("GOOGLE SESSION SAVE ERROR:", saveErr);
+        return res.status(500).json({
+          success: false,
+          message: "Unable to save Google session."
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: isNewUser
+          ? "Google account created successfully."
+          : "Google login successful.",
+        isNewUser,
+        user: createUserResponse(user)
+      });
+    });
+  });
+}
 
 router.post("/google", async (req, res) => {
   const {
@@ -496,14 +626,7 @@ router.post("/google", async (req, res) => {
               existingUser.GoogleID = googleId;
               existingUser.AuthProvider = provider;
 
-              return res.json({
-                success: true,
-                message:
-                  "Google login successful.",
-                isNewUser: false,
-                user:
-                  createUserResponse(existingUser)
-              });
+            return createGoogleSession(req, res, existingUser, false);
             }
           );
 
@@ -574,14 +697,7 @@ router.post("/google", async (req, res) => {
                   });
                 }
 
-                return res.json({
-                  success: true,
-                  message:
-                    "Google account created successfully.",
-                  isNewUser: true,
-                  user:
-                    createUserResponse(newResult[0])
-                });
+              return createGoogleSession(req, res, newResult[0], true);
               }
             );
           }
@@ -1136,6 +1252,66 @@ router.put("/onboarding/:userId", (req, res) => {
     return res.json({
       success: true,
       message: "Onboarding completed successfully."
+    });
+  });
+});
+
+router.get("/session", (req, res) => {
+  if (!req.session?.userId) {
+    return res.status(401).json({
+      success: false,
+      authenticated: false,
+      message: "Not logged in."
+    });
+  }
+
+  db.query(
+    "SELECT * FROM users WHERE UserID = ? LIMIT 1",
+    [req.session.userId],
+    (err, results) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: "Database Error"
+        });
+      }
+
+      if (!results.length) {
+        return res.status(401).json({
+          success: false,
+          authenticated: false
+        });
+      }
+
+      return res.json({
+        success: true,
+        authenticated: true,
+        user: createUserResponse(results[0])
+      });
+    }
+  );
+});
+
+
+router.post("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: "Logout failed."
+      });
+    }
+
+    res.clearCookie("smartcoop.sid", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/"
+    });
+
+    return res.json({
+      success: true,
+      message: "Logged out successfully."
     });
   });
 });

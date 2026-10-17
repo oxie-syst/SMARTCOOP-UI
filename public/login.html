@@ -60,7 +60,7 @@
           <input
             id="email"
             type="email"
-            placeholder="farmer@smartcoop.com"
+            placeholder="farmer@gmail.com"
             autocomplete="email"
             required>
 
@@ -81,14 +81,38 @@
 
           </div>
 
-          <input
-            id="password"
-            type="password"
-            placeholder="Enter your password"
-            autocomplete="current-password"
-            required>
+<div class="password-wrapper">
+  <input
+    id="password"
+    type="password"
+    placeholder="Enter your password"
+    autocomplete="current-password"
+    required
+  >
 
-        </div>
+  <button
+    type="button"
+    class="password-toggle"
+    id="toggleLoginPassword"
+    aria-label="Show password"
+    aria-pressed="false"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  </button>
+</div>
 
 
         <label class="check-row">
@@ -176,82 +200,6 @@
     class="toast hidden">
   </div>
 
-
-  <script>
-  document
-    .getElementById("loginForm")
-    .addEventListener("submit", async function (event) {
-
-      event.preventDefault();
-
-      const button =
-        document.getElementById("loginBtn");
-
-      const email =
-        document.getElementById("email").value.trim();
-
-      const password =
-        document.getElementById("password").value;
-
-      button.disabled = true;
-      button.textContent = "Signing in...";
-
-      try {
-        const response = await fetch("/api/auth/login", {
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-            email,
-            password
-          })
-        });
-
-        const result = await response.json();
-
-        console.log("LOGIN RESULT:", result);
-
-        if (!result.success) {
-          alert(
-            result.message ||
-            "Invalid email or password."
-          );
-
-          button.disabled = false;
-          button.textContent = "Sign in";
-
-          return;
-        }
-
-        localStorage.setItem(
-          "user",
-          JSON.stringify(result.user)
-        );
-
-        localStorage.setItem(
-          "smartcoop_user",
-          JSON.stringify(result.user)
-        );
-
-        if (result.user.onboardingCompleted) {
-          window.location.href = "user.html";
-        } else {
-          window.location.href = "onboarding.html";
-        }
-
-      } catch (error) {
-        console.error("LOGIN ERROR:", error);
-
-        alert("Unable to connect to the server.");
-
-        button.disabled = false;
-        button.textContent = "Sign in";
-      }
-    });
-</script>
 
 <script src="js/auth.js"></script>
 

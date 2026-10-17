@@ -61,15 +61,17 @@ function hideSignupError() {
 }
 
 
-async function loginUser(email, password) {
+async function loginUser(email, password, remember) {
   const response = await fetch("/api/auth/login", {
     method: "POST",
+    credentials: "same-origin",
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
       email,
-      password
+      password,
+      remember
     })
   });
 
@@ -85,6 +87,7 @@ function setupLoginPage() {
 
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
+    const remember = document.getElementById("remember")?.checked === true;
     const errorBox = document.getElementById("loginError");
     const button = document.getElementById("loginBtn");
 
@@ -96,7 +99,7 @@ function setupLoginPage() {
     setLoading(button, true, "Sign in");
 
     try {
-      const result = await loginUser(email, password);
+      const result = await loginUser(email, password, remember);
 
       setLoading(button, false, "Sign in");
 
@@ -212,9 +215,14 @@ function setupSignupPage() {
       return;
     }
 
-    if (password.length < 6) {
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8,}$/;
+
+    if (!passwordRegex.test(password)) {
       showSignupError(
-        "Password must be at least 6 characters."
+        "Password must contain at least 8 characters, " +
+        "1 uppercase letter, 1 lowercase letter, " +
+        "1 number, and 1 special character."
       );
       return;
     }
@@ -441,7 +449,44 @@ function setupAdminLoginPage() {
       return "Good evening";
     }
 
+    async function verifyUserSession() {
+  try {
+    const response = await fetch("/api/auth/session", {
+      method: "GET",
+      credentials: "same-origin",
+      cache: "no-store"
+    });
+
+    if (!response.ok) return false;
+
+    const result = await response.json();
+
+    if (!result.success || !result.authenticated || !result.user) {
+      return false;
+    }
+
+    localStorage.setItem("user", JSON.stringify(result.user));
+    localStorage.setItem(
+      SMARTCOOP_USER_KEY,
+      JSON.stringify(result.user)
+    );
+
+    return true;
+  } catch (error) {
+    console.error("SESSION VERIFICATION ERROR:", error);
+    return false;
+  }
+}
+
 async function loadDashboard() {
+  const authenticated = await verifyUserSession();
+  
+  if (!authenticated) {
+    localStorage.removeItem("user");
+    localStorage.removeItem(SMARTCOOP_USER_KEY);
+    window.location.replace("login.html");
+    return;
+  }
   const storedUser =
     localStorage.getItem("user") ||
     localStorage.getItem(SMARTCOOP_USER_KEY);
@@ -841,12 +886,26 @@ function openCoopRecords(coopId) {
       if (element) element.textContent = value;
     }
 
-    function logout() {
-      localStorage.removeItem("user");
-      localStorage.removeItem(SMARTCOOP_USER_KEY); 
+async function logout() {
+  try {
+    const response = await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "same-origin"
+    });
 
-      window.location.href = "index.html";
+    if (!response.ok) {
+      throw new Error("Logout failed.");
     }
+
+    localStorage.removeItem("user");
+    localStorage.removeItem(SMARTCOOP_USER_KEY);
+
+    window.location.href = "index.html";
+  } catch (error) {
+    console.error("LOGOUT ERROR:", error);
+    alert("Unable to log out. Please try again.");
+  }
+}
 
     function toggleSidebar() {
       const sidebar = document.getElementById("sidebar");
@@ -1035,7 +1094,31 @@ document.addEventListener("DOMContentLoaded", () => {
   setupAdminLoginPage();
   setupSignupPage();
   setupLandingPage();
-});
+
+    const toggleButton =
+      document.getElementById("toggleLoginPassword");
+
+    const passwordInput =
+      document.getElementById("password");
+
+    if (toggleButton && passwordInput) {
+      toggleButton.addEventListener("click", () => {
+        const showPassword = passwordInput.type === "password";
+
+        passwordInput.type = showPassword ? "text" : "password";
+
+        toggleButton.setAttribute(
+          "aria-label",
+          showPassword ? "Hide password" : "Show password"
+        );
+
+        toggleButton.setAttribute(
+          "aria-pressed",
+          String(showPassword)
+        );
+      });
+    }
+  });
    
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -4398,6 +4481,19 @@ function closeDashboardCosts() {
 }
 
 async function handleGoogleCredential(response) {
+
+  const termsCheckbox = document.getElementById("agreeTerms");
+
+if (
+  window.location.pathname.endsWith("signup.html") &&
+  (!termsCheckbox || !termsCheckbox.checked)
+) {
+  showToast(
+    "Please agree to the Terms and Conditions and Privacy Policy before continuing with Google."
+  );
+  return;
+}
+
   if (!response || !response.credential) {
     showGoogleAuthError(
       "Google did not return a valid credential."

@@ -10,6 +10,8 @@ console.log(
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const session = require("express-session");
+const MySQLStore = require("express-mysql-session")(session);
 
 const app = express();
 
@@ -24,6 +26,42 @@ app.use(
 );
 
 app.use(express.json());
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
+const sessionStore = new MySQLStore({
+  host: process.env.DB_HOST || "localhost",
+  port: Number(process.env.DB_PORT || 3306),
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || "SmartCoop",
+
+  createDatabaseTable: true,
+  clearExpired: true,
+  checkExpirationInterval: 900000,
+  expiration: 30 * 24 * 60 * 60 * 1000
+});
+
+if (!process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET is required.");
+}
+
+app.use(
+  session({
+    name: "smartcoop.sid",
+    secret: process.env.SESSION_SECRET,
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    rolling: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax"
+    }
+  })
+);
 app.use(
   express.static(
     path.join(__dirname, "../public")
