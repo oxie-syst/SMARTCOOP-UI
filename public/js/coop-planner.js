@@ -486,6 +486,36 @@ const coopData = {
   }
 };
 
+const chickenCapacities = {
+  "1x1":   { layers: 8, dualPurpose: 4 },
+  "2x2":   { layers: 48, dualPurpose: 16 },
+  "3x3":   { layers: 96, dualPurpose: 36 },
+  "4x4":   { layers: 144, dualPurpose: 64 },
+  "5x5":   { layers: 192, dualPurpose: 100 },
+  "6x6":   { layers: 336, dualPurpose: 144 },
+  "7x7":   { layers: 576, dualPurpose: 196 },
+  "8x8":   { layers: 672, dualPurpose: 256 },
+  "9x9":   { layers: 960, dualPurpose: 324 },
+  "10x10": { layers: 1152, dualPurpose: 400 }
+};
+
+function getChickenCapacity(sizeKey, chickenType) {
+  if (chickenType === "Broilers") {
+    return coopData[sizeKey]?.capacity ?? null;
+  }
+
+  if (chickenType === "Layers (Egg Production)") {
+    return chickenCapacities[sizeKey]?.layers ?? null;
+  }
+
+  if (chickenType === "Dual Purpose") {
+    return chickenCapacities[sizeKey]?.dualPurpose ?? null;
+  }
+
+  return null;
+}
+
+
 const broilerMaterialSizes = {
   "1x1": {
     concrete: {
@@ -1371,6 +1401,191 @@ const dualPurposeMaterialSizes = {
 }
 };
 
+const dualPurposeModelSpecs = {
+  "3x3": {
+    postHeight: 2.10,
+    postThickness: 0.05,
+    ridgeLength: 3.00,
+    plateThickness: 0.05,
+    riceHull: "2.90m × 2.80m × 0.075m",
+    roof: "0.9m × 6m sheet divided into 3",
+    door: "1.60m × 0.70m × 0.05m",
+    perch: "2.16m × 0.04m × 0.04m"
+  },
+
+  "4x4": {
+    postHeight: 2.10,
+    postThickness: 0.05,
+    ridgeLength: 4.00,
+    plateThickness: 0.05,
+    riceHull: "3.87m × 3.97m × 0.075m",
+    roof: "3ft × 9ft sheet (full and half sections)",
+    door: "1.60m × 0.70m × 0.05m",
+    perch: "Requires Blender verification"
+  },
+
+  "5x5": {
+    postHeight: 2.40,
+    postThickness: 0.075,
+    ridgeLength: 4.99,
+    plateThickness: 0.10,
+    riceHull: "4.86m × 4.90m × 0.075m",
+    roof: "3ft × 10ft sheet (full and half sections)",
+    door: "1.60m × 0.70m × 0.05m",
+    perch: "Requires Blender verification"
+  },
+
+  "6x6": {
+    postHeight: 2.40,
+    postThickness: 0.075,
+    ridgeLength: 5.99,
+    plateThickness: 0.10,
+    riceHull: "5.82m × 5.83m × 0.075m",
+    roof: "3ft × 12.60ft sheet",
+    door: "1.60m × 0.70m × 0.05m",
+    perch: "Requires Blender verification"
+  },
+
+  "7x7": {
+    postHeight: 2.40,
+    postThickness: 0.075,
+    ridgeLength: 6.99,
+    plateThickness: 0.10,
+    riceHull: "6.79m × 6.77m × 0.075m",
+    roof: "3ft × 14.8ft sheet (full and half sections)",
+    door: "1.60m × 0.70m × 0.05m",
+    perch: "Requires Blender verification"
+  },
+
+  "8x8": {
+    postHeight: 2.40,
+    postThickness: 0.075,
+    ridgeLength: 8.20,
+    plateThickness: 0.10,
+    riceHull: "7.75m × 7.93m × 0.075m",
+    roof: "3ft × 14.8ft sheet",
+    door: "1.60m × 0.70m × 0.05m",
+    perch: "Requires Blender verification"
+  },
+
+  "9x9": {
+    postHeight: 2.40,
+    postThickness: 0.10,
+    ridgeLength: 9.02,
+    plateThickness: 0.10,
+    riceHull: "8.80m × 8.87m × 0.075m",
+    roof: "3ft × 19.2ft sheet",
+    door: "1.60m × 0.70m × 0.05m",
+    perch: "Requires Blender verification"
+  },
+
+  "10x10": {
+    postHeight: 2.40,
+    postThickness: 0.10,
+    ridgeLength: 10.02,
+    plateThickness: 0.10,
+    riceHull: "9.91m × 9.80m × 0.075m",
+    roof: "3ft × 21.7ft sheet",
+    door: "1.60m × 0.70m × 0.05m",
+    perch: "Requires Blender verification"
+  }
+};
+
+Object.entries(dualPurposeModelSpecs).forEach(
+  ([sizeKey, spec]) => {
+    const size = Number(sizeKey.split("x")[0]);
+
+    const format = value => Number(value).toFixed(2);
+
+    const postSize =
+      `${format(spec.postHeight)}m × ` +
+      `${format(spec.postThickness)}m × ` +
+      `${format(spec.postThickness)}m`;
+
+    const ridgeSize =
+      `${format(spec.ridgeLength)}m × ` +
+      `${format(spec.plateThickness)}m × 0.05m`;
+
+    const frontBackSize =
+      `${format(size)}m × ` +
+      `${format(spec.plateThickness)}m × 0.05m`;
+
+    const sideSize =
+      `${format(size - 0.10)}m × ` +
+      `${format(spec.plateThickness)}m × 0.05m`;
+
+    dualPurposeMaterialSizes[sizeKey] = {
+      concrete: {
+        name: "Concrete Slab",
+        size: `${format(size)}m × ${format(size)}m`,
+        height: "0.55m"
+      },
+
+      posts: {
+        name: "Wood Posts",
+        size: postSize
+      },
+
+      ridgeBoard: {
+        name: "Ridge Board",
+        size: ridgeSize
+      },
+
+      frontBackPlate: {
+        name: "Front / Back Wall Plate",
+        size: frontBackSize
+      },
+
+      sidePlate: {
+        name: "Side Wall Plate",
+        size: sideSize
+      },
+
+      door: {
+        name: "Door",
+        size: spec.door
+      },
+
+      riceHull: {
+        name: "Rice Hull Area",
+        size: spec.riceHull
+      },
+
+      roof: {
+        name: "Roof Sheet",
+        size: spec.roof,
+        thickness: "0.4mm"
+      },
+
+      wireMesh: {
+        name: "Wire Mesh",
+        specification:
+          "0.025m × 0.025m openings • 0.0016m wire"
+      },
+
+      waterer: {
+        name: "Bell Waterer",
+        size: "Approx. 0.274m × 0.274m × 0.199m"
+      },
+
+      brooderLamp: {
+        name: "Brooder Lamp / Refractor",
+        size: "Requires Blender verification"
+      },
+
+      nestingBox: {
+        name: "Nesting Box",
+        size: "Approx. 0.38m × 0.38m × 0.47m"
+      },
+
+      perch: {
+        name: "Perch",
+        size: spec.perch
+      }
+    };
+  }
+);
+
 const broilerHotspotPositions = {
   "1x1": {
     concrete: "-0.45m 0.18m 0.35m",
@@ -1840,6 +2055,328 @@ function calculateCategoryTotal(items = []) {
   );
 }
 
+
+const BUDGET_ALLOWANCE = 0.10;
+
+const estimatedChickenPrices = {
+  "Broilers": 60,
+  "Layers (Egg Production)": 180,
+  "Dual Purpose": 120
+};
+
+const layerSetupCosts = {};
+const dualPurposeSetupCosts = {};
+
+// Planning estimates only.
+// Blender object counts and supplier prices still need verification.
+const COST_ESTIMATE_NOTE =
+  "Estimated material quantity and price; subject to verification";
+
+function createCostItem(name, quantity, unit, unitPrice, specification = COST_ESTIMATE_NOTE) {
+  return {
+    name,
+    specification,
+    quantity,
+    unit,
+    unitPrice
+  };
+}
+
+function buildAlternativeSetupCost(sizeKey, chickenType) {
+  const base = setupCostData.broiler[sizeKey];
+
+  if (!base) return null;
+
+  const capacity = getChickenCapacity(sizeKey, chickenType);
+  if (!capacity) return null;
+
+  const size = Number(sizeKey.split("x")[0]);
+  const area = size * size;
+
+
+const data = JSON.parse(JSON.stringify(base));
+
+if (chickenType === "Dual Purpose") {
+  const materials = dualPurposeMaterialSizes[sizeKey];
+
+  if (!materials) return null;
+
+  const specifications = {
+    "Concrete Slab":
+      `${materials.concrete.size} × ${materials.concrete.height}`,
+
+    "Wood Posts":
+      materials.posts.size,
+
+    "Ridge Board":
+      materials.ridgeBoard.size,
+
+    "Front / Back Wall Plate":
+      materials.frontBackPlate.size,
+
+    "Side Wall Plate":
+      materials.sidePlate.size,
+
+    "Roof Sheet":
+      `${materials.roof.size} • ${materials.roof.thickness}`,
+
+    "Wire Mesh":
+      materials.wireMesh.specification,
+
+    "Door":
+      materials.door.size
+  };
+
+  data.construction.forEach(item => {
+    if (specifications[item.name]) {
+      item.specification = specifications[item.name];
+    }
+  });
+}
+
+if (chickenType === "Layers (Egg Production)") {
+  const cageModules = Math.max(
+    1,
+    Math.ceil(capacity / 8)
+  );
+
+  data.construction = [
+    createCostItem(
+      "Cage Installation Materials",
+      cageModules,
+      "sets",
+      150,
+      "Estimated installation materials for layer cage modules"
+    ),
+
+    createCostItem(
+      "Cage Mounting Hardware",
+      cageModules,
+      "sets",
+      120,
+      "Estimated bolts, brackets and mounting accessories"
+    )
+  ];
+
+  data.hardware = [
+    createCostItem(
+      "Nails / Screws / Fasteners",
+      cageModules,
+      "sets",
+      100,
+      "Estimated cage installation fasteners"
+    )
+  ];
+}
+
+  if (chickenType === "Dual Purpose") {
+
+    const mesh = data.construction.find(
+      item => item.name === "Wire Mesh"
+    );
+
+    if (mesh) {
+      mesh.quantity = Math.ceil(
+        Number(mesh.quantity) * 1.15
+      );
+    mesh.specification =
+  `${dualPurposeMaterialSizes[sizeKey].wireMesh.specification} • Estimated enclosure mesh including nesting/perching area`;
+    }
+  }
+
+
+  if (chickenType === "Layers (Egg Production)") {
+    const cageModules = Math.ceil(capacity / 8);
+
+    data.equipment = [
+      createCostItem(
+        "Layer Cage Assembly",
+        cageModules,
+        "modules",
+        1400
+      ),
+      createCostItem(
+        "Cage Support Frame",
+        cageModules,
+        "sets",
+        450
+      ),
+      createCostItem(
+        "Feeder Trough",
+        cageModules,
+        "sets",
+        220,
+        "Estimated purchasing sets; 1x1 Blender model contains 2 feeder trough objects"
+      ),
+      createCostItem(
+        "Water Trough",
+        cageModules,
+        "sets",
+        220
+      ),
+      createCostItem(
+        "Egg Catcher / Collection Tray",
+        cageModules,
+        "sets",
+        180,
+        "Estimated purchasing sets; 1x1 Blender model contains 4 egg catcher objects"
+      )
+    ];
+
+    data.bedding = [];
+
+  } else if (chickenType === "Dual Purpose") {
+    const nestingBoxes = Math.ceil(capacity / 5);
+    const perches = Math.ceil(capacity / 10);
+    const feeders = Math.ceil(capacity / 15);
+    const waterers = Math.ceil(capacity / 20);
+
+    data.equipment = [
+      createCostItem(
+        "Nesting Box",
+        nestingBoxes,
+        "sets",
+        350
+      ),
+      createCostItem(
+        "Perch",
+        perches,
+        "sets",
+        180
+      ),
+      createCostItem(
+        "Feeder",
+        feeders,
+        "sets",
+        180
+      ),
+      createCostItem(
+        "Bell Waterer",
+        waterers,
+        "sets",
+        300
+      )
+    ];
+
+    data.bedding = [
+      createCostItem(
+        "Rice Hull",
+        Math.max(1, Math.ceil(area * 1.1)),
+        "sacks",
+        100
+      )
+    ];
+
+  } else {
+    return null;
+  }
+
+  return data;
+}
+
+// Populate all 10 sizes for both chicken types.
+Object.keys(coopData).forEach(sizeKey => {
+  layerSetupCosts[sizeKey] =
+    buildAlternativeSetupCost(
+      sizeKey,
+      "Layers (Egg Production)"
+    );
+
+  dualPurposeSetupCosts[sizeKey] =
+    buildAlternativeSetupCost(
+      sizeKey,
+      "Dual Purpose"
+    );
+});
+
+
+function getSetupCostData(sizeKey, chickenType) {
+  if (chickenType === "Broilers") {
+    return setupCostData.broiler[sizeKey] ?? null;
+  }
+
+  if (chickenType === "Layers (Egg Production)") {
+    return layerSetupCosts[sizeKey] ?? null;
+  }
+
+  if (chickenType === "Dual Purpose") {
+    return dualPurposeSetupCosts[sizeKey] ?? null;
+  }
+
+  return null;
+}
+
+
+
+
+function calculateRecommendedBudget(sizeKey, chickenType) {
+  const capacity = getChickenCapacity(
+    sizeKey,
+    chickenType
+  );
+
+  const costData = getSetupCostData(
+    sizeKey,
+    chickenType
+  );
+
+  const chickenUnitPrice =
+    estimatedChickenPrices[chickenType];
+
+  if (
+    !capacity ||
+    !costData ||
+    !Number.isFinite(chickenUnitPrice)
+  ) {
+    return null;
+  }
+
+  const constructionTotal =
+    calculateCategoryTotal(costData.construction);
+
+  const hardwareTotal =
+    calculateCategoryTotal(costData.hardware);
+
+  const equipmentTotal =
+    calculateCategoryTotal(costData.equipment);
+
+  const beddingTotal =
+    calculateCategoryTotal(costData.bedding);
+
+  const coopCost =
+    constructionTotal +
+    hardwareTotal +
+    equipmentTotal +
+    beddingTotal;
+
+  const chickenCost =
+    capacity * chickenUnitPrice;
+
+  const estimatedCost =
+    coopCost + chickenCost;
+
+  const allowance = Math.ceil(
+    estimatedCost * BUDGET_ALLOWANCE
+  );
+
+  return {
+    costData,
+    capacity,
+    chickenUnitPrice,
+    constructionTotal,
+    hardwareTotal,
+    equipmentTotal,
+    beddingTotal,
+    coopCost,
+    chickenCost,
+    estimatedCost,
+    allowance,
+    recommendedBudget: estimatedCost + allowance
+  };
+}
+
+
+
 function populateSizeDropdown() {
   const sizeSelect = document.getElementById("coopSize");
 
@@ -1858,10 +2395,15 @@ function populateSizeDropdown() {
   }
 }
 
+
+
 function findSuitableSizes() {
   const budget = Number(
     document.getElementById("budget").value
   );
+
+  const chickenType =
+    document.getElementById("type").value;
 
   const sizeSelect =
     document.getElementById("coopSize");
@@ -1872,74 +2414,79 @@ function findSuitableSizes() {
   const message =
     document.getElementById("budgetMessage");
 
+  const previousSize = sizeSelect.value;
+
   sizeSelect.innerHTML = "";
   capacityInput.value = "";
 
-  if (!budget || budget <= 0) {
+  if (!Number.isFinite(budget) || budget <= 0) {
     sizeSelect.innerHTML =
       '<option value="" disabled selected>Enter your budget first</option>';
 
     message.textContent = "";
-
     return;
   }
 
-  let bestSize = null;
-  let bestTotal = 0;
+  if (!Object.hasOwn(estimatedChickenPrices, chickenType)) {
+  sizeSelect.innerHTML =
+    '<option value="" disabled selected>Select Chicken Type first</option>';
 
-  for (const size in coopData) {
-    const data = coopData[size];
+  message.textContent =
+    "Please select a chicken type first.";
 
-    const chickenCost =
-      data.capacity * chickPrice;
+  return;
+}
 
-    const totalCost =
-      data.cost + chickenCost;
+  const affordableSizes = Object.keys(coopData)
+    .map(size => ({
+      size,
+      costing: calculateRecommendedBudget(
+        size,
+        chickenType
+      )
+    }))
+    .filter(item =>
+      item.costing &&
+      item.costing.recommendedBudget <= budget
+    );
 
-    if (totalCost <= budget) {
-      bestSize = size;
-      bestTotal = totalCost;
-    }
-  }
-
-  if (!bestSize) {
+  if (affordableSizes.length === 0) {
     sizeSelect.innerHTML =
       '<option value="" disabled selected>No suitable coop size</option>';
 
-    capacityInput.value =
-      "No available capacity";
-
     message.textContent =
-      "Your budget is below the minimum estimated setup cost.";
+      "Your budget is below the minimum estimated budget.";
 
     return;
   }
 
-  const [length, width] =
-    bestSize.split("x");
+  sizeSelect.innerHTML =
+    '<option value="" disabled selected>Select your preferred coop size</option>';
 
-  const data =
-    coopData[bestSize];
 
-  const option =
-    document.createElement("option");
+affordableSizes.forEach(({ size, costing }) => {
+  const [length, width] = size.split("x");
 
-  option.value =
-    `${length},${width}`;
+  const option = document.createElement("option");
+
+  option.value = `${length},${width}`;
 
   option.textContent =
-    `${bestSize} meters`;
-
-  option.selected = true;
+    `${size} meters - Estimated Budget: ₱${costing.recommendedBudget.toLocaleString()}`;
 
   sizeSelect.appendChild(option);
+});
 
-  capacityInput.value =
-    `Up to ${data.capacity} chickens`;
+if ([...sizeSelect.options].some(
+  option => option.value === previousSize
+)) {
+  sizeSelect.value = previousSize;
+}
 
   message.textContent =
-    `Recommended: ${bestSize} coop • ${data.capacity} chicks • Estimated Total: ₱${bestTotal.toLocaleString()}`;
+    `${affordableSizes.length} coop size(s) fit your estimated budget.`;
 }
+
 
 function useManualPlanning() {
   document.getElementById(
@@ -1963,48 +2510,30 @@ function useManualPlanning() {
   }
 }
 
+
 function updateCapacity() {
-  const sizeSelect =
-    document.getElementById(
-      "coopSize"
-    );
+  const sizeSelect = document.getElementById("coopSize");
+  const typeSelect = document.getElementById("type");
+  const capacityInput = document.getElementById("capacity");
 
-  const capacityInput =
-    document.getElementById(
-      "capacity"
-    );
+  if (!sizeSelect || !typeSelect || !capacityInput) return;
 
-  if (
-    !sizeSelect ||
-    !capacityInput
-  ) {
-    return;
-  }
+  const selectedSize = sizeSelect.value;
+  const chickenType = typeSelect.value;
 
-  const selectedValue =
-    sizeSelect.value;
-
-  if (!selectedValue) {
+  if (!selectedSize || !chickenType) {
     capacityInput.value = "";
     return;
   }
 
-  const [length, width] =
-    selectedValue.split(",");
+  const sizeKey = selectedSize.replace(",", "x");
+  const capacity = getChickenCapacity(sizeKey, chickenType);
 
-  const sizeKey =
-    `${length}x${width}`;
-
-  const data =
-    coopData[sizeKey];
-
-  if (data) {
-    capacityInput.value =
-      `Up to ${data.capacity} chickens`;
-  } else {
-    capacityInput.value = "";
-  }
+  capacityInput.value = capacity === null
+    ? "Capacity not available"
+    : `Up to ${capacity} chickens`;
 }
+
 
 async function generatePlan() {
   const sizeValue =
@@ -2135,53 +2664,32 @@ try {
     return;
   }
 
-const chickens =
-  selectedCoop.capacity;
 
-const costData =
-  setupCostData.broiler?.[sizeKey];
+const costing = calculateRecommendedBudget(
+  sizeKey,
+  type
+);
 
-// Detailed costing is currently available for 1x1 Broiler
-let constructionTotal = 0;
-let hardwareTotal = 0;
-let equipmentTotal = 0;
-let beddingTotal = 0;
-
-if (costData) {
-  constructionTotal =
-    calculateCategoryTotal(
-      costData.construction
-    );
-
-  hardwareTotal =
-    calculateCategoryTotal(
-      costData.hardware
-    );
-
-  equipmentTotal =
-    calculateCategoryTotal(
-      costData.equipment
-    );
-
-  beddingTotal =
-    calculateCategoryTotal(
-      costData.bedding
-    );
+if (!costing) {
+  alert("Cost estimation is unavailable.");
+  return;
 }
 
-const coopCost =
-  costData
-    ? constructionTotal +
-      hardwareTotal +
-      equipmentTotal +
-      beddingTotal
-    : selectedCoop.cost;
+const chickens = costing.capacity;
+const costData = costing.costData;
 
-const chickenCost =
-  chickens * chickPrice;
+const constructionTotal = costing.constructionTotal;
+const hardwareTotal = costing.hardwareTotal;
+const equipmentTotal = costing.equipmentTotal;
+const beddingTotal = costing.beddingTotal;
 
-const total =
-  coopCost + chickenCost;
+const coopCost = costing.coopCost;
+const chickenCost = costing.chickenCost;
+const allowance = costing.allowance;
+const chickenUnitPrice = costing.chickenUnitPrice;
+
+const total = costing.recommendedBudget;
+
 
 const spacePerChicken =
   area / chickens;
@@ -2755,7 +3263,7 @@ const createMaterialRows = (title, items, categoryTotal) => {
 
       <tr class="cost-item-row">
         <td class="cost-item-name">
-          <strong>Broiler Chicks</strong>
+          <strong>${type} Chickens</strong>
           <small>
             Recommended capacity for ${sizeKey} coop
           </small>
@@ -2766,11 +3274,20 @@ const createMaterialRows = (title, items, categoryTotal) => {
         </td>
 
         <td class="cost-unit-price">
-          ₱${chickPrice.toLocaleString()}
+          ₱${chickenUnitPrice.toLocaleString()}
         </td>
 
         <td class="cost-item-subtotal">
           ₱${chickenCost.toLocaleString()}
+        </td>
+      </tr>
+
+      <tr class="cost-item-row">
+        <td colspan="3">
+          <strong>Contingency Allowance (10%)</strong>
+        </td>
+        <td class="cost-item-subtotal">
+          ₱${allowance.toLocaleString()}
         </td>
       </tr>
     `;
@@ -2788,13 +3305,19 @@ const createMaterialRows = (title, items, categoryTotal) => {
 
       <tr>
         <td>
-          Chicks (${chickens} × ₱${chickPrice})
+          Chicks (${chickens} × ₱${chickenUnitPrice})
         </td>
 
         <td>
           ₱${chickenCost.toLocaleString()}
         </td>
       </tr>
+
+      <tr>
+        <td>Contingency Allowance (10%)</td>
+        <td>₱${allowance.toLocaleString()}</td>
+      </tr>
+
     `;
   }
 }
@@ -3364,7 +3887,28 @@ document.addEventListener("DOMContentLoaded", function () {
   populateSizeDropdown();
   loadPlans();
 
-  const params = new URLSearchParams(window.location.search);
+  
+const budgetInput = document.getElementById("budget");
+const chickenTypeSelect = document.getElementById("type");
+const coopSizeSelect = document.getElementById("coopSize");
+
+function refreshBudgetAndCapacity() {
+  if (Number(budgetInput?.value) > 0) {
+    findSuitableSizes();
+  } else {
+    populateSizeDropdown();
+  }
+
+  updateCapacity();
+}
+
+budgetInput?.addEventListener("input", refreshBudgetAndCapacity);
+
+chickenTypeSelect?.addEventListener("change", refreshBudgetAndCapacity);
+
+coopSizeSelect?.addEventListener("change", updateCapacity);
+
+const params = new URLSearchParams(window.location.search);
 
 const recommendedType = (params.get("type") || "").toLowerCase();
 const recommendedBreed = params.get("breed") || "";
@@ -3391,6 +3935,10 @@ if (typeSelect && recommendedType) {
 
   if (selectedType) {
     typeSelect.value = selectedType;
+
+    if (typeSelect?.value && Number(budgetInput?.value) > 0) {
+      refreshBudgetAndCapacity();
+    }
 
     if (fromSaved) {
       typeSelect.disabled = true;

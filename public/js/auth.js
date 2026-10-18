@@ -477,8 +477,44 @@ function setupAdminLoginPage() {
     return false;
   }
 }
+function dashboardLoadState(state, message = "") {
+  const ids = [
+    "totalChickens",
+    "currentChickensDisplay",
+    "maximumCapacityDisplay",
+    "chickenCapacityPercentage",
+    "activeCoops",
+    "monthlyCost"
+  ];
 
+  if (state === "loading" || state === "error") {
+    ids.forEach(id => {
+      setText(
+        id,
+        state === "loading" ? "Loading..." : "Unavailable"
+      );
+    });
+
+    setText(
+      "activeCoopsText",
+      state === "loading"
+        ? "Loading coop data..."
+        : "Coop data unavailable"
+    );
+
+    const container =
+      document.getElementById("projectContainer");
+
+    if (container) {
+      container.textContent =
+        state === "loading"
+          ? "Loading your projects..."
+          : message || "Unable to load projects. Please try again.";
+    }
+  }
+}
 async function loadDashboard() {
+  dashboardLoadState("loading");
   const authenticated = await verifyUserSession();
   
   if (!authenticated) {
@@ -546,12 +582,17 @@ async function loadDashboard() {
           `/api/coops/active/${user.id || user.UserID}`
         );
 
+        if (!response.ok) {
+          throw new Error("Coop request failed");
+        }
+
         const data = await response.json();
 
-        const coops =
-          data.success && Array.isArray(data.coops)
-            ? data.coops
-            : [];
+        if (!data.success || !Array.isArray(data.coops)) {
+          throw new Error("Invalid coop response");
+        }
+
+        const coops = data.coops;
 
         window.dashboardCoops = coops;
         const projectContainer =
@@ -562,17 +603,7 @@ async function loadDashboard() {
           "activeCoops",
           coops.length
         );
-
-        setText(
-          "activeCoopsText",
-          `${coops.length} ${
-            coops.length === 1
-              ? "Active Coop"
-              : "Active Coops"
-          }`
-        );
-      
-
+    
         setText(
           "activeCoopsText",
           `${coops.length} ${
@@ -583,6 +614,7 @@ async function loadDashboard() {
         );
 
 let monthlyCost = 0;
+let expensesLoaded = true;
 
 const now = new Date();
 const currentMonth = now.getMonth();
@@ -598,7 +630,7 @@ try {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        return 0;
+        throw new Error("Expense records unavailable");
       }
 
       const expenses =
@@ -640,6 +672,7 @@ try {
   );
 
 } catch (error) {
+    expensesLoaded = false;
   console.error(
     "Unable to load monthly expenses:",
     error
@@ -648,17 +681,18 @@ try {
 
 setText(
   "monthlyCost",
-  `₱${monthlyCost.toLocaleString(
-    "en-PH",
-    {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2
-    }
-  )}`
+  expensesLoaded
+    ? `₱${monthlyCost.toLocaleString("en-PH", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      })}`
+    : "Unavailable"
 );
             if (projectContainer) {
 
               let totalCurrentChickens = 0;
+              let totalMaximumChickens = 0; 
+              let chickenRecordsLoaded = true;  
 
               const coopCards = await Promise.all(
               coops.map(async (coop) => {
@@ -673,10 +707,9 @@ setText(
                   const recordResult =
                     await recordResponse.json();
 
-                  if (
-                    recordResponse.ok &&
-                    recordResult.success
-                  ) {
+                  if (!recordResponse.ok || !recordResult.success) {
+                  throw new Error("Chicken records unavailable");
+                }
 
                   const chickenRecords =
                     recordResult.records?.chicken || [];
@@ -710,9 +743,11 @@ setText(
                     totalInventory - totalDeaths - totalHarvested
                   );
 
-                  }
+                  
 
                 } catch (error) {
+                    chickenRecordsLoaded = false;
+                    currentChickens = null;
                   console.error(
                     `Unable to load chicken records for coop ${coop.CoopID}:`,
                     error
@@ -722,15 +757,18 @@ setText(
                 const maximumChickens =
                   Number(coop.NumberOfChickens || 0);
 
-                const capacityUsage =
-                  maximumChickens > 0
-                    ? Math.min(
-                        (currentChickens / maximumChickens) * 100,
-                        100
-                      )
-                    : 0;
+              const capacityUsage =
+                maximumChickens > 0 && currentChickens !== null
+                  ? Math.min(
+                      (currentChickens / maximumChickens) * 100,
+                      100
+                    )
+                  : null;
 
-                  totalCurrentChickens += currentChickens;
+                  if (currentChickens !== null) {
+                    totalCurrentChickens += currentChickens;
+                  }
+                  totalMaximumChickens += maximumChickens;
 
                 return `
                   <div class="project-card">
@@ -772,14 +810,14 @@ setText(
                       <div class="project-item">
                         <small>Current Chickens</small>
                         <strong>
-                          ${currentChickens}
+                          ${currentChickens === null ? "Unavailable" : currentChickens}
                         </strong>
                       </div>
 
                       <div class="project-item">
                         <small>Capacity Usage</small>
                         <strong>
-                          ${capacityUsage.toFixed(1)}%
+                          ${capacityUsage !== null ? capacityUsage.toFixed(1) + '%' : 'N/A'}
                         </strong>
                       </div>
 
@@ -832,7 +870,28 @@ setText(
 
               setText(
                 "totalChickens",
-                totalCurrentChickens
+                chickenRecordsLoaded ? totalCurrentChickens : "Unavailable"
+              );
+
+              setText(
+                "currentChickensDisplay",
+                chickenRecordsLoaded ? totalCurrentChickens : "Unavailable"
+              );
+              setText("maximumCapacityDisplay", totalMaximumChickens);
+
+              const totalCapacityPercentage =
+                totalMaximumChickens > 0
+                  ? Math.min(
+                      (totalCurrentChickens / totalMaximumChickens) * 100,
+                      100
+                    )
+                  : 0;
+
+              setText(
+                "chickenCapacityPercentage",
+                chickenRecordsLoaded
+                  ? `${totalCapacityPercentage.toFixed(1)}% Used`
+                  : "Unavailable"
               );
 
               projectContainer.innerHTML =
@@ -841,6 +900,9 @@ setText(
 
       } else {
         setText("totalChickens", 0);
+        setText("currentChickensDisplay", 0);
+        setText("maximumCapacityDisplay", 0);
+        setText("chickenCapacityPercentage", "0.0% Used");
         setText("activeCoops", 0);
         setText(
           "activeCoopsText",
@@ -865,9 +927,11 @@ setText(
     }
 
   } catch (error) {
-    console.error(
-      "DASHBOARD LOAD ERROR:",
-      error
+    console.error("DASHBOARD LOAD ERROR:", error);
+
+    dashboardLoadState(
+      "error",
+      "Unable to load dashboard data. Refresh to try again."
     );
   }
 }

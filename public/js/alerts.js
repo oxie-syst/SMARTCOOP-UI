@@ -130,6 +130,24 @@ async function loadAlertsPage() {
     return;
   }
 
+  list.innerHTML = `
+  <div class="notification-loading">
+    Loading reminders...
+  </div>
+`;
+
+const emptyState = document.getElementById("alertsEmptyState");
+
+if (emptyState) {
+  emptyState.style.display = "none";
+}
+[
+  "upcomingCount",
+  "completedCount",
+  "highPriorityCount",
+  "overdueCount"
+].forEach(id => setAlertText(id, "Loading..."));
+
   try {
     const response = await fetch(
       `/api/alerts/user/${userId}`
@@ -145,10 +163,11 @@ async function loadAlertsPage() {
       );
     }
 
-    alertsData =
-      Array.isArray(result.alerts)
-        ? result.alerts
-        : [];
+    if (!Array.isArray(result.alerts)) {
+      throw new Error("Invalid reminders response");
+    }
+
+    alertsData = result.alerts;
 
     updateAlertStatistics();
     renderAlerts();
@@ -159,12 +178,24 @@ async function loadAlertsPage() {
       error
     );
 
-    alertsData = [];
+list.innerHTML = `
+  <div class="notification-empty" role="alert">
+    Unable to load reminders. Please refresh to try again.
+  </div>
+`;
 
-    updateAlertStatistics();
-    renderAlerts();
+const emptyState = document.getElementById("alertsEmptyState");
 
-    alert("Unable to load reminders.");
+if (emptyState) {
+  emptyState.style.display = "none";
+}
+
+[
+  "upcomingCount",
+  "completedCount",
+  "highPriorityCount",
+  "overdueCount"
+].forEach(id => setAlertText(id, "—"));
   }
 }
 
@@ -264,10 +295,55 @@ function updateNotificationIndicator(count) {
 
   if (!notificationBadge) return;
 
+  if (count === null) {
+    notificationBadge.style.display = "none";
+    notificationBadge.title = "Notifications unavailable";
+    return;
+  }
+
   notificationBadge.style.display =
-    count > 0
-      ? "block"
-      : "none";
+    count > 0 ? "block" : "none";
+
+  notificationBadge.title = "";
+}
+function getReminderDueTime(alert) {
+  const date = String(
+    alert.reminderDate || alert.date || ""
+  ).slice(0, 10);
+
+  const time = alert.reminderTime || alert.time || "00:00:00";
+
+  const timestamp = new Date(`${date}T${time}`).getTime();
+
+  return Number.isNaN(timestamp)
+    ? Number.MAX_SAFE_INTEGER
+    : timestamp;
+}
+
+function compareRemindersByUrgency(a, b) {
+  const statusOrder = {
+    overdue: 0,
+    upcoming: 1,
+    completed: 2
+  };
+
+  const statusA = getAlertStatus(a);
+  const statusB = getAlertStatus(b);
+
+  const statusDifference =
+    statusOrder[statusA] - statusOrder[statusB];
+
+  if (statusDifference !== 0) {
+    return statusDifference;
+  }
+
+  const dateA = getReminderDueTime(a);
+  const dateB = getReminderDueTime(b);
+
+  if (statusA === "overdue") {
+    return dateB - dateA;
+  }
+  return dateA - dateB;
 }
 
 function renderAlerts() {
@@ -331,32 +407,9 @@ function renderAlerts() {
     );
   }
 
-  if (sortValue === "date") {
-    filteredAlerts.sort(
-      (a, b) => {
-        const dateA =
-          new Date(
-            `${String(
-              a.reminderDate
-            ).slice(0, 10)}T${
-              a.reminderTime
-            }`
-          );
-
-        const dateB =
-          new Date(
-            `${String(
-              b.reminderDate
-            ).slice(0, 10)}T${
-              b.reminderTime
-            }`
-          );
-
-        return dateA - dateB;
-      }
-    );
-  }
-
+if (sortValue === "date") {
+  filteredAlerts.sort(compareRemindersByUrgency);
+}
   if (
     filteredAlerts.length === 0
   ) {
@@ -549,6 +602,15 @@ async function loadDashboardAlerts() {
     getCurrentAlertUserId();
 
   if (!userId) return;
+      container.innerHTML = `
+      <div class="dashboard-alert-empty">
+        <p>Loading reminders...</p>
+      </div>
+    `;
+
+    if (badge) {
+      badge.textContent = "...";
+    }
 
   try {
     const response = await fetch(
@@ -568,10 +630,11 @@ async function loadDashboardAlerts() {
       );
     }
 
-    const allAlerts =
-      Array.isArray(result.alerts)
-        ? result.alerts
-        : [];
+    if (!Array.isArray(result.alerts)) {
+      throw new Error("Invalid reminders response");
+    }
+
+    const allAlerts = result.alerts;
 
     const activeAlerts =
       allAlerts.filter(alert => {
@@ -584,27 +647,7 @@ async function loadDashboardAlerts() {
         );
       });
 
-    activeAlerts.sort((a, b) => {
-      const dateA =
-        new Date(
-          `${String(
-            a.reminderDate
-          ).slice(0, 10)}T${
-            a.reminderTime
-          }`
-        );
-
-      const dateB =
-        new Date(
-          `${String(
-            b.reminderDate
-          ).slice(0, 10)}T${
-            b.reminderTime
-          }`
-        );
-
-      return dateA - dateB;
-    });
+activeAlerts.sort(compareRemindersByUrgency);
 
     if (badge) {
       badge.textContent =
@@ -742,24 +785,24 @@ async function loadDashboardAlerts() {
       lucide.createIcons();
     }
 
-  } catch (error) {
-    console.error(
-      "Dashboard Alerts Error:",
-      error
-    );
+} catch (error) {
+  console.error(
+    "Dashboard Alerts Error:",
+    error
+  );
 
-    if (badge) {
-      badge.textContent = "0";
-    }
+  updateNotificationIndicator(null);
 
-    container.innerHTML = `
-      <div class="dashboard-alert-empty">
-        <p>
-          Unable to load reminders.
-        </p>
-      </div>
-    `;
+  if (badge) {
+    badge.textContent = "—";
   }
+
+  container.innerHTML = `
+    <div class="dashboard-alert-empty">
+      <p>Unable to load reminders.</p>
+    </div>
+  `;
+}
 }
 
 function toggleNotificationMenu() {
@@ -806,6 +849,9 @@ async function loadNotificationDropdown() {
       Loading notifications...
     </div>
   `;
+  if (count) {
+  count.textContent = "Loading...";
+}
 
   try {
     const response = await fetch(
@@ -824,6 +870,9 @@ async function loadNotificationDropdown() {
         "Unable to load notifications."
       );
     }
+    if (!Array.isArray(result.alerts)) {
+  throw new Error("Invalid reminders response");
+}
 
     const notifications =
       (Array.isArray(result.alerts)
@@ -838,28 +887,8 @@ async function loadNotificationDropdown() {
             status === "overdue"
           );
         })
-        .sort((a, b) => {
-          const dateA =
-            new Date(
-              `${String(
-                a.reminderDate
-              ).slice(0, 10)}T${
-                a.reminderTime
-              }`
-            );
-
-          const dateB =
-            new Date(
-              `${String(
-                b.reminderDate
-              ).slice(0, 10)}T${
-                b.reminderTime
-              }`
-            );
-
-          return dateA - dateB;
-        });
-
+        .sort(compareRemindersByUrgency);
+    
     if (count) {
       count.textContent =
         `${notifications.length} active`;
@@ -957,19 +986,26 @@ async function loadNotificationDropdown() {
       lucide.createIcons();
     }
 
-  } catch (error) {
-    console.error(
-      "Notification Error:",
-      error
-    );
+} catch (error) {
+  console.error(
+    "Notification Error:",
+    error
+  );
 
-    list.innerHTML = `
-      <div class="notification-empty">
-        Unable to load notifications.
-      </div>
-    `;
+  updateNotificationIndicator(null);
+
+  if (count) {
+    count.textContent = "Unavailable";
   }
+
+  list.innerHTML = `
+    <div class="notification-empty">
+      Unable to load notifications.
+    </div>
+  `;
 }
+}
+
 
 function openReminderModal() {
   alertEditingId = null;

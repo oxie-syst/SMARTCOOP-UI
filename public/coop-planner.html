@@ -253,35 +253,36 @@
               </select>
             </div>
 
-            <div class="input-group">
-              <label for="capacity">
-                <i data-lucide="bird"></i>
-                Recommended Capacity
-              </label>
 
-              <input
-                id="capacity"
-                type="text"
-                readonly
-                placeholder="Select a coop size first">
-            </div>
+        <div class="input-group">
+          <label for="type">
+            <i data-lucide="bird"></i>
+            Chicken Type
+          </label>
 
-            <div class="input-group">
-              <label for="type">
-                <i data-lucide="bird"></i>
-                Chicken Type
-              </label>
+          <select id="type" required onchange="updateCapacity()">
+            <option value="" disabled selected>
+              Select Chicken Type
+            </option>
+            <option>Layers (Egg Production)</option>
+            <option>Broilers</option>
+            <option>Dual Purpose</option>
+          </select>
+        </div>
 
-              <select id="type">
-                <option value="" disabled selected>
-                  Select Chicken Type
-                </option>
+        <div class="input-group">
+          <label for="capacity">
+            <i data-lucide="bird"></i>
+            Recommended Capacity
+          </label>
 
-                <option>Layers (Egg Production)</option>
-                <option>Broilers</option>
-                <option>Dual Purpose</option>
-              </select>
-            </div>
+          <input
+            id="capacity"
+            type="text"
+            readonly
+            placeholder="Select a coop size and chicken type">
+        </div>
+
 
             <button
               type="button"

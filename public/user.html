@@ -227,19 +227,32 @@
 
           <div class="metric-content">
 
-            <div class="metric-heading">
-              <span>Total Chickens</span>
+          <div class="metric-heading">
+            <span>Total Chickens</span>
 
-              <span class="metric-change green-change">
-                0%
-              </span>
-            </div>
+            <span
+              class="metric-change green-change"
+              id="chickenCapacityPercentage"
+              title="Percentage of total coop capacity currently occupied">
+              Loading...
+            </span>
+          </div>
 
-            <h2 id="totalChickens">0</h2>
+          <h2 id="totalChickens">Loading...</h2>
 
-            <p id="activeCoopsText">
-              Across 0 active coops
-            </p>
+          <p>
+            Current Chickens:
+            <strong id="currentChickensDisplay">—</strong>
+          </p>
+
+          <p>
+            Maximum Capacity:
+            <strong id="maximumCapacityDisplay">—</strong>
+          </p>
+
+          <p id="activeCoopsText">
+            Loading coop data...
+          </p>
 
           </div>
 
@@ -263,11 +276,11 @@
               <span>Active Coops</span>
 
               <span class="metric-change blue-change">
-                0%
+                Active
               </span>
             </div>
 
-            <h2 id="activeCoops">0</h2>
+            <h2 id="activeCoops">Loading...</h2>
 
             <p>Currently active</p>
 
@@ -297,7 +310,7 @@
               </span>
             </div>
 
-            <h2 id="monthlyCost">₱0</h2>
+            <h2 id="monthlyCost">Loading...</h2>
 
             <p>From expense records</p>
 
@@ -330,7 +343,7 @@
 
           </div>
 
-          <div id="projectContainer"></div>
+          <div id="projectContainer" role="status" aria-live="polite">Loading your projects...</div>
 
         </section>
 
@@ -346,7 +359,7 @@
                 <span
                   class="dashboard-alert-badge"
                   id="alertBadgePanel">
-                  0
+                  —
                 </span>
               </h2>
 
@@ -359,7 +372,7 @@
 
           </div>
 
-          <div id="alertsContainer"></div>
+          <div id="alertsContainer" role="status" aria-live="polite">Loading reminders...</div>
 
         </section>
 
@@ -379,14 +392,9 @@
               </h2>
 
               <p>
-                AI-powered recommendations for your farm
+                Farm management tips and useful information
               </p>
             </div>
-
-            <span class="updated-label">
-              <i data-lucide="refresh-cw"></i>
-              Updated today
-            </span>
 
           </div>
 

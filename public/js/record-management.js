@@ -1894,6 +1894,33 @@ if (activeRecordTab === "chicken") {
   const updatedTotal =
     getTotalInventoryChickens() - originalQuantity + quantity;
 
+    const maximumCapacity = Number(selectedCoop?.NumberOfChickens);
+
+if (!Number.isFinite(maximumCapacity) || maximumCapacity <= 0) {
+  alert("Cannot save chicken record. The selected coop has no valid maximum capacity.");
+  return;
+}
+
+const updatedActiveChickens =
+  updatedTotal - getTotalUsedChickens();
+
+if (updatedActiveChickens > maximumCapacity) {
+  const availableSlots = Math.max(
+    0,
+    maximumCapacity - getActiveChickenCount() + originalQuantity
+  );
+
+  alert(
+    `Coop Capacity Exceeded!\n\n` +
+    `Maximum Capacity: ${maximumCapacity} chickens\n` +
+    `Current Chickens: ${getActiveChickenCount()}\n` +
+    `Available Slots: ${availableSlots}\n\n` +
+    `You cannot exceed the maximum capacity of this coop.`
+  );
+
+  return;
+}
+
   if (updatedTotal < getTotalUsedChickens()) {
     alert(
       `Cannot update chicken inventory. ${getTotalUsedChickens()} chickens are already recorded as dead or harvested.`

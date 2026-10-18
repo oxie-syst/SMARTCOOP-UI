@@ -51,6 +51,67 @@ function getCoopChickenStock(userId, coopId, callback) {
   );
 }
 
+function checkChickenCapacity(userId, coopId, newQuantity, originalQuantity, callback) {
+  db.query(
+    `SELECT NumberOfChickens, Status
+     FROM coops
+     WHERE CoopID = ? AND UserID = ?
+     LIMIT 1`,
+    [coopId, userId],
+    (coopError, coops) => {
+      if (coopError) return callback(coopError);
+
+      if (!coops.length) {
+        return callback(null, {
+          allowed: false,
+          message: "Coop not found."
+        });
+      }
+
+      const coop = coops[0];
+      const maximumCapacity = Number(coop.NumberOfChickens);
+
+      if (String(coop.Status).toLowerCase() !== "active") {
+        return callback(null, {
+          allowed: false,
+          message: "Chicken records can only be added to an active coop."
+        });
+      }
+
+      if (!Number.isInteger(maximumCapacity) || maximumCapacity <= 0) {
+        return callback(null, {
+          allowed: false,
+          message: "This coop has no valid maximum capacity."
+        });
+      }
+
+      getCoopChickenStock(userId, coopId, (stockError, stock) => {
+        if (stockError) return callback(stockError);
+
+        const updatedActive =
+          stock.activeChickens - originalQuantity + newQuantity;
+
+        const availableSlots = Math.max(
+          0,
+          maximumCapacity - stock.activeChickens + originalQuantity
+        );
+
+        if (updatedActive > maximumCapacity) {
+          return callback(null, {
+            allowed: false,
+            message:
+              `Coop capacity exceeded. Maximum: ${maximumCapacity}, ` +
+              `Current: ${stock.activeChickens}, ` +
+              `Available slots: ${availableSlots}.`
+          });
+        }
+
+        callback(null, { allowed: true });
+      });
+    }
+  );
+}
+
 const recordConfig = {
   expenses: {
     table: "expense_records",
@@ -661,9 +722,32 @@ const value = Number(countField[type]);
     });
   }
 
-  if (type === "chicken") {
-    return continueAddRecord();
-  }
+if (type === "chicken") {
+  return checkChickenCapacity(
+    userId,
+    coopId,
+    value,
+    0,
+    (error, result) => {
+      if (error) {
+        console.error("Chicken Capacity Check Error:", error);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to check coop capacity."
+        });
+      }
+
+      if (!result.allowed) {
+        return res.status(400).json({
+          success: false,
+          message: result.message
+        });
+      }
+
+      continueAddRecord();
+    }
+  );
+}
 
   getCoopChickenStock(userId, coopId, (error, stock) => {
     if (error) {
@@ -1041,17 +1125,42 @@ db.query(
         });
       }
 
-      if (type === "chicken") {
-        const updatedInventory =
-          stock.totalInventory - originalQuantity + value;
+if (type === "chicken") {
+  const updatedInventory =
+    stock.totalInventory - originalQuantity + value;
 
-        if (updatedInventory < stock.totalUsed) {
-          return res.status(400).json({
-            success: false,
-            message: `Cannot reduce inventory. ${stock.totalUsed} chickens are already dead or harvested.`
-          });
-        }
+  if (updatedInventory < stock.totalUsed) {
+    return res.status(400).json({
+      success: false,
+      message: `Cannot reduce inventory. ${stock.totalUsed} chickens are already dead or harvested.`
+    });
+  }
+
+  return checkChickenCapacity(
+    userId,
+    coopId,
+    value,
+    originalQuantity,
+    (error, result) => {
+      if (error) {
+        console.error("Chicken Capacity Check Error:", error);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to check coop capacity."
+        });
       }
+
+      if (!result.allowed) {
+        return res.status(400).json({
+          success: false,
+          message: result.message
+        });
+      }
+
+      executeUpdate();
+    }
+  );
+}
 
       if (type === "mortality" || type === "meat") {
         const availableChickens =
