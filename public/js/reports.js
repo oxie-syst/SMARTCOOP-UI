@@ -1,4 +1,5 @@
 let eggTrendChart = null;
+let meatTrendChart = null;
 let expenseChart = null;
 let mortalityChart = null;
 let costChart = null;
@@ -390,6 +391,9 @@ function renderReportCharts(data) {
   renderEggTrendChart(
     data.monthlyEggs || {}
   );
+  renderMeatTrendChart(
+  data.monthlyMeat || {}
+);
 
   renderExpenseChart(
     data.expenseBreakdown || {}
@@ -471,6 +475,43 @@ function renderEggTrendChart(
         }
       }
     );
+}
+
+function renderMeatTrendChart(monthlyMeat) {
+  const canvas = document.getElementById("meatTrendChart");
+
+  if (!canvas) return;
+
+  const labels = Object.keys(monthlyMeat);
+  const values = Object.values(monthlyMeat);
+
+  meatTrendChart = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: "Meat Harvested (kg)",
+        data: values,
+        borderColor: "#ea580c",
+        backgroundColor: "rgba(234, 88, 12, 0.12)",
+        fill: true,
+        tension: 0.35
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: "Total Weight (kg)"
+          }
+        }
+      }
+    }
+  });
 }
 
 function renderExpenseChart(
@@ -685,6 +726,10 @@ function destroyReportCharts() {
     costChart.destroy();
     costChart = null;
   }
+  if (meatTrendChart) {
+  meatTrendChart.destroy();
+  meatTrendChart = null;
+}
 }
 
 function renderCoopPerformance(

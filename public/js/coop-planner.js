@@ -156,6 +156,9 @@ async function getPlans() {
 }
 
 let currentPlan = null;
+let isSavingPlan = false;
+let savedPlanRef = null;
+
 
 async function savePlan() {
   if (!currentPlan) {
@@ -172,6 +175,18 @@ async function savePlan() {
     alert("Please log in first.");
     return;
   }
+  
+  
+if (isSavingPlan) return;
+
+if (savedPlanRef === currentPlan) {
+  alert("This coop plan has already been saved.");
+  return;
+}
+
+isSavingPlan = true;
+
+
 
   try {
     const response =
@@ -230,25 +245,39 @@ async function savePlan() {
     }
 
 
-    alert(
-      result.message ||
-      "Plan saved successfully!"
-    );
+
+savedPlanRef = currentPlan;
+
+alert(
+  result.message ||
+  "Plan saved successfully!"
+);
 
 
-    loadPlans();
 
-  } catch (error) {
-    console.error(
-      "SAVE PLAN ERROR:",
-      error
-    );
+  await loadPlans();
 
-    alert(
-      "Unable to connect to the server."
-    );
-  }
+const coopNameInput = document.getElementById("coopName");
+
+if (coopNameInput) {
+  coopNameInput.value = await getNextCoopName();
 }
+
+
+} catch (error) {
+  console.error(
+    "SAVE PLAN ERROR:",
+    error
+  );
+
+  alert(
+    "Unable to connect to the server."
+  );
+} finally {
+  isSavingPlan = false;
+}
+}
+
 
 function showCoopUpgradePopup(message) {
 
@@ -1261,6 +1290,22 @@ const broilerMaterialSizes = {
   }
 };
 
+
+Object.keys(broilerMaterialSizes).forEach(sizeKey => {
+  broilerMaterialSizes[sizeKey].feeder = {
+    name: "Feeder",
+    specification: "Poultry feeding equipment"
+  };
+
+  broilerMaterialSizes[sizeKey].broodingGuard = {
+    name: "Brooding Guard (Optional)",
+    specification: "Temporary enclosure for chicks during brooding"
+  };
+});
+
+
+
+
 const dualPurposeMaterialSizes = {
   "1x1": {
     concrete: {
@@ -1593,7 +1638,9 @@ const broilerHotspotPositions = {
     door: "0.4749m 0.8733m -0.0984m",
     mesh: "0.30m 1.25m 0.48m",
     riceHull: "0m 0.40m 0m",
-    roof: "0m 1.95m 0.35m"
+    roof: "0m 1.95m 0.35m",
+    feeder: "0m 0.45m -0.25m",
+    broodingGuard: "0m 0.35m 0m"
   },
 
   "2x2": {
@@ -1602,7 +1649,9 @@ const broilerHotspotPositions = {
     door: "0.9742m 0.9251m -0.5497m",
     mesh: "0.9750m 1.2327m -0.0001m",
     riceHull: "0m 0.175m 0.60m",
-    roof: "0.6750m 2.0689m 0.0004m"
+    roof: "0.6750m 2.0689m 0.0004m",
+    feeder: "0m 0.45m -0.50m",
+    broodingGuard: "0m 0.35m 0m"
   },
 
   "3x3": {
@@ -1611,7 +1660,9 @@ const broilerHotspotPositions = {
     door: "1.4254m 0.8733m -1.0507m",
     mesh: "1.4528m 1.2559m -0.0001m",
     riceHull: "0m 0.1250m 0.70m",
-    roof: "0.9404m 2.3538m -0.0010m"
+    roof: "0.9404m 2.3538m -0.0010m",
+    feeder: "0m 0.45m -0.75m",
+    broodingGuard:  "0m 0.35m -0.50m"
   },
 
   "4x4": {
@@ -1620,7 +1671,9 @@ const broilerHotspotPositions = {
     door: "1.9263m 0.8482m -1.1513m",
     mesh: "1.9508m 1.2559m 0m",
     riceHull: "0.0168m 0.1250m 0.80m",
-    roof: "1.2215m 2.4556m 0.0876m"
+    roof: "1.2215m 2.4556m 0.0876m",
+    feeder: "0m 0.45m -1.00m",
+    broodingGuard: "0m 0.35m -0.75m"
   },
 
   "5x5": {
@@ -1629,7 +1682,9 @@ const broilerHotspotPositions = {
     door: "2.4529m 0.8482m -2.05m",
     mesh: "2.4766m 1.4585m 0m",
     riceHull: "0.0225m 0.0875m 1.00m",
-    roof: "1.5822m 2.8605m 0.2250m"
+    roof: "1.5822m 2.8605m 0.2250m",
+    feeder: "0m 0.45m -1.25m",
+    broodingGuard: "0m 0.35m -1.00m"
   },
 
   "6x6": {
@@ -1638,7 +1693,9 @@ const broilerHotspotPositions = {
     door: "2.9510m 0.8482m -2.55m",
     mesh: "2.9776m 1.4585m 0m",
     riceHull: "0m 0.0875m 1.20m",
-    roof: "1.7355m 3.1222m 0m"
+    roof: "1.7355m 3.1222m 0m",
+    feeder: "0m 0.45m -1.50m",
+    broodingGuard: "0m 0.35m -1.25m"
   },
 
   "7x7": {
@@ -1647,7 +1704,9 @@ const broilerHotspotPositions = {
     door: "3.4517m 0.8482m 0.0027m",
     mesh: "0m 1.4585m -3.45m",
     riceHull: "0.0151m 0.0875m 1.20m",
-    roof: "2.0444m 3.1563m 0.1330m"
+    roof: "2.0444m 3.1563m 0.1330m",
+    feeder: "0m 0.45m -1.75m",
+    broodingGuard: "0m 0.35m -1.50m"
   },
 
   "8x8": {
@@ -1656,7 +1715,9 @@ const broilerHotspotPositions = {
     door: "3.4517m 0.8482m 0.0027m",
     mesh: "0m 1.4585m -3.95m",
     riceHull: "0.0027m 0.0875m 1.40m",
-    roof: "2.3435m 3.2957m 0m"
+    roof: "2.3435m 3.2957m 0m",
+    feeder: "0m 0.45m -2.00m",
+    broodingGuard: "0m 0.35m -1.75m"
   },
 
   "9x9": {
@@ -1665,7 +1726,9 @@ const broilerHotspotPositions = {
     door: "4.4756m 0.8482m -0.40m",
     mesh: "0m 1.4720m -4.45m",
     riceHull: "-0.0004m 0.0875m 1.40m",
-    roof: "2.6476m 3.3977m 0m"
+    roof: "2.6476m 3.3977m 0m",
+    feeder: "0m 0.45m -2.25m",
+    broodingGuard: "0m 0.35m -2.00m"
   },
 
   "10x10": {
@@ -1674,9 +1737,12 @@ const broilerHotspotPositions = {
     door: "4.9757m 0.8482m -0.50m",
     mesh: "0m 1.4720m -4.95m",
     riceHull: "-0.0120m 0.0875m 0.0005m",
-    roof: "2.9970m 3.4778m 0m"
+    roof: "2.9970m 3.4778m 0m",
+    feeder: "0m 0.45m -2.50m",
+    broodingGuard: "0m 0.35m -2.25m"
   }
 };
+
 
 const dualPurposeHotspotPositions = {
   "1x1": {
@@ -2194,13 +2260,36 @@ if (chickenType === "Dual Purpose") {
   });
 }
 
+
 if (chickenType === "Layers (Egg Production)") {
-  const cageModules = Math.max(
-    1,
-    Math.ceil(capacity / 8)
-  );
+  const cageModules = Math.max(1, Math.ceil(capacity / 8));
+
+  const floorArea = area;
+  const postCount = Math.max(4, 4 * Math.ceil(size / 2));
+  const roofSheets = Math.max(2, Math.ceil((area * 1.2) / 2.5));
 
   data.construction = [
+    createCostItem(
+      "Concrete Floor",
+      floorArea,
+      "m²",
+      1000,
+      "Estimated concrete flooring; verify thickness and cost"
+    ),
+    createCostItem(
+      "Wood Posts",
+      postCount,
+      "pcs",
+      125,
+      "Estimated structural support posts"
+    ),
+    createCostItem(
+      "Roof Sheet",
+      roofSheets,
+      "sheets",
+      180,
+      "Estimated roofing with allowance for overhang"
+    ),
     createCostItem(
       "Cage Installation Materials",
       cageModules,
@@ -2208,7 +2297,6 @@ if (chickenType === "Layers (Egg Production)") {
       150,
       "Estimated installation materials for layer cage modules"
     ),
-
     createCostItem(
       "Cage Mounting Hardware",
       cageModules,
@@ -2229,6 +2317,7 @@ if (chickenType === "Layers (Egg Production)") {
   ];
 }
 
+
   if (chickenType === "Dual Purpose") {
 
     const mesh = data.construction.find(
@@ -2242,46 +2331,45 @@ if (chickenType === "Layers (Egg Production)") {
     mesh.specification =
   `${dualPurposeMaterialSizes[sizeKey].wireMesh.specification} • Estimated enclosure mesh including nesting/perching area`;
     }
+    data.hardware = data.hardware.filter(
+  item => item.name !== "Door Latch"
+);
+
+data.hardware.push(
+  createCostItem(
+    "Door Lock",
+    1,
+    "set",
+    150,
+    "Estimated door locking hardware"
+  ),
+  createCostItem(
+    "Electrical Switch",
+    1,
+    "pc",
+    100,
+    "Estimated switch for coop lighting"
+  )
+);
   }
 
 
   if (chickenType === "Layers (Egg Production)") {
     const cageModules = Math.ceil(capacity / 8);
 
-    data.equipment = [
-      createCostItem(
-        "Layer Cage Assembly",
-        cageModules,
-        "modules",
-        1400
-      ),
-      createCostItem(
-        "Cage Support Frame",
-        cageModules,
-        "sets",
-        450
-      ),
-      createCostItem(
-        "Feeder Trough",
-        cageModules,
-        "sets",
-        220,
-        "Estimated purchasing sets; 1x1 Blender model contains 2 feeder trough objects"
-      ),
-      createCostItem(
-        "Water Trough",
-        cageModules,
-        "sets",
-        220
-      ),
-      createCostItem(
-        "Egg Catcher / Collection Tray",
-        cageModules,
-        "sets",
-        180,
-        "Estimated purchasing sets; 1x1 Blender model contains 4 egg catcher objects"
-      )
-    ];
+data.equipment = [
+  createCostItem("Battery Cage", cageModules, "modules", 1400),
+  createCostItem("Stand / Frame", cageModules, "sets", 450),
+  createCostItem("Atlanta Feeder Trough", cageModules, "sets", 220),
+  createCostItem("Atlanta Water Trough", cageModules, "sets", 220),
+  createCostItem("Egg Catcher / Collection Tray", cageModules, "sets", 180),
+  createCostItem(
+    "Lights / Lighting Assembly",
+    Math.max(1, Math.ceil(area / 10)),
+    "sets",
+    250
+  )
+];
 
     data.bedding = [];
 
@@ -2291,32 +2379,40 @@ if (chickenType === "Layers (Egg Production)") {
     const feeders = Math.ceil(capacity / 15);
     const waterers = Math.ceil(capacity / 20);
 
-    data.equipment = [
-      createCostItem(
-        "Nesting Box",
-        nestingBoxes,
-        "sets",
-        350
-      ),
-      createCostItem(
-        "Perch",
-        perches,
-        "sets",
-        180
-      ),
-      createCostItem(
-        "Feeder",
-        feeders,
-        "sets",
-        180
-      ),
-      createCostItem(
-        "Bell Waterer",
-        waterers,
-        "sets",
-        300
-      )
-    ];
+
+data.equipment = [
+  createCostItem(
+    "Nesting Box",
+    nestingBoxes,
+    "sets",
+    350
+  ),
+  createCostItem(
+    "Perch",
+    perches,
+    "sets",
+    180
+  ),
+  createCostItem(
+    "Feeder",
+    feeders,
+    "sets",
+    180
+  ),
+  createCostItem(
+    "Bell Waterer",
+    waterers,
+    "sets",
+    300
+  ),
+  createCostItem(
+    "Lights / Lighting Assembly",
+    Math.max(1, Math.ceil(area / 10)),
+    "sets",
+    250
+  )
+];
+
 
     data.bedding = [
       createCostItem(
@@ -2436,6 +2532,61 @@ function calculateRecommendedBudget(sizeKey, chickenType) {
 }
 
 
+const savedPlannerParams = new URLSearchParams(window.location.search);
+const isFromSavedRecommendation =
+  savedPlannerParams.get("fromSaved") === "1";
+
+let savedRecommendedSizes = [];
+
+if (isFromSavedRecommendation) {
+  try {
+    const rawSizes = JSON.parse(
+      savedPlannerParams.get("recommendedSizes") || "[]"
+    );
+
+    const ranges = Array.isArray(rawSizes)
+      ? rawSizes
+      : [rawSizes];
+
+    ranges.forEach(range => {
+      const matches = String(range)
+        .match(/(\d+)\s*[x×]\s*(\d+)/gi);
+
+      if (!matches) return;
+
+      const numbers = matches.map(size =>
+        Number(size.match(/\d+/)[0])
+      );
+
+      if (numbers.length === 1) {
+        savedRecommendedSizes.push(numbers[0]);
+      } else {
+        const start = Math.min(...numbers);
+        const end = Math.max(...numbers);
+
+        for (let i = start; i <= end; i++) {
+          savedRecommendedSizes.push(i);
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Invalid recommended sizes:", error);
+  }
+}
+
+savedRecommendedSizes = [
+  ...new Set(savedRecommendedSizes)
+].filter(size => size >= 1 && size <= 10);
+
+function isRecommendedCoopSize(size) {
+  if (!isFromSavedRecommendation) return true;
+
+  return savedRecommendedSizes.includes(
+    Number(String(size).split("x")[0])
+  );
+}
+
+
 
 function populateSizeDropdown() {
   const sizeSelect = document.getElementById("coopSize");
@@ -2446,14 +2597,26 @@ function populateSizeDropdown() {
     '<option value="" disabled selected>Select Size</option>';
 
   for (let i = 1; i <= 10; i++) {
-    let option = document.createElement("option");
+    const sizeKey = `${i}x${i}`;
 
-    option.value = i + "," + i;
-    option.text = i + " x " + i + " meters";
+    if (!isRecommendedCoopSize(sizeKey)) {
+      continue;
+    }
+
+    const option = document.createElement("option");
+
+    option.value = `${i},${i}`;
+    option.textContent = `${i} x ${i} meters`;
 
     sizeSelect.appendChild(option);
   }
+
+  if (sizeSelect.options.length === 1) {
+    sizeSelect.innerHTML =
+      '<option value="" disabled selected>No recommended coop sizes available</option>';
+  }
 }
+
 
 
 
@@ -2479,13 +2642,31 @@ function findSuitableSizes() {
   sizeSelect.innerHTML = "";
   capacityInput.value = "";
 
-  if (!Number.isFinite(budget) || budget <= 0) {
-    sizeSelect.innerHTML =
-      '<option value="" disabled selected>Enter your budget first</option>';
+const budgetInput = document.getElementById("budget");
+const rawBudget = budgetInput.value.trim();
 
-    message.textContent = "";
-    return;
-  }
+if (rawBudget === "") {
+  sizeSelect.innerHTML =
+    '<option value="" disabled selected>Enter your budget first</option>';
+  message.textContent = "";
+  return;
+}
+
+if (rawBudget === "-" || !Number.isFinite(budget) || budget < 0) {
+  sizeSelect.innerHTML =
+    '<option value="" disabled selected>Invalid budget</option>';
+  message.textContent =
+    "Invalid Budget. Please enter a valid positive amount.";
+  return;
+}
+
+if (budget === 0) {
+  sizeSelect.innerHTML =
+    '<option value="" disabled selected>No suitable coop size</option>';
+  message.textContent =
+    "Below Minimum Budget. No coop fits your budget.";
+  return;
+}
 
   if (!Object.hasOwn(estimatedChickenPrices, chickenType)) {
   sizeSelect.innerHTML =
@@ -2497,28 +2678,46 @@ function findSuitableSizes() {
   return;
 }
 
-  const affordableSizes = Object.keys(coopData)
-    .map(size => ({
+
+const affordableSizes = Object.keys(coopData)
+  .filter(size => isRecommendedCoopSize(size))
+  .map(size => ({
+    size,
+    costing: calculateRecommendedBudget(
       size,
-      costing: calculateRecommendedBudget(
-        size,
-        chickenType
-      )
-    }))
-    .filter(item =>
-      item.costing &&
-      item.costing.recommendedBudget <= budget
-    );
+      chickenType
+    )
+  }))
+  .filter(item =>
+    item.costing &&
+    item.costing.recommendedBudget <= budget
+  );
 
-  if (affordableSizes.length === 0) {
-    sizeSelect.innerHTML =
-      '<option value="" disabled selected>No suitable coop size</option>';
 
-    message.textContent =
-      "Your budget is below the minimum estimated budget.";
 
-    return;
-  }
+
+if (affordableSizes.length === 0) {
+  sizeSelect.innerHTML =
+    '<option value="" disabled selected>No suitable coop size</option>';
+
+  const recommendedBudgets = Object.keys(coopData)
+    .filter(size => isRecommendedCoopSize(size))
+    .map(size => calculateRecommendedBudget(size, chickenType))
+    .filter(Boolean)
+    .map(item => item.recommendedBudget);
+
+  const minimumBudget = recommendedBudgets.length
+    ? Math.min(...recommendedBudgets)
+    : null;
+
+  message.textContent = minimumBudget !== null
+    ? `Your budget is below the minimum recommended total of ₱${minimumBudget.toLocaleString()}, including coop setup, chickens, and budget allowance.`
+    : "No recommended coop sizes are available.";
+
+  return;
+}
+
+
 
   sizeSelect.innerHTML =
     '<option value="" disabled selected>Select your preferred coop size</option>';
@@ -2553,10 +2752,10 @@ function useManualPlanning() {
     "budget"
   ).value = "";
 
-  document.getElementById(
-    "budgetMessage"
-  ).textContent =
-    "Manual planning enabled.";
+document.getElementById(
+  "budgetMessage"
+).textContent =
+  "Manual Planning Enabled. Budget is optional. You can select your preferred coop size and continue.";
 
   populateSizeDropdown();
 
@@ -2570,8 +2769,51 @@ function useManualPlanning() {
   }
 }
 
+function updateCoopSpaceGuidance() {
+  const guidance = document.getElementById("coopSpaceGuidance");
+  const sizeValue = document.getElementById("coopSize")?.value;
+
+  if (!guidance) return;
+
+  if (!sizeValue) {
+    guidance.textContent = "";
+    return;
+  }
+
+  const [length, width] = sizeValue.split(",").map(Number);
+
+  if (!Number.isFinite(length) || !Number.isFinite(width)) {
+    guidance.textContent = "";
+    return;
+  }
+
+  const area = length * width;
+  const sizeKey = `${length}x${width}`;
+
+  const dimensionsText =
+    `Selected Coop: ${length} × ${width} meters (${area} m²).`;
+
+
+if (!isFromSavedRecommendation) {
+  guidance.textContent = dimensionsText;
+  return;
+}
+
+
+  if (savedRecommendedSizes.length === 0) {
+    guidance.textContent =
+      `${dimensionsText} No saved breed-specific space recommendation is available.`;
+    return;
+  }
+
+  guidance.textContent = isRecommendedCoopSize(sizeKey)
+    ? `${dimensionsText} This coop size is within the saved breed recommendation.`
+    : `${dimensionsText} This coop size is outside the saved breed recommendation.`;
+}
+
 
 function updateCapacity() {
+  updateCoopSpaceGuidance();
   const sizeSelect = document.getElementById("coopSize");
   const typeSelect = document.getElementById("type");
   const capacityInput = document.getElementById("capacity");
@@ -2610,6 +2852,10 @@ async function generatePlan() {
     document.getElementById(
       "coopName"
     ).value.trim();
+    if (name.length > 50) {
+  alert("Coop name must not exceed 50 characters.");
+  return;
+}
 
   const budget =
     Number(
@@ -2618,6 +2864,27 @@ async function generatePlan() {
       ).value
     ) || 0;
 
+const budgetInput = document.getElementById("budget");
+const rawBudget = budgetInput.value.trim();
+
+if (rawBudget !== "") {
+  const enteredBudget = Number(rawBudget);
+
+  if (
+  !/^\d+(\.\d{1,2})?$/.test(rawBudget) ||
+  !Number.isFinite(enteredBudget) ||
+  enteredBudget < 0
+) {
+    alert("Invalid Budget. Please enter a valid positive amount.");
+    return;
+  }
+
+  if (enteredBudget === 0) {
+    alert("Below Minimum Budget. No coop fits your budget.");
+    return;
+  }
+}
+
   if (!name) {
     alert(
       "Please enter a coop name."
@@ -2625,22 +2892,35 @@ async function generatePlan() {
 
     return;
   }
+if (!type) {
+  alert("Please select a chicken type.");
+  return;
+}
 
-  if (!sizeValue) {
+if (rawBudget !== "") {
+  const minimumBudget = Math.min(
+...Object.keys(coopData)
+  .filter(size => isRecommendedCoopSize(size))
+  .map(size => calculateRecommendedBudget(size, type))
+      .filter(Boolean)
+      .map(cost => cost.recommendedBudget)
+  );
+
+  if (Number.isFinite(minimumBudget) && budget < minimumBudget) {
     alert(
-      "Please enter your budget or choose a coop size."
+      `Below Minimum Budget!\n\n` +
+      `Available Budget: ₱${budget.toLocaleString()}\n` +
+      `Minimum Estimated Cost: ₱${minimumBudget.toLocaleString()}\n\n` +
+      `Please increase your budget.`
     );
-
     return;
   }
+}
 
-  if (!type) {
-    alert(
-      "Please select a chicken type."
-    );
-
-    return;
-  }
+if (!sizeValue) {
+  alert("Please choose a coop size.");
+  return;
+}
 const user =
   JSON.parse(
     localStorage.getItem("user")
@@ -2648,6 +2928,63 @@ const user =
 
 if (!user || !user.id) {
   alert("Please log in first.");
+  return;
+}
+  const [length, width] =
+    sizeValue
+      .split(",")
+      .map(Number);
+
+  const sizeKey =
+    `${length}x${width}`;
+
+  const area =
+    length * width;
+
+  const selectedCoop =
+    coopData[sizeKey];
+
+  if (!selectedCoop) {
+    alert(
+      "Coop size data not found."
+    );
+
+    return;
+  }
+
+
+const costing = calculateRecommendedBudget(
+  sizeKey,
+  type
+);
+
+if (!costing) {
+  alert("Cost estimation is unavailable.");
+  return;
+}
+
+const chickens = costing.capacity;
+const costData = costing.costData;
+
+const constructionTotal = costing.constructionTotal;
+const hardwareTotal = costing.hardwareTotal;
+const equipmentTotal = costing.equipmentTotal;
+const beddingTotal = costing.beddingTotal;
+
+const coopCost = costing.coopCost;
+const chickenCost = costing.chickenCost;
+const allowance = costing.allowance;
+const chickenUnitPrice = costing.chickenUnitPrice;
+
+const total = costing.recommendedBudget;
+
+if (rawBudget !== "" && budget < total) {
+  alert(
+    `Insufficient Budget!\n\n` +
+    `Available Budget: ₱${budget.toLocaleString()}\n` +
+    `Estimated Setup Cost: ₱${total.toLocaleString()}\n\n` +
+    `Please increase your budget or choose a smaller coop size.`
+  );
   return;
 }
 
@@ -2701,55 +3038,6 @@ try {
 
   return;
 }
-
-  const [length, width] =
-    sizeValue
-      .split(",")
-      .map(Number);
-
-  const sizeKey =
-    `${length}x${width}`;
-
-  const area =
-    length * width;
-
-  const selectedCoop =
-    coopData[sizeKey];
-
-  if (!selectedCoop) {
-    alert(
-      "Coop size data not found."
-    );
-
-    return;
-  }
-
-
-const costing = calculateRecommendedBudget(
-  sizeKey,
-  type
-);
-
-if (!costing) {
-  alert("Cost estimation is unavailable.");
-  return;
-}
-
-const chickens = costing.capacity;
-const costData = costing.costData;
-
-const constructionTotal = costing.constructionTotal;
-const hardwareTotal = costing.hardwareTotal;
-const equipmentTotal = costing.equipmentTotal;
-const beddingTotal = costing.beddingTotal;
-
-const coopCost = costing.coopCost;
-const chickenCost = costing.chickenCost;
-const allowance = costing.allowance;
-const chickenUnitPrice = costing.chickenUnitPrice;
-
-const total = costing.recommendedBudget;
-
 
 const spacePerChicken =
   area / chickens;
@@ -3030,6 +3318,46 @@ ${
     `
     : ""
 }
+
+${
+  materials.feeder && positions.feeder
+    ? `
+      <button
+        class="model-hotspot material-marker feeder-marker"
+        slot="hotspot-feeder"
+        data-position="${positions.feeder}"
+        data-normal="0m 1m 0m"
+      >
+        <span class="hotspot-label">
+          <strong>${materials.feeder.name}</strong>
+          <span>${materials.feeder.specification}</span>
+        </span>
+      </button>
+    `
+    : ""
+}
+
+${
+  type === "Broilers" &&
+  materials.broodingGuard &&
+  positions.broodingGuard
+    ? `
+      <button
+        class="model-hotspot material-marker brooding-guard-marker"
+        slot="hotspot-brooding-guard"
+        data-position="${positions.broodingGuard}"
+        data-normal="0m 1m 0m"
+      >
+        <span class="hotspot-label">
+          <strong>${materials.broodingGuard.name}</strong>
+          <span>${materials.broodingGuard.specification}</span>
+        </span>
+      </button>
+    `
+    : ""
+}
+
+
 
 ${
   materials.waterer && positions.waterer
@@ -3506,8 +3834,40 @@ document.getElementById("materialsComingSoonModal")
       closeMaterialsComingSoonModal();
     }
   });
+  async function getNextCoopName() {
+  const user = JSON.parse(localStorage.getItem("user"));
 
-function resetPlannerForm() {
+  if (!user?.id) return "New Coop";
+
+  try {
+    const response = await fetch(`/api/coops/user/${user.id}`);
+    if (!response.ok) return "New Coop";
+
+    const data = await response.json();
+    const plans = data.coops || [];
+
+    const existingNames = new Set(
+      plans.map(plan => String(plan.CoopName || "").trim().toLowerCase())
+    );
+
+    if (!existingNames.has("new coop")) {
+      return "New Coop";
+    }
+
+    let number = 1;
+
+    while (existingNames.has(`new coop ${number}`)) {
+      number++;
+    }
+
+    return `New Coop ${number}`;
+  } catch (error) {
+    console.error("Coop naming error:", error);
+    return "New Coop";
+  }
+}
+
+async function resetPlannerForm() {
   const budget =
     document.getElementById(
       "budget"
@@ -3561,9 +3921,9 @@ function resetPlannerForm() {
     budgetMessage.textContent = "";
   }
 
-  if (coopName) {
-    coopName.value = "New Coop";
-  }
+if (coopName) {
+  coopName.value = await getNextCoopName();
+}
 
   if (coopSize) {
     coopSize.innerHTML = `
@@ -3725,9 +4085,9 @@ async function loadPlans() {
 
           <div class="saved-header">
 
-            <h3>
-              ${plan.CoopName}
-            </h3>
+          <h3 class="saved-coop-name" title="${escapeCoopHTML(plan.CoopName)}">
+            ${escapeCoopHTML(plan.CoopName)}
+          </h3>
 
             <span class="status-badge">
               ${plan.Status}
@@ -4031,16 +4391,27 @@ document.addEventListener("DOMContentLoaded", function () {
   populateSizeDropdown();
   loadPlans();
 
+  const coopNameInput = document.getElementById("coopName");
+
+if (coopNameInput) {
+  getNextCoopName().then(name => {
+    if (coopNameInput.value === "New Coop") {
+      coopNameInput.value = name;
+    }
+  });
+}
+
   
 const budgetInput = document.getElementById("budget");
 const chickenTypeSelect = document.getElementById("type");
 const coopSizeSelect = document.getElementById("coopSize");
 
 function refreshBudgetAndCapacity() {
-  if (Number(budgetInput?.value) > 0) {
+  if (budgetInput?.value.trim() !== "") {
     findSuitableSizes();
   } else {
     populateSizeDropdown();
+    document.getElementById("budgetMessage").textContent = "";
   }
 
   updateCapacity();

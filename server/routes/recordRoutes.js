@@ -207,6 +207,7 @@ router.get("/user/:userId/coop/:coopId", (req, res) => {
         CoopOrBatch AS coopOrBatch,
         BirdsCount AS birdsCount,
         TotalWeight AS weight,
+        PricePerHead AS pricePerHead,
         CreatedAt AS createdAt
       FROM meat_records
       WHERE UserID = ? AND CoopID = ?
@@ -412,7 +413,8 @@ const {
   days,
   coopOrBatch,
   birdsCount,
-  weight
+  weight,
+  pricePerHead
 } = req.body;
 
   if (!userId) {
@@ -633,14 +635,19 @@ const {
 
         else if (type === "meat") {
 
-          if (
-            !date ||
-            !coopOrBatch
-          ) {
+          if (!date || !coopOrBatch) {
             return res.status(400).json({
               success: false,
-              message:
-                "Missing required meat record fields."
+              message: "Missing required meat record fields."
+            });
+          }
+
+          const price = Number(pricePerHead ?? 0);
+
+          if (!Number.isFinite(price) || price < 0) {
+            return res.status(400).json({
+              success: false,
+              message: "Price per head must be zero or greater."
             });
           }
 
@@ -652,9 +659,10 @@ const {
               RecordTime,
               CoopOrBatch,
               BirdsCount,
-              TotalWeight
+              TotalWeight,
+              PricePerHead
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           `;
 
           values = [
@@ -664,7 +672,8 @@ const {
             time || null,
             coopOrBatch,
             Number(birdsCount) || 0,
-            Number(weight) || 0
+            Number(weight) || 0,
+            price
           ];
         }
 
@@ -864,7 +873,8 @@ router.put("/:type/:id", (req, res) => {
     days,
     coopOrBatch,
     birdsCount,
-    weight
+    weight,
+    pricePerHead
   } = req.body;
 
   if (!userId) {
@@ -997,32 +1007,43 @@ router.put("/:type/:id", (req, res) => {
     ];
   }
 
-  else if (type === "meat") {
+else if (type === "meat") {
 
-    sql = `
-      UPDATE meat_records
-      SET
-        HarvestDate = ?,
-        RecordTime = ?,
-        CoopOrBatch = ?,
-        BirdsCount = ?,
-        TotalWeight = ?
-      WHERE MeatRecordID = ?
-      AND UserID = ?
-      AND CoopID = ?
-    `;
+  const price = Number(pricePerHead ?? 0);
 
-    values = [
-      date,
-      time || null,
-      coopOrBatch,
-      Number(birdsCount) || 0,
-      Number(weight) || 0,
-      id,
-      userId,
-      coopId
-    ];
+  if (!Number.isFinite(price) || price < 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Price per head must be zero or greater."
+    });
   }
+
+  sql = `
+    UPDATE meat_records
+    SET
+      HarvestDate = ?,
+      RecordTime = ?,
+      CoopOrBatch = ?,
+      BirdsCount = ?,
+      TotalWeight = ?,
+      PricePerHead = ?
+    WHERE MeatRecordID = ?
+    AND UserID = ?
+    AND CoopID = ?
+  `;
+
+  values = [
+    date,
+    time || null,
+    coopOrBatch,
+    Number(birdsCount) || 0,
+    Number(weight) || 0,
+    price,
+    id,
+    userId,
+    coopId
+  ];
+}
 
   else {
     return res.status(400).json({

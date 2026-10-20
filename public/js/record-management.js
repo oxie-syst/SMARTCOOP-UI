@@ -1,5 +1,6 @@
 let activeRecordTab = "expenses";
 let editRecordId = null;
+let isRecordSaving = false;
 
 let recordData = {
   expenses: [],
@@ -25,6 +26,46 @@ function isBroilerCoop() {
 
   return chickenType.includes("broiler");
 }
+function getChickenGrowthStage(chickenType, days) {
+  const type = String(chickenType || "").toLowerCase();
+  const age = Number(days);
+
+  if (!Number.isInteger(age) || age < 0) {
+    return "Invalid Age";
+  }
+
+  if (type.includes("broiler")) {
+    if (age <= 10) return "Starter";
+    if (age <= 24) return "Grower";
+    return "Finisher";
+  }
+
+  if (type.includes("layer")) {
+    if (age <= 56) return "Chick / Brooder";
+    if (age <= 125) return "Grower";
+    return "Layer";
+  }
+
+  if (type.includes("dual")) {
+    if (age <= 40) return "Brooding";
+    if (age <= 84) return "Grower / Meat-rearing";
+    if (age >= 120 && age <= 150) return "Pullet / Pre-laying";
+    if (age >= 300 && age <= 450) return "Egg Production";
+    return "Transition / Not Specified";
+  }
+
+  return "Not Specified";
+}
+
+function isLayerCoop() {
+  const chickenType =
+    String(selectedCoop?.ChickenType || "")
+      .trim()
+      .toLowerCase();
+
+  return chickenType.includes("layer");
+}
+
 
 function requiresActiveChickens() {
   return ["eggs", "mortality", "meat"].includes(activeRecordTab);
@@ -74,6 +115,33 @@ function getActiveChickenCount() {
 
 function updateRecordFeaturesByChickenType() {
   const broiler = isBroilerCoop();
+  
+const meatTabLabel = document.getElementById("recordMeatTabLabel");
+
+if (meatTabLabel) {
+  meatTabLabel.textContent = isLayerCoop()
+    ? "Cull / Spent Hens"
+    : "Meat Production";
+}
+
+  
+const meatCard = document.getElementById("recordMeatStatCard");
+
+if (meatCard) {
+  meatCard.style.display = isLayerCoop() ? "none" : "";
+}
+
+
+if (meatCard) {
+  const meatLabel = meatCard.querySelector(".stat-label");
+
+  if (meatLabel) {
+    meatLabel.textContent = isLayerCoop()
+      ? "Total Culled / Spent Hens"
+      : "Total Meat";
+  }
+}
+
 
   const eggCard =
     document.getElementById("recordEggStatCard");
@@ -349,15 +417,15 @@ function normalizeRecordData() {
       date: formatRecordDate(item.date)
     }));
 
-  recordData.meat =
-    (recordData.meat || []).map(item => ({
-      ...item,
-      birdsCount: Number(item.birdsCount) || 0,
-      weight: Number(item.weight) || 0,
-      date: formatRecordDate(item.date)
-    }));
+recordData.meat =
+  (recordData.meat || []).map(item => ({
+    ...item,
+    birdsCount: Number(item.birdsCount) || 0,
+    weight: Number(item.weight) || 0,
+    pricePerHead: Number(item.pricePerHead) || 0,
+    date: formatRecordDate(item.date)
+  }));
 }
-
 
 function updateRecordStats() {
   const totalExpenses =
@@ -451,10 +519,14 @@ setRecordText(
         : "batch logs"
     }`
   );
-
   setRecordText(
     "recordTotalMeat",
-    `${totalMeat.toLocaleString()} kg`
+    isLayerCoop()
+      ? `${recordData.meat.reduce(
+          (sum, item) => sum + (Number(item.birdsCount) || 0),
+          0
+        ).toLocaleString()} heads`
+      : `${totalMeat.toLocaleString()} kg`
   );
 
   setRecordText(
@@ -500,6 +572,15 @@ function switchRecordTab(tab) {
 
 
 function renderActiveRecordTab() {
+  const totalLabels = {
+  expenses: "Total Expenses",
+  eggs: "Total Eggs",
+  mortality: "Total Deaths",
+  chicken: "Total Active Chickens",
+  meat: isLayerCoop() ? "Total Disposed" : "Total Harvested"
+};
+
+setRecordText("runningTotalLabel", totalLabels[activeRecordTab]);
   if (activeRecordTab === "expenses") {
     loadExpenseRecords();
   }
@@ -616,7 +697,11 @@ function loadExpenseRecords() {
 
         <td>
           <span class="badge">
-            ${escapeRecordHTML(item.category)}
+            ${escapeRecordHTML(
+  item.category === "Medicine"
+    ? "Medicine/Vitamins"
+    : item.category
+)}
           </span>
         </td>
 
@@ -664,16 +749,12 @@ function loadEggRecords() {
     </tr>
   `);
 
-  setRecordText(
-    "runningTotal",
-    `Total Eggs: ${recordData.eggs
-      .reduce(
-        (sum, item) =>
-          sum + item.eggs,
-        0
-      )
-      .toLocaleString()}`
-  );
+setRecordText(
+  "runningTotal",
+  recordData.eggs
+    .reduce((sum, item) => sum + item.eggs, 0)
+    .toLocaleString()
+);
 
   renderTableRows(
     recordData.eggs.map(item => `
@@ -735,16 +816,12 @@ function loadMortalityRecords() {
     </tr>
   `);
 
-  setRecordText(
-    "runningTotal",
-    `Total Deaths: ${recordData.mortality
-      .reduce(
-        (sum, item) =>
-          sum + item.deaths,
-        0
-      )}`
-  );
-
+setRecordText(
+  "runningTotal",
+  recordData.mortality
+    .reduce((sum, item) => sum + item.deaths, 0)
+    .toLocaleString()
+);
   renderTableRows(
     recordData.mortality.map(item => `
       <tr>
@@ -799,8 +876,9 @@ function loadChickenRecords() {
       <th>Date</th>
       <th>Coop</th>
       <th>No. of Chicken/s</th>
-      <th>Stage</th>
+      <th>Chicken Type</th>
       <th>Days</th>
+      <th>Growth Stage</th>
       <th>Actions</th>
     </tr>
   `);
@@ -808,7 +886,7 @@ function loadChickenRecords() {
 
 setRecordText(
   "runningTotal",
-  `Total Active Chickens: ${getActiveChickenCount().toLocaleString()} heads`
+  `${getActiveChickenCount().toLocaleString()} heads`
 );
 
 
@@ -832,11 +910,19 @@ setRecordText(
           </span>
         </td>
 
-        <td>${item.days} days</td>
+<td>${item.days} days</td>
 
-        <td>
-          ${getRecordActions(item.id)}
-        </td>
+<td>
+  <span class="badge">
+    ${escapeRecordHTML(
+      getChickenGrowthStage(item.stage, item.days)
+    )}
+  </span>
+</td>
+
+<td>
+  ${getRecordActions(item.id)}
+</td>
       </tr>
     `).join("")
   );
@@ -844,71 +930,113 @@ setRecordText(
 
 
 function loadMeatRecords() {
+  const isLayer = isLayerCoop();
+
   setRecordText(
     "recordPanelTitle",
-    "Meat Production Logs"
+    isLayer ? "Cull / Spent Hens Logs" : "Meat Production Logs"
   );
 
   setRecordText(
     "recordPanelSubtitle",
-    "Track broiler harvests and total weight production"
+    isLayer
+      ? "Track culled or disposed spent hens and their value"
+      : "Track broiler harvests and total weight production"
   );
 
-  updateAddButton("Add Meat Log");
+  updateAddButton(
+    isLayer ? "Add Cull / Spent Hens Record" : "Add Meat Log"
+  );
 
   hideCategoryFilter();
 
   setTableHeader(`
     <tr>
-      <th>Harvest Date</th>
-      <th>Coop / Batch</th>
-      <th>Birds Harvested</th>
-      <th>Total Weight</th>
+      <th>${isLayer ? "Cull / Disposal Date" : "Harvest Date"}</th>
+      <th>Coop Name</th>
+      <th>${isLayer ? "Quantity Disposed" : "Birds Harvested"}</th>
+      ${
+        isLayer
+          ? "<th>Price per Head</th><th>Total Value</th>"
+          : "<th>Total Weight</th>"
+      }
       <th>Actions</th>
     </tr>
   `);
 
-  setRecordText(
-    "runningTotal",
-    `Total Harvested: ${recordData.meat
-      .reduce(
-        (sum, item) =>
-          sum + item.weight,
-        0
-      )
-      .toLocaleString()} kg`
+if (isLayer) {
+  const totalDisposed = recordData.meat.reduce(
+    (sum, item) => sum + (Number(item.birdsCount) || 0),
+    0
   );
 
+  const totalValue = recordData.meat.reduce(
+    (sum, item) =>
+      sum +
+      (Number(item.birdsCount) || 0) *
+      (Number(item.pricePerHead) || 0),
+    0
+  );
+
+  setRecordText(
+    "runningTotal",
+    `${totalDisposed.toLocaleString()} heads | ₱${totalValue.toLocaleString()}`
+  );
+
+} else {
+  const totalWeight = recordData.meat.reduce(
+    (sum, item) => sum + (Number(item.weight) || 0),
+    0
+  );
+
+  setRecordText(
+    "runningTotal",
+    `${totalWeight.toLocaleString()} kg`
+  );
+}
   renderTableRows(
-    recordData.meat.map(item => `
-      <tr>
-        <td>
-  ${escapeRecordHTML(
-    formatRecordDateTime(item.date, item.time)
-  )}
-</td>
+    recordData.meat.map(item => {
+      const birdsCount = Number(item.birdsCount) || 0;
+      const pricePerHead = Number(item.pricePerHead) || 0;
+      const totalValue = birdsCount * pricePerHead;
 
-        <td>
-          ${escapeRecordHTML(
-            item.coopOrBatch
-          )}
-        </td>
+      return `
+        <tr>
+          <td>
+            ${escapeRecordHTML(
+              formatRecordDateTime(item.date, item.time)
+            )}
+          </td>
 
-        <td>
-          ${item.birdsCount} birds
-        </td>
+          <td>
+            ${escapeRecordHTML(item.coopOrBatch)}
+          </td>
 
-        <td>
-          <strong>
-            ${item.weight} kg
-          </strong>
-        </td>
+          <td>
+            ${birdsCount} ${isLayer ? "heads" : "birds"}
+          </td>
 
-        <td>
-          ${getRecordActions(item.id)}
-        </td>
-      </tr>
-    `).join("")
+          ${
+            isLayer
+              ? `
+                <td>₱${pricePerHead.toLocaleString()}</td>
+                <td>
+                  <strong>₱${totalValue.toLocaleString()}</strong>
+                </td>
+              `
+              : `
+                <td>
+                  <strong>${Number(item.weight) || 0} kg</strong>
+                </td>
+              `
+          }
+
+          <td>
+            ${getRecordActions(item.id)}
+          </td>
+        </tr>
+      `;
+    }).join("")
   );
 }
 
@@ -1043,9 +1171,17 @@ function updateRecordEmptyState() {
     },
 
     meat: {
-      title: "No meat production records yet",
-      text: "Start recording your broiler harvests.",
-      button: "Add Your First Meat Record"
+      title: isLayerCoop()
+        ? "No cull / spent hens records yet"
+        : "No meat production records yet",
+
+      text: isLayerCoop()
+        ? "Start recording culled or disposed spent hens."
+        : "Start recording your chicken harvests.",
+
+      button: isLayerCoop()
+        ? "Add Your First Cull Record"
+        : "Add Your First Meat Record"
     }
   };
 
@@ -1189,16 +1325,16 @@ function buildRecordForm(record = null) {
       <div class="form-group">
         <label>Category</label>
 
-        <select id="expenseCategory">
-          <option value="Feed">Feed</option>
-          <option value="Medicine">Medicine</option>
-          <option value="Labor">Labor</option>
-          <option value="Construction">Construction</option>
-          <option value="Utilities">Utilities</option>
-          <option value="Livestock">Chicken Batches</option>
-          <option value="Harvest">Meat Harvest</option>
-          <option value="Misc">Miscellaneous</option>
-        </select>
+      <select id="expenseCategory" required>
+        <option value="Misc" selected>Miscellaneous</option>
+        <option value="Feed">Feed</option>
+        <option value="Medicine">Medicine/Vitamins</option>
+        <option value="Labor">Labor</option>
+        <option value="Construction">Construction</option>
+        <option value="Utilities">Utilities</option>
+        <option value="Livestock">Chicken Batches</option>
+        <option value="Harvest">Meat Harvest</option>
+      </select>
       </div>
 
       <div class="form-group">
@@ -1213,12 +1349,14 @@ function buildRecordForm(record = null) {
       <div class="form-group">
         <label>Amount</label>
 
-        <input
-          type="number"
-          min="0"
-          step="0.01"
-          id="expenseAmount"
-          placeholder="0.00">
+      <input
+        type="number"
+        min="0.01"
+        max="99999999"
+        step="0.01"
+        id="expenseAmount"
+        placeholder="0.00"
+        required>
       </div>
     `;
   }
@@ -1408,74 +1546,93 @@ function buildRecordForm(record = null) {
         >
       </div>
 
-      <div class="form-group">
-        <label>Days</label>
+        <div class="form-group">
+          <label>Days</label>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            id="chickenDays"
+            placeholder="0"
+            oninput="updateChickenStagePreview()">
+        </div>
 
-        <input
-          type="number"
-          min="0"
-          id="chickenDays"
-          placeholder="0">
-      </div>
+        <div class="form-group">
+          <label>Growth Stage</label>
+          <input
+            type="text"
+            id="chickenGrowthStage"
+            placeholder="Enter Days first"
+            readonly>
+        </div>
     `;
   }
+  
 
   else if (activeRecordTab === "meat") {
-    title.textContent =
-      record
-        ? "Edit Meat Log"
-        : "Add Meat Production Log";
+  title.textContent = isLayerCoop()
+    ? (record ? "Edit Cull / Spent Hens Record" : "Add Cull / Spent Hens Record")
+    : (record ? "Edit Meat Log" : "Add Meat Production Log");
 
-    fields.innerHTML = `
-<div class="record-date-time-row">
 
-  <div class="form-group">
-    <label>Harvest Date</label>
-    <input
-      type="date"
-      id="meatDate"
-      value="${getCurrentRecordDate()}"
-      required>
+fields.innerHTML = `
+  <div class="record-date-time-row">
+    <div class="form-group">
+      <label>${isLayerCoop() ? "Cull / Disposal Date" : "Harvest Date"}</label>
+      <input
+        type="date"
+        id="meatDate"
+        value="${getCurrentRecordDate()}"
+        required>
+    </div>
+
+    <div class="form-group">
+      <label>Time</label>
+      <input
+        type="time"
+        id="meatTime"
+        value="${getCurrentRecordTime()}"
+        required>
+    </div>
   </div>
 
   <div class="form-group">
-    <label>Time</label>
-    <input
-      type="time"
-      id="meatTime"
-      value="${getCurrentRecordTime()}"
-      required>
+    <label>Coop / Batch Reference</label>
+    ${getSelectedCoopField()}
   </div>
 
-</div>
+  <div class="form-group">
+    <label>${isLayerCoop() ? "Quantity Disposed" : "Birds Harvested"}</label>
+    <input
+      type="number"
+      min="1"
+      step="1"
+      id="meatBirdsCount"
+      placeholder="0">
+  </div>
 
-      <div class="form-group">
-        <label>Coop / Batch Reference</label>
-
-        ${getSelectedCoopField()}
-      </div>
-
-      <div class="form-group">
-        <label>Birds Harvested</label>
-
-        <input
-          type="number"
-          min="0"
-          id="meatBirdsCount"
-          placeholder="0">
-      </div>
-
-      <div class="form-group">
-        <label>Total Weight (kg)</label>
-
-        <input
-          type="number"
-          min="0"
-          step="0.01"
-          id="meatWeight"
-          placeholder="0.00">
-      </div>
-    `;
+  ${isLayerCoop() ? `
+    <div class="form-group">
+      <label>Price per Head (₱)</label>
+      <input
+        type="number"
+        min="0"
+        step="0.01"
+        id="meatPricePerHead"
+        placeholder="0.00">
+    </div>
+  ` : `
+    <div class="form-group">
+      <label>Total Weight (kg)</label>
+      <input
+        type="number"
+        min="0"
+        step="0.01"
+        id="meatWeight"
+        placeholder="0.00">
+    </div>
+  `}
+`;
   }
 
   if (record) {
@@ -1578,34 +1735,51 @@ function fillRecordForm(record) {
       record.stage
     );
 
-    setInputValue(
-      "chickenDays",
-      record.days
-    );
-  }
-
-  else if (activeRecordTab === "meat") {
-    setInputValue(
-      "meatDate",
-      record.date
-    );
-    setInputValue(
-  "meatTime",
-  record.time
+setInputValue(
+  "chickenDays",
+  record.days
 );
 
-    setInputValue(
-      "meatBirdsCount",
-      record.birdsCount
-    );
+updateChickenStagePreview();
+  }
 
+else if (activeRecordTab === "meat") {
+  setInputValue("meatDate", record.date);
+  setInputValue("meatTime", record.time);
+  setInputValue("meatBirdsCount", record.birdsCount);
+
+  if (isLayerCoop()) {
+    setInputValue(
+      "meatPricePerHead",
+      record.pricePerHead
+    );
+  } else {
     setInputValue(
       "meatWeight",
       record.weight
     );
   }
 }
+}
+function updateChickenStagePreview() {
+  const daysInput = document.getElementById("chickenDays");
+  const typeInput = document.getElementById("chickenStage");
+  const stageInput = document.getElementById("chickenGrowthStage");
 
+  if (!daysInput || !stageInput) return;
+
+  const days = daysInput.value.trim();
+
+  if (days === "") {
+    stageInput.value = "";
+    return;
+  }
+
+  stageInput.value = getChickenGrowthStage(
+    typeInput?.value,
+    days
+  );
+}
 
 function setInputValue(id, value) {
   const input =
@@ -1772,44 +1946,39 @@ function getRecordFormData() {
     };
   }
 
-  if (activeRecordTab === "meat") {
-    return {
-      date:
-        document.getElementById(
-          "meatDate"
-        )?.value,
+if (activeRecordTab === "meat") {
+  const data = {
+    date: document.getElementById("meatDate")?.value,
+    time: document.getElementById("meatTime")?.value,
+    coopOrBatch: selectedCoop?.CoopName || "",
+    birdsCount: Number(
+      document.getElementById("meatBirdsCount")?.value
+    ) || 0
+  };
 
-        time:
-        document.getElementById(
-          "meatTime"
-        )?.value,
+  if (isLayerCoop()) {
+    data.pricePerHead = Number(
+      document.getElementById("meatPricePerHead")?.value
+    ) || 0;
 
-      coopOrBatch: selectedCoop?.CoopName || "",
-
-      birdsCount:
-        Number(
-          document.getElementById(
-            "meatBirdsCount"
-          )?.value
-        ) || 0,
-
-      weight:
-        Number(
-          document.getElementById(
-            "meatWeight"
-          )?.value
-        ) || 0
-    };
+    data.weight = 0;
+  } else {
+    data.weight = Number(
+      document.getElementById("meatWeight")?.value
+    ) || 0;
   }
 
-  return {};
+  return data;
 }
 
+return {};
+}
 
 async function saveRecord() {
+  if (isRecordSaving) return;
+
   const userId =
     getRecordUserId();
-
   if (!userId) {
     alert("Please sign in again.");
     return;
@@ -1817,6 +1986,36 @@ async function saveRecord() {
 
   const formData =
     getRecordFormData();
+    if (activeRecordTab === "expenses") {
+  const description = document.getElementById("expenseDesc")?.value.trim();
+  const amountInput = document.getElementById("expenseAmount")?.value.trim();
+  const amount = Number(amountInput);
+
+  if (!formData.date || !formData.time) {
+    alert("Please provide the expense date and time.");
+    return;
+  }
+
+  if (!description) {
+    alert("Please enter an expense description.");
+    return;
+  }
+
+  if (amountInput === "") {
+    alert("Please enter the expense amount.");
+    return;
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    alert("Expense amount must be greater than zero.");
+    return;
+  }
+
+  if (amount > 99999999) {
+    alert("Expense amount cannot exceed ₱99,999,999.");
+    return;
+  }
+}
 
     
 
@@ -1854,13 +2053,24 @@ if (requiresActiveChickens()) {
         return;
       }
 
-  if (activeRecordTab === "meat" &&
-      (!Number.isInteger(formData.birdsCount) ||
-       formData.birdsCount <= 0 ||
-       formData.birdsCount > availableChickens)) {
-    alert(`Harvest must be between 1 and ${availableChickens} chickens.`);
-    return;
-  }
+    if (
+      activeRecordTab === "meat" &&
+      (
+        !Number.isInteger(formData.birdsCount) ||
+        formData.birdsCount <= 0 ||
+        formData.birdsCount > availableChickens
+      )
+    ) {
+      const recordType = isLayerCoop()
+        ? "Cull / Disposal quantity"
+        : "Harvest quantity";
+
+      alert(
+        `${recordType} must be between 1 and ${availableChickens} chickens.`
+      );
+
+      return;
+    }
 }
 
 if (activeRecordTab === "eggs") {
@@ -1869,9 +2079,33 @@ if (activeRecordTab === "eggs") {
     return;
   }
 }
+if (activeRecordTab === "meat" && !isLayerCoop()) {
+  const weightInput = document.getElementById("meatWeight")?.value.trim();
+  const weight = Number(weightInput);
 
+  if (weightInput === "") {
+    alert("Please enter the total weight.");
+    return;
+  }
+
+  if (!Number.isFinite(weight) || weight <= 0) {
+    alert("Total weight must be greater than zero.");
+    return;
+  }
+}
 if (activeRecordTab === "chicken") {
   const quantity = formData.quantity;
+  const daysInput = document.getElementById("chickenDays")?.value.trim();
+  const days = Number(daysInput);
+
+  if (
+    daysInput === "" ||
+    !Number.isInteger(days) ||
+    days < 0
+  ) {
+    alert("Days must be a non-negative whole number.");
+    return;
+  }
 
   if (!Number.isInteger(quantity) || quantity <= 0) {
     alert("Chicken quantity must be a positive whole number.");
@@ -1934,13 +2168,25 @@ if (updatedActiveChickens > maximumCapacity) {
     return;
   }
 
-  const payload = {
-    userId,
-    coopId: selectedCoopId,
-    ...formData
-  };
+const payload = {
+  userId,
+  coopId: selectedCoopId,
+  ...formData
+};
 
-  try {
+isRecordSaving = true;
+
+const saveButton = document.querySelector(
+  '#recordModal button[onclick*="saveRecord"]'
+);
+
+if (saveButton) {
+  saveButton.disabled = true;
+  saveButton.dataset.originalHtml = saveButton.innerHTML;
+  saveButton.textContent = "Saving...";
+}
+
+try {
     let url =
       `/api/records/${activeRecordTab}`;
 
@@ -2000,9 +2246,16 @@ if (updatedActiveChickens > maximumCapacity) {
       error.message ||
       "Failed to save record."
     );
+  } finally {
+    isRecordSaving = false;
+
+    if (saveButton) {
+      saveButton.disabled = false;
+      saveButton.innerHTML =
+        saveButton.dataset.originalHtml || "Save Record";
+    }
   }
 }
-
 
 async function deleteRecord(id) {
   const userId = getRecordUserId();

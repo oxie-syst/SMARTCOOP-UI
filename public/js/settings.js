@@ -273,16 +273,6 @@ async function saveProfile() {
       .value
       .trim();
 
-
-  const email =
-    document
-      .getElementById(
-        "settingsEmail"
-      )
-      .value
-      .trim();
-
-
   const phoneNumber =
     document
       .getElementById(
@@ -300,32 +290,28 @@ async function saveProfile() {
 
     return;
   }
-
-
-  if (!email) {
+  if (phoneNumber && !/^09\d{9}$/.test(phoneNumber)) {
     showSettingsToast(
-      "Please enter your email address.",
+      "Enter a valid 11-digit Philippine mobile number.",
       "error"
     );
-
     return;
   }
 
+  const invalidPhoneNumbers = [
+    "09123456789",
+    "09876543210"
+  ];
 
-  const emailValid =
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (!emailValid.test(email)) {
+  if (invalidPhoneNumbers.includes(phoneNumber)) {
     showSettingsToast(
-      "Please enter a valid email address.",
+      "Please enter a valid phone number.",
       "error"
     );
-
     return;
   }
 
-
-  try {
+      try {
     const response =
       await fetch(
         `/api/settings/${userId}/profile`,
@@ -339,7 +325,6 @@ async function saveProfile() {
 
           body: JSON.stringify({
             fullName,
-            email,
             phoneNumber
           })
         }
@@ -725,84 +710,89 @@ async function updatePassword() {
   }
 }
 
-
 async function deleteAccount() {
-  const userId =
-    getSettingsUserId();
+  const userId = getSettingsUserId();
 
-
-  const confirmed =
-    confirm(
-      "Are you sure you want to permanently delete your SmartCoop account?"
-    );
-
-
-  if (!confirmed) {
+  if (!userId) {
+    showSettingsToast("Please log in first.", "error");
     return;
   }
 
+  const confirmed = confirm(
+    "Are you sure you want to permanently delete your SmartCoop account? All related data will be lost."
+  );
 
-  const secondConfirm =
-    confirm(
-      "This will permanently remove your account and related records. Continue?"
-    );
+  if (!confirmed) return;
 
+  const password = prompt(
+    "Enter your current password to continue:"
+  );
 
-  if (!secondConfirm) {
+  if (password === null) return;
+
+  if (!password.trim()) {
+    showSettingsToast("Current password is required.", "error");
     return;
   }
 
+  const confirmation = prompt(
+    "Type DELETE to permanently delete your account:"
+  );
+
+  if (confirmation === null) return;
+
+  if (confirmation !== "DELETE") {
+    showSettingsToast(
+      "Account deletion cancelled.",
+      "error"
+    );
+    return;
+  }
+
+  const finalConfirmed = confirm(
+    "FINAL WARNING: This action cannot be undone. Permanently delete your account?"
+  );
+
+  if (!finalConfirmed) return;
 
   try {
-    const response =
-      await fetch(
-        `/api/settings/${userId}`,
-        {
-          method: "DELETE"
-        }
-      );
+    const response = await fetch(
+      `/api/settings/${userId}`,
+      {
+        method: "DELETE",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          password,
+          confirmation
+        })
+      }
+    );
 
-
-    const data =
-      await response.json();
-
+    const data = await response.json();
 
     if (!response.ok || !data.success) {
       throw new Error(
-        data.message ||
-        "Failed to delete account."
+        data.message || "Failed to delete account."
       );
     }
 
-
-    localStorage.removeItem(
-      "user"
-    );
-
-    localStorage.removeItem(
-      "smartcoop_user"
-    );
-
+    localStorage.removeItem("user");
+    localStorage.removeItem("smartcoop_user");
 
     sessionStorage.clear();
 
+    alert("Your SmartCoop account has been deleted.");
 
-    alert(
-      "Your account has been deleted."
-    );
-
-
-    window.location.href =
-      "login.html";
+    window.location.replace("/login.html");
 
   } catch (error) {
-    console.error(
-      "DELETE ACCOUNT ERROR:",
-      error
-    );
+    console.error("DELETE ACCOUNT ERROR:", error);
 
     showSettingsToast(
-      error.message,
+      error.message || "Failed to delete account.",
       "error"
     );
   }
@@ -924,6 +914,27 @@ function createSettingsInitials(
       parts.length - 1
     ].charAt(0)
   ).toUpperCase();
+}
+function toggleSettingsPassword(inputId, button) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  const showPassword = input.type === "password";
+
+  input.type = showPassword ? "text" : "password";
+
+  button.setAttribute(
+    "aria-label",
+    showPassword ? "Hide password" : "Show password"
+  );
+
+  button.innerHTML = showPassword
+    ? '<i data-lucide="eye-off"></i>'
+    : '<i data-lucide="eye"></i>';
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
 }
 
 

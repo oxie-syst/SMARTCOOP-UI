@@ -7,10 +7,15 @@
     {
       "id": "infectious_bronchitis",
       "name": "Infectious Bronchitis",
+      "description": "Infectious Bronchitis is a highly contagious viral respiratory disease in chickens caused by infectious bronchitis virus. It commonly causes coughing, sneezing, nasal discharge, and reduced egg production.",
       "priorityOverride": null,
       "symptomWeights": {
-        "sneezing": 80, "coughing": 70, "wateryEyes": 75,
-        "nasalDischarge": 70, "eggProblems": 65, "reducedAppetite": 30
+        "sneezing": 80,
+        "coughing": 70,
+        "wateryEyes": 75,
+        "nasalDischarge": 70,
+        "eggProblems": 65,
+        "reducedAppetite": 30
       },
       "recommendedActions": [
         "Isolate birds showing respiratory signs from the rest of the flock.",
@@ -29,10 +34,16 @@
     {
       "id": "newcastle_disease",
       "name": "Newcastle Disease (ND)",
+      "description": "Newcastle Disease is a highly contagious viral disease affecting chickens and other birds. It can cause respiratory problems, diarrhea, weakness, nervous system signs, and reduced egg production.",
       "priorityOverride": "high",
       "symptomWeights": {
-        "coughing": 70, "nasalDischarge": 60, "diarrhea": 75,
-        "eggProblems": 70, "lethargy": 40, "lameness": 55, "droppedWings": 60
+        "coughing": 70,
+        "nasalDischarge": 60,
+        "diarrhea": 75,
+        "eggProblems": 70,
+        "lethargy": 40,
+        "lameness": 55,
+        "droppedWings": 60
       },
       "recommendedActions": [
         "Isolate affected birds immediately and limit movement in and out of the coop.",
@@ -51,10 +62,14 @@
     {
       "id": "infectious_coryza",
       "name": "Infectious Coryza",
+      "description": "Infectious Coryza is an acute, contagious bacterial respiratory disease in chickens caused by Avibacterium paragallinarum. It commonly causes nasal discharge, sneezing, watery eyes, and facial swelling.",
       "priorityOverride": null,
       "symptomWeights": {
-        "wateryEyes": 85, "nasalDischarge": 80, "sneezing": 60,
-        "swelling": 75, "reducedAppetite": 30
+        "wateryEyes": 85,
+        "nasalDischarge": 80,
+        "sneezing": 60,
+        "swelling": 75,
+        "reducedAppetite": 30
       },
       "recommendedActions": [
         "Isolate affected birds to reduce spread within the flock.",
@@ -73,10 +88,15 @@
     {
       "id": "fowl_cholera",
       "name": "Fowl Cholera (Pasteurellosis)",
+      "description": "Fowl Cholera is a contagious bacterial disease caused by Pasteurella multocida. It may cause weakness, diarrhea, swelling, and sudden illness in affected chickens.",
       "priorityOverride": null,
       "symptomWeights": {
-        "lethargy": 55, "diarrhea": 60, "swelling": 70,
-        "paleComb": 65, "lameness": 50, "droppedWings": 45
+        "lethargy": 55,
+        "diarrhea": 60,
+        "swelling": 70,
+        "paleComb": 65,
+        "lameness": 50,
+        "droppedWings": 45
       },
       "recommendedActions": [
         "Isolate affected birds — fowl cholera can spread and progress quickly.",
@@ -95,10 +115,15 @@
     {
       "id": "coccidiosis",
       "name": "Coccidiosis",
+      "description": "Coccidiosis is an intestinal disease caused by Eimeria parasites. It commonly causes diarrhea, reduced appetite, weakness, and poor growth in chickens.",
       "priorityOverride": null,
       "symptomWeights": {
-        "diarrhea": 90, "paleComb": 70, "lethargy": 55,
-        "reducedAppetite": 55, "droppedWings": 50, "featherLoss": 30
+        "diarrhea": 90,
+        "paleComb": 70,
+        "lethargy": 55,
+        "reducedAppetite": 55,
+        "droppedWings": 50,
+        "featherLoss": 30
       },
       "recommendedActions": [
         "Keep litter and bedding dry — coccidia spread readily in wet, dirty conditions.",
@@ -117,9 +142,13 @@
     {
       "id": "fowl_pox",
       "name": "Fowl Pox",
+      "description": "Fowl Pox is a viral disease in chickens that commonly causes skin lesions on the comb, wattles, and other unfeathered areas. Some cases may also affect the mouth and respiratory tract.",
       "priorityOverride": null,
       "symptomWeights": {
-        "skinLesions": 95, "swelling": 45, "reducedAppetite": 25, "lethargy": 20
+        "skinLesions": 95,
+        "swelling": 45,
+        "reducedAppetite": 25,
+        "lethargy": 20
       },
       "recommendedActions": [
         "Isolate affected birds to limit spread through direct contact or mosquitoes.",
@@ -138,10 +167,15 @@
     {
       "id": "chronic_respiratory_disease",
       "name": "Chronic Respiratory Disease (CRD)",
+      "description": "Chronic Respiratory Disease is commonly associated with Mycoplasma gallisepticum infection in chickens. It can cause coughing, sneezing, nasal discharge, and recurring respiratory problems.",
       "priorityOverride": null,
       "symptomWeights": {
-        "coughing": 80, "sneezing": 70, "nasalDischarge": 75,
-        "wateryEyes": 55, "reducedAppetite": 25, "eggProblems": 40
+        "coughing": 80,
+        "sneezing": 70,
+        "nasalDischarge": 75,
+        "wateryEyes": 55,
+        "reducedAppetite": 25,
+        "eggProblems": 40
       },
       "recommendedActions": [
         "Reduce stress factors such as overcrowding and poor ventilation.",
@@ -160,10 +194,14 @@
     {
       "id": "fowl_typhoid",
       "name": "Fowl Typhoid (Salmonella Gallinarum)",
+      "description": "Fowl Typhoid is a bacterial disease caused by Salmonella Gallinarum. It can cause diarrhea, weakness, reduced appetite, and serious illness in chickens.",
       "priorityOverride": null,
       "symptomWeights": {
-        "diarrhea": 80, "lethargy": 60, "reducedAppetite": 50,
-        "paleComb": 55, "droppedWings": 40
+        "diarrhea": 80,
+        "lethargy": 60,
+        "reducedAppetite": 50,
+        "paleComb": 55,
+        "droppedWings": 40
       },
       "recommendedActions": [
         "Isolate affected birds and disinfect housing and equipment.",
@@ -182,9 +220,13 @@
     {
       "id": "infectious_synovitis",
       "name": "Infectious Synovitis (Mycoplasma synoviae)",
+      "description": "Infectious Synovitis is a poultry disease caused by Mycoplasma synoviae. It may cause joint swelling, lameness, and difficulty moving, although some infections produce respiratory signs.",
       "priorityOverride": null,
       "symptomWeights": {
-        "lameness": 85, "swelling": 75, "droppedWings": 55, "paleComb": 35
+        "lameness": 85,
+        "swelling": 75,
+        "droppedWings": 55,
+        "paleComb": 35
       },
       "recommendedActions": [
         "Isolate affected birds to reduce joint strain and spread.",
@@ -203,9 +245,13 @@
     {
       "id": "external_parasites",
       "name": "External Parasite Infestation (Mites / Lice)",
+      "description": "External parasite infestation occurs when mites or lice affect chickens. These parasites can cause irritation, feather loss, skin problems, and reduced overall health.",
       "priorityOverride": null,
       "symptomWeights": {
-        "featherLoss": 90, "skinLesions": 50, "lethargy": 35, "reducedAppetite": 25
+        "featherLoss": 90,
+        "skinLesions": 50,
+        "lethargy": 35,
+        "reducedAppetite": 25
       },
       "recommendedActions": [
         "Inspect birds closely, especially around the vent and under wings, for parasites.",
@@ -224,10 +270,15 @@
     {
       "id": "avian_influenza",
       "name": "Avian Influenza (HPAI)",
+      "description": "Avian Influenza is a contagious viral disease affecting poultry and other birds. Highly pathogenic forms can cause severe illness, respiratory signs, swelling, weakness, and sudden deaths.",
       "priorityOverride": "high",
       "symptomWeights": {
-        "swelling": 70, "paleComb": 80, "lethargy": 55,
-        "diarrhea": 45, "coughing": 40, "eggProblems": 60
+        "swelling": 70,
+        "paleComb": 80,
+        "lethargy": 55,
+        "diarrhea": 45,
+        "coughing": 40,
+        "eggProblems": 60
       },
       "recommendedActions": [
         "Stop handling birds beyond what is necessary and avoid moving them off the property.",

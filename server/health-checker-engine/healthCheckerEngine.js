@@ -104,6 +104,20 @@ class HealthCheckerEngine {
     return "low";
   }
 
+  
+_getPriorityGuidance(priority) {
+  if (priority === "high") {
+    return "HIGH PRIORITY: The selected symptoms may indicate a serious poultry health concern. Contact a veterinarian promptly. Isolate affected birds when appropriate and monitor the flock closely.";
+  }
+
+  if (priority === "medium") {
+    return "MEDIUM PRIORITY: Monitor the affected birds closely and arrange a timely veterinary consultation, especially if symptoms persist, worsen, or spread.";
+  }
+
+  return "LOW PRIORITY: Continue monitoring the flock and maintain proper care. A low symptom match does not rule out serious illness. Seek veterinary assistance if symptoms worsen or persist.";
+}
+
+
   /**
    * @param {string[]} rawSymptomIds - symptom IDs as sent by the frontend
    *   (checkbox values, e.g. "sneezing", "wateryEyes")
@@ -243,13 +257,35 @@ if (confidence < 40) {
       fallback: false,
       selectedSymptoms: cleanSymptoms,
       analysis: {
-        possibleConcern: top.disease.name,
-        priority: this._priorityFromScore(top.finalScore, top.disease.priorityOverride),
-        summary: `The selected symptoms show similarities with the ${top.disease.name.toLowerCase()} pattern in the SmartCoop poultry health knowledge base.`,
-        symptomMatch: confidence,
-        recommendedActions: top.disease.recommendedActions,
-        prevention: top.disease.prevention,
-        veterinaryGuidance: top.disease.veterinaryGuidance,
+      possibleConcern: top.disease.name,
+
+      priority: this._priorityFromScore(
+        top.finalScore,
+        top.disease.priorityOverride
+      ),
+
+      description: top.disease.description || "",
+
+      summary: `The selected symptoms (${top.matchedSymptoms
+  .map(symptom => symptom.replace(/([A-Z])/g, " $1").toLowerCase())
+  .join(", ")}) are associated with ${top.disease.name}. However, these symptoms may also occur in other poultry health conditions, so veterinary confirmation is recommended.`,
+
+      symptomMatch: confidence,
+
+recommendedActions: [
+  this._getPriorityGuidance(
+    this._priorityFromScore(
+      top.finalScore,
+      top.disease.priorityOverride
+    )
+  ),
+  ...top.disease.recommendedActions
+],
+
+prevention: top.disease.prevention,
+
+veterinaryGuidance: top.disease.veterinaryGuidance,
+
       },
     };
   }

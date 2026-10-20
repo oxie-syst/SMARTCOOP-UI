@@ -310,7 +310,7 @@
         </article>
 
 
-        <article class="records-stat-card">
+        <article class="records-stat-card" id="recordMeatStatCard">
 
           <div class="records-stat-top">
 
@@ -319,7 +319,7 @@
             </div>
 
             <div>
-              <p>Meat Production</p>
+              <p class="stat-label">Meat Production</p>
               <h2 id="recordTotalMeat">0 kg</h2>
               <small id="recordMeatCount">0 harvest logs</small>
             </div>
@@ -364,10 +364,10 @@
           Add Chicken
         </button>
 
-        <button onclick="switchRecordTab('meat')">
-          <i data-lucide="beef"></i>
-          Meat Production
-        </button>
+      <button id="recordMeatTab" onclick="switchRecordTab('meat')">
+        <i data-lucide="beef"></i>
+        <span id="recordMeatTabLabel">Meat Production</span>
+      </button>
 
       </div>
 
@@ -415,7 +415,7 @@
 
             <option value="all">All Categories</option>
             <option value="Feed">Feed</option>
-            <option value="Medicine">Medicine</option>
+            <option value="Medicine">Medicine/Vitamins</option>
             <option value="Labor">Labor</option>
             <option value="Construction">Construction</option>
             <option value="Utilities">Utilities</option>
@@ -441,7 +441,7 @@
 
           <div class="running-total-value">
             <strong id="runningTotal">₱0</strong>
-            <small>Total Expenses</small>
+            <small id="runningTotalLabel">Total Expenses</small>
           </div>
 
         </div>

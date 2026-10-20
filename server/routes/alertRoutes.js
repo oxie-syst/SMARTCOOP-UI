@@ -2,6 +2,50 @@ const express = require("express");
 const router = express.Router();
 const db = require("../db");
 
+function isValidFutureReminder(reminderDate, reminderTime) {
+  if (
+    typeof reminderDate !== "string" ||
+    typeof reminderTime !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(reminderDate) ||
+    !/^([01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(reminderTime)
+  ) {
+    return false;
+  }
+
+  const selectedDateTime = new Date(
+    `${reminderDate}T${reminderTime}+08:00`
+  );
+
+  if (Number.isNaN(selectedDateTime.getTime())) {
+    return false;
+  }
+
+
+const selectedPHDate = new Intl.DateTimeFormat(
+  "en-US",
+  {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }
+).formatToParts(selectedDateTime);
+
+const getPart = (type) =>
+  selectedPHDate.find(part => part.type === type)?.value;
+
+const formattedPHDate =
+  `${getPart("year")}-${getPart("month")}-${getPart("day")}`;
+
+
+return (
+  formattedPHDate === reminderDate &&
+  selectedDateTime > new Date()
+);
+}
+
+
+
 router.post("/", (req, res) => {
   const {
     userId,
@@ -19,6 +63,14 @@ router.post("/", (req, res) => {
       message: "Required fields are missing."
     });
   }
+  
+if (!isValidFutureReminder(reminderDate, reminderTime)) {
+  return res.status(400).json({
+    success: false,
+    message: "Please select a valid future date and time."
+  });
+}
+
 
   const sql = `
     INSERT INTO alerts (
@@ -98,9 +150,8 @@ router.get("/user/:userId", (req, res) => {
           : String(row.ReminderDate).split("T")[0];
 
       const reminderDateTime = new Date(
-        `${dateString}T${row.ReminderTime}`
+        `${dateString}T${row.ReminderTime}+08:00`
       );
-
       let status = "upcoming";
 
       if (row.IsCompleted) {
@@ -166,7 +217,7 @@ router.get("/stats/:userId", (req, res) => {
           : String(row.ReminderDate).split("T")[0];
 
       const reminderDateTime = new Date(
-        `${dateString}T${row.ReminderTime}`
+        `${dateString}T${row.ReminderTime}+08:00`
       );
 
       if (row.IsCompleted) {
@@ -271,6 +322,14 @@ router.put("/:id", (req, res) => {
       message: "Required fields are missing."
     });
   }
+  
+if (!isValidFutureReminder(reminderDate, reminderTime)) {
+  return res.status(400).json({
+    success: false,
+    message: "Please select a valid future date and time."
+  });
+}
+
 
   const sql = `
     UPDATE alerts

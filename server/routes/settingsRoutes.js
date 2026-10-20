@@ -83,79 +83,74 @@ router.get("/:userId", (req, res) => {
 router.put("/:userId/profile", (req, res) => {
   const userId = req.params.userId;
 
-  const {
-    fullName,
-    email,
-    phoneNumber
-  } = req.body;
+  const { fullName, phoneNumber } = req.body;
 
-  if (!fullName || !email) {
+  if (typeof fullName !== "string" || !fullName.trim()) {
     return res.status(400).json({
       success: false,
-      message: "Full name and email are required."
+      message: "Full name is required."
     });
   }
 
-  const checkEmailQuery = `
-    SELECT UserID
-    FROM users
-    WHERE Email = ?
-    AND UserID <> ?
+  const phone = phoneNumber == null
+    ? ""
+    : String(phoneNumber).trim();
+
+  if (phone && !/^09\d{9}$/.test(phone)) {
+    return res.status(400).json({
+      success: false,
+      message: "Enter a valid 11-digit Philippine mobile number."
+    });
+  }
+  const invalidPhoneNumbers = [
+    "09123456789",
+    "09876543210"
+  ];
+
+  if (invalidPhoneNumbers.includes(phone)) {
+    return res.status(400).json({
+      success: false,
+      message: "Please enter a valid phone number."
+    });
+  }
+
+  const query = `
+    UPDATE users
+    SET FullName = ?, PhoneNumber = ?
+    WHERE UserID = ?
   `;
 
   db.query(
-    checkEmailQuery,
-    [email, userId],
-    (checkErr, results) => {
-      if (checkErr) {
-        console.error("EMAIL CHECK ERROR:", checkErr);
+    query,
+    [fullName.trim(), phone || null, userId],
+    (err, result) => {
+if (err) {
+  console.error("PROFILE UPDATE ERROR:", err);
 
-        return res.status(500).json({
+  if (err.code === "ER_DUP_ENTRY") {
+    return res.status(409).json({
+      success: false,
+      message: "Phone number is already registered to another account."
+    });
+  }
+
+  return res.status(500).json({
+    success: false,
+    message: "Failed to update profile."
+  });
+}
+
+      if (!result.affectedRows) {
+        return res.status(404).json({
           success: false,
-          message: "Failed to validate email."
+          message: "User not found."
         });
       }
 
-      if (results.length) {
-        return res.status(400).json({
-          success: false,
-          message: "Email is already being used by another account."
-        });
-      }
-
-      const updateQuery = `
-        UPDATE users
-        SET
-          FullName = ?,
-          Email = ?,
-          PhoneNumber = ?
-        WHERE UserID = ?
-      `;
-
-      db.query(
-        updateQuery,
-        [
-          fullName,
-          email,
-          phoneNumber || null,
-          userId
-        ],
-        (err) => {
-          if (err) {
-            console.error("PROFILE UPDATE ERROR:", err);
-
-            return res.status(500).json({
-              success: false,
-              message: "Failed to update profile."
-            });
-          }
-
-          res.json({
-            success: true,
-            message: "Profile updated successfully."
-          });
-        }
-      );
+      res.json({
+        success: true,
+        message: "Profile updated successfully."
+      });
     }
   );
 });
@@ -379,38 +374,122 @@ router.put("/:userId/password", (req, res) => {
   });
 });
 
-router.delete("/:userId", (req, res) => {
-  const userId = req.params.userId;
+router.delete("/:userId", async (req, res) => {
+  const userId = Number(req.params.userId);
+  const sessionUserId = Number(req.session?.userId);
+  const { password, confirmation } = req.body || {};
 
-  const query = `
-    DELETE FROM users
-    WHERE UserID = ?
-  `;
+  if (!sessionUserId) {
+    return res.status(401).json({
+      success: false,
+      message: "Please log in first."
+    });
+  }
+
+  if (!Number.isSafeInteger(userId) || userId !== sessionUserId) {
+    return res.status(403).json({
+      success: false,
+      message: "You can only delete your own account."
+    });
+  }
+
+  if (confirmation !== "DELETE") {
+    return res.status(400).json({
+      success: false,
+      message: "Type DELETE to confirm account deletion."
+    });
+  }
+
+  if (typeof password !== "string" || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Current password is required."
+    });
+  }
 
   db.query(
-    query,
+    "SELECT Password FROM users WHERE UserID = ? LIMIT 1",
     [userId],
-    (err, result) => {
+    async (err, results) => {
       if (err) {
-        console.error("DELETE ACCOUNT ERROR:", err);
-
+        console.error("DELETE ACCOUNT LOOKUP ERROR:", err);
         return res.status(500).json({
           success: false,
-          message: "Failed to delete account."
+          message: "Failed to verify account."
         });
       }
 
-      if (!result.affectedRows) {
+      if (!results.length) {
         return res.status(404).json({
           success: false,
-          message: "User not found."
+          message: "Account not found."
         });
       }
 
-      res.json({
-        success: true,
-        message: "Account deleted successfully."
-      });
+      try {
+        const storedPassword = results[0].Password;
+
+        if (!storedPassword) {
+          return res.status(400).json({
+            success: false,
+            message: "This account has no password. Set a password before deleting."
+          });
+        }
+
+        const matches = await bcrypt.compare(password, storedPassword);
+
+        if (!matches) {
+          return res.status(401).json({
+            success: false,
+            message: "Incorrect password."
+          });
+        }
+
+        db.query(
+          "DELETE FROM users WHERE UserID = ?",
+          [userId],
+          (deleteErr, result) => {
+            if (deleteErr) {
+              console.error("DELETE ACCOUNT ERROR:", deleteErr);
+              return res.status(500).json({
+                success: false,
+                message: "Unable to delete account. Related records may still exist."
+              });
+            }
+
+            if (!result.affectedRows) {
+              return res.status(404).json({
+                success: false,
+                message: "Account not found."
+              });
+            }
+
+            req.session.destroy((sessionErr) => {
+              if (sessionErr) {
+                console.error("DELETE SESSION ERROR:", sessionErr);
+              }
+
+              res.clearCookie("smartcoop.sid", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                path: "/"
+              });
+
+              return res.json({
+                success: true,
+                message: "Account deleted successfully."
+              });
+            });
+          }
+        );
+      } catch (error) {
+        console.error("DELETE ACCOUNT VERIFICATION ERROR:", error);
+        return res.status(500).json({
+          success: false,
+          message: "Failed to verify password."
+        });
+      }
     }
   );
 });

@@ -379,10 +379,12 @@
 
                   <i data-lucide="mail"></i>
 
-                  <input
-                    id="settingsEmail"
-                    type="email"
-                    placeholder="Enter your email">
+                <input
+                  id="settingsEmail"
+                  type="email"
+                  placeholder="Your registered email"
+                  readonly
+                  title="Your registered email address cannot be changed here">
 
                 </div>
 
@@ -398,12 +400,15 @@
                 <div class="settings-input-wrap">
 
                   <i data-lucide="phone"></i>
-
-                  <input
-                    id="settingsPhone"
-                    type="text"
-                    placeholder="+63 XXX XXX XXXX">
-
+                    <input
+                      id="settingsPhone"
+                      type="tel"
+                      inputmode="numeric"
+                      maxlength="11"
+                      pattern="09[0-9]{9}"
+                      placeholder="09XXXXXXXXX"
+                      oninput="this.value = this.value.replace(/\D/g, '').slice(0, 11)"
+                    >
                 </div>
 
               </div>
@@ -818,10 +823,17 @@
 
                     <i data-lucide="lock"></i>
 
-                    <input
-                      id="currentPassword"
-                      type="password"
-                      placeholder="Enter current password">
+                  <input
+                    id="currentPassword"
+                    type="password"
+                    placeholder="Enter current password">
+
+                  <button type="button"
+                    class="settings-password-toggle"
+                    onclick="toggleSettingsPassword('currentPassword', this)"
+                    aria-label="Show password">
+                    <i data-lucide="eye"></i>
+                  </button>
 
                   </div>
 
@@ -843,6 +855,13 @@
                       type="password"
                       placeholder="Enter new password">
 
+                      <button type="button"
+                      class="settings-password-toggle"
+                      onclick="toggleSettingsPassword('newPassword', this)"
+                      aria-label="Show password">
+                      <i data-lucide="eye"></i>
+                    </button>
+
                   </div>
 
                 </div>
@@ -862,6 +881,13 @@
                       id="confirmPassword"
                       type="password"
                       placeholder="Confirm new password">
+
+                      <button type="button"
+                      class="settings-password-toggle"
+                      onclick="toggleSettingsPassword('confirmPassword', this)"
+                      aria-label="Show password">
+                      <i data-lucide="eye"></i>
+                    </button>
 
                   </div>
 

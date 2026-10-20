@@ -396,6 +396,16 @@ if (coop !== "all") {
           Number(record.eggs || 0);
       });
 
+      const monthlyMeat = {};
+
+      meat.forEach(record => {
+        const month = getMonthKey(record.date);
+
+        monthlyMeat[month] =
+          (monthlyMeat[month] || 0) +
+          Number(record.weight || 0);
+      });
+
       const monthlyExpenses = {};
 
       expenses.forEach(record => {
@@ -569,6 +579,11 @@ const coopOptions =
           isPremium
             ? monthlyEggs
             : {},
+
+            monthlyMeat:
+            isPremium
+              ? monthlyMeat
+              : {},
 
         monthlyExpenses:
           isPremium

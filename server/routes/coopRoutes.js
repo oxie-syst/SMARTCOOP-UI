@@ -517,12 +517,15 @@ router.delete(
     );
 
 
+
     db.query(
       `
         DELETE FROM coops
         WHERE CoopID = ?
         AND UserID = ?
+        AND (Status IS NULL OR Status <> 'active')
       `,
+
       [
         coopId,
         userId
@@ -559,7 +562,7 @@ router.delete(
           return res.json({
             success: false,
             message:
-              "No coop was deleted."
+              "Cannot delete this coop. Active coops must be set to inactive before deletion."
           });
 
         }

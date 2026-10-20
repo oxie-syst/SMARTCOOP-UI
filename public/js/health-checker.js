@@ -15,6 +15,158 @@ const symptomLabels = {
   eggProblems: "Egg production issues"
 };
 
+let isHealthSaving = false;
+let isHealthSaved = false;
+
+
+const symptomLabelsFilipino = {
+  sneezing: "Pagbahing",
+  coughing: "Pag-ubo",
+  wateryEyes: "Pagluluha ng mata",
+  nasalDischarge: "Pagtulo ng sipon",
+  diarrhea: "Pagtatae",
+  reducedAppetite: "Kawalan ng gana sa pagkain",
+  lethargy: "Panghihina",
+  droppedWings: "Nakalaylay na mga pakpak",
+  paleComb: "Maputlang palong at lambi",
+  featherLoss: "Hindi pangkaraniwang pagkalagas ng balahibo",
+  skinLesions: "Mga sugat sa balat",
+  swelling: "Pamamaga ng mukha o mga paa",
+  lameness: "Pagkapilay",
+  eggProblems: "Problema sa pangingitlog"
+};
+
+let healthLanguage = "en";
+let lastHealthResult = null;
+let lastHealthHistory = null;
+
+function healthText(en, fil) {
+  return healthLanguage === "fil" ? fil : en;
+}
+
+function escapeHealthHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, character => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  })[character]);
+}
+
+
+
+const healthPageTranslations = {
+  "Select Symptoms": "Pumili ng mga Sintomas",
+  "Check all symptoms you observe in your chickens.": "Piliin ang lahat ng sintomas na napapansin mo sa iyong mga manok.",
+  "Respiratory": "Paghinga",
+  "Digestive": "Pagtunaw ng Pagkain",
+  "General": "Pangkalahatan",
+  "Skin & Feathers": "Balat at Balahibo",
+  "Physical": "Pisikal",
+  "Production": "Produksyon",
+  "Selected Symptoms": "Mga Napiling Sintomas",
+  "Analyze Symptoms": "Suriin ang mga Sintomas",
+  "AI Health Analysis": "Pagsusuri ng AI sa Kalusugan",
+  "Your health assessment will appear here.": "Dito lalabas ang resulta ng pagsusuri sa kalusugan.",
+  "Recent Health Checks": "Mga Kamakailang Pagsusuri",
+  "Your recently saved health assessments.": "Mga kamakailan mong na-save na pagsusuri sa kalusugan.",
+  "AI-Powered Health Analysis": "Pagsusuri sa Kalusugan Gamit ang AI",
+  "Select the symptoms you observe in your chickens and SmartCoop will analyze them to identify possible health concerns and provide care recommendations.": "Piliin ang mga sintomas na napansin sa mga manok upang masuri ng SmartCoop ang posibleng problema sa kalusugan at makapagbigay ng gabay sa pag-aalaga."
+
+};
+
+
+function translateHealthPage() {
+  const elements = document.querySelectorAll(
+    ".health-checker-page h2, .health-checker-page h3, .health-checker-page p, .health-selected-summary span, #analyzeHealthBtn"
+  );
+
+  elements.forEach(element => {
+    if (element.children.length > 0) return;
+
+    if (!element.dataset.originalText) {
+      const text = element.textContent.trim();
+
+      if (healthPageTranslations[text]) {
+        element.dataset.originalText = text;
+      } else {
+        const original = Object.keys(healthPageTranslations).find(key => healthPageTranslations[key] === text);
+        if (original) element.dataset.originalText = original;
+      }
+    }
+
+    const original = element.dataset.originalText;
+
+    if (!original) return;
+
+    element.textContent =
+      healthLanguage === "fil"
+        ? healthPageTranslations[original] || original
+        : original;
+  });
+}
+
+
+function toggleHealthLanguage() {
+  healthLanguage = healthLanguage === "en" ? "fil" : "en";
+
+  const languageText = document.getElementById("healthLanguageText");
+
+  if (languageText) {
+    languageText.textContent =
+      healthLanguage === "en" ? "Filipino" : "English";
+  }
+
+  document.documentElement.lang =
+    healthLanguage === "fil" ? "fil" : "en";
+
+  const labels =
+    healthLanguage === "fil"
+      ? symptomLabelsFilipino
+      : symptomLabels;
+
+  document.querySelectorAll(
+    ".health-symptoms-panel input[type='checkbox']"
+  ).forEach(input => {
+    const span = input.parentElement.querySelector("span");
+
+    if (span) {
+      span.textContent = labels[input.value] || input.value;
+    }
+  });
+  translateHealthPage();
+  if (lastHealthResult && document.querySelector("#healthResult .health-result-modern")) {
+    displayHealthResult(...lastHealthResult, true);
+  } else {
+    // Handles the initial, reset, loading, and error screens.
+    translateHealthPage();
+  }
+  if (lastHealthHistory !== null) renderHealthHistory(lastHealthHistory);
+  const overlay = document.getElementById("healthUpgradeOverlay");
+  if (overlay) {
+    const heading = overlay.querySelector("h2");
+    const later = overlay.querySelector(".upgrade-later-btn");
+    const premium = overlay.querySelector(".upgrade-premium-btn");
+    if (heading) heading.textContent = healthText("Free Limit Reached", "Naabot ang Libreng Limitasyon");
+    if (later) later.textContent = healthText("Maybe Later", "Sa Susunod Na Lang");
+    if (premium) premium.innerHTML = `<i data-lucide="crown"></i> ${healthText("Upgrade to Premium", "Mag-upgrade sa Premium")}`;
+  }
+
+  const analyzeButton = document.getElementById("analyzeHealthBtn");
+
+  if (analyzeButton && !analyzeButton.disabled) {
+    analyzeButton.innerHTML = `
+      <i data-lucide="activity"></i>
+      ${healthLanguage === "fil"
+        ? "Suriin ang mga Sintomas"
+        : "Analyze Symptoms"}
+    `;
+
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+}
+
+
 document.addEventListener("DOMContentLoaded", function () {
   setupHealthChecker();
   loadHealthHistory();
@@ -103,7 +255,7 @@ async function analyzeSymptoms() {
     selectedSymptoms.length === 0
   ) {
     alert(
-      "Please select at least one symptom."
+      healthText("Please select at least one symptom.", "Pumili muna ng kahit isang sintomas.")
     );
 
     return;
@@ -137,10 +289,12 @@ if (!userId) {
   if (button) {
     button.disabled = true;
 
-    button.innerHTML = `
-      <i data-lucide="loader-circle"></i>
-      Analyzing Symptoms...
-    `;
+  button.innerHTML = `
+    <i data-lucide="loader-circle"></i>
+    ${healthLanguage === "fil"
+      ? "Sinusuri ang mga Sintomas..."
+      : "Analyzing Symptoms..."}
+  `;
   }
 
   result.innerHTML = `
@@ -152,12 +306,14 @@ if (!userId) {
 
       <div>
         <h2>
-          AI Health Analysis
+          ${healthLanguage === "fil"
+            ? "Pagsusuri ng AI sa Kalusugan"
+            : "AI Health Analysis"}
         </h2>
-
         <p>
-          SmartCoop AI is reviewing
-          the selected symptoms.
+          ${healthLanguage === "fil"
+            ? "Sinusuri ng SmartCoop AI ang mga napiling sintomas."
+            : "SmartCoop AI is reviewing the selected symptoms."}
         </p>
       </div>
 
@@ -170,15 +326,16 @@ if (!userId) {
       </div>
 
       <h2>
-        Analyzing Symptoms
+        ${healthLanguage === "fil"
+          ? "Sinusuri ang mga Sintomas"
+          : "Analyzing Symptoms"}
       </h2>
 
       <p>
-        SmartCoop is comparing the
-        selected symptoms with poultry
-        health reference information.
+        ${healthLanguage === "fil"
+          ? "Inihahambing ng SmartCoop ang mga napiling sintomas sa impormasyon tungkol sa kalusugan ng mga manok."
+          : "SmartCoop is comparing the selected symptoms with poultry health reference information."}
       </p>
-
     </div>
   `;
 
@@ -249,10 +406,12 @@ if (!userId) {
     if (button) {
       button.disabled = false;
 
-      button.innerHTML = `
-        <i data-lucide="activity"></i>
-        Analyze Symptoms
-      `;
+    button.innerHTML = `
+      <i data-lucide="activity"></i>
+      ${healthLanguage === "fil"
+        ? "Suriin ang mga Sintomas"
+        : "Analyze Symptoms"}
+    `;
     }
 
     if (window.lucide) {
@@ -265,7 +424,8 @@ function displayHealthResult(
   analysis,
   selectedSymptoms,
   source,
-  fallback
+  fallback,
+  preserveState = false
 ) {
   const result =
     document.getElementById(
@@ -275,22 +435,24 @@ function displayHealthResult(
   if (!result) {
     return;
   }
+  
+  if (!preserveState) {
+    isHealthSaving = false;
+    isHealthSaved = false;
+    lastHealthResult = [analysis, selectedSymptoms, source, fallback];
+  }
+
 
   const severity =
     analysis.priority ||
     "medium";
 
-  const severityText =
-    getSeverityText(
-      severity
-    );
+  const severityText = getSeverityText(severity);
 
-  const selectedLabels =
-    selectedSymptoms.map(
-      symptom =>
-        symptomLabels[symptom] ||
-        symptom
-    );
+  const selectedLabels = selectedSymptoms.map(symptom =>
+    (healthLanguage === "fil" ? symptomLabelsFilipino : symptomLabels)[symptom] || symptom
+  );
+  const englishSelectedLabels = selectedSymptoms.map(symptom => symptomLabels[symptom] || symptom);
 
   const recommendedActions =
     Array.isArray(
@@ -320,14 +482,19 @@ function displayHealthResult(
 
       <div>
         <h2>
-          AI Health Assessment
+          ${healthLanguage === "fil"
+            ? "Pagsusuri ng AI sa Kalusugan"
+            : "AI Health Assessment"}
         </h2>
-
         <p>
           ${
             fallback
-              ? "SmartCoop dataset-based health guidance."
-              : "SmartCoop health guidance powered by knowledge-based and machine learning analysis."
+              ? (healthLanguage === "fil"
+                  ? "Gabay sa kalusugan ng mga manok batay sa dataset ng SmartCoop."
+                  : "SmartCoop dataset-based health guidance.")
+              : (healthLanguage === "fil"
+                  ? "Gabay sa kalusugan ng SmartCoop gamit ang knowledge-based at machine learning analysis."
+                  : "SmartCoop health guidance powered by knowledge-based and machine learning analysis.")
           }
         </p>
       </div>
@@ -345,13 +512,14 @@ function displayHealthResult(
         <div class="health-result-main">
 
           <span>
-            Possible Health Concern
+            ${healthLanguage === "fil"
+              ? "Posibleng Problema sa Kalusugan"
+              : "Possible Health Concern"}
           </span>
 
           <h2>
             ${
-              analysis.possibleConcern ||
-              "General Poultry Health Concern"
+              escapeHealthHtml(analysis.possibleConcern || healthText("General Poultry Health Concern", "Pangkalahatang Problema sa Kalusugan ng Manok"))
             }
           </h2>
 
@@ -363,14 +531,14 @@ function displayHealthResult(
               ${severityText}
             </span>
 
-            <span
-              class="health-confidence"
-            >
-              <i data-lucide="scan-search"></i>
+          <span class="health-confidence">
+            <i data-lucide="scan-search"></i>
 
-              Symptom Match:
-              ${match}%
-            </span>
+            ${healthLanguage === "fil"
+              ? "Pagkakatugma ng mga Sintomas:"
+              : "Symptom Match:"}
+            ${match}%
+          </span>
 
           </div>
 
@@ -378,31 +546,63 @@ function displayHealthResult(
 
       </div>
 
-      ${
-        analysis.summary
-          ? `
-            <div class="health-observed">
+        ${
+          analysis.description || analysis.summary
+            ? `
+                <div class="health-observed">
 
-              <h3>
-                <i data-lucide="sparkles"></i>
-                AI Assessment
-              </h3>
+                <h3>
+                  <i data-lucide="sparkles"></i>
+                  ${healthLanguage === "fil"
+                    ? "Pagsusuri ng AI"
+                    : "AI Assessment"}
+                </h3>
 
-              <p>
-                ${analysis.summary}
-              </p>
+                  ${
+                    analysis.description
+                      ? `
+                          <p>         
+                            <strong>
+                              ${healthLanguage === "fil"
+                                ? "Tungkol sa Sakit:"
+                                : "About the Disease:"}
+                            </strong>
+                            ${escapeHealthHtml(analysis.description)}
+                          </p>
+                        `
+                      : ""
+                  }
 
-            </div>
-          `
-          : ""
-      }
+                  ${
+                    analysis.summary
+                      ? `
+                          <p>                           
+                            <strong>
+                              ${healthLanguage === "fil"
+                                ? "Pagsusuri:"
+                                : "Assessment:"}
+                            </strong>
+                            ${escapeHealthHtml(analysis.summary)}
+                          </p>
+                        `
+                      : ""
+                  }
+
+                </div>
+              `
+            : ""
+        }
 
       <div class="health-observed">
 
-        <h3>
-          <i data-lucide="list-checks"></i>
-          Observed Symptoms
-        </h3>
+
+<h3>
+  <i data-lucide="list-checks"></i>
+  ${healthLanguage === "fil"
+    ? "Mga Napansing Sintomas"
+    : "Observed Symptoms"}
+</h3>
+
 
         <div class="health-observed-tags">
 
@@ -410,7 +610,7 @@ function displayHealthResult(
             .map(
               symptom => `
                 <span>
-                  ${symptom}
+                  ${escapeHealthHtml(symptom)}
                 </span>
               `
             )
@@ -433,7 +633,7 @@ function displayHealthResult(
             </div>
 
             <h3>
-              Recommended Actions
+              ${healthText("Recommended Actions", "Mga Inirerekomendang Hakbang")}
             </h3>
 
           </div>
@@ -447,7 +647,7 @@ function displayHealthResult(
                     <i data-lucide="circle-check"></i>
 
                     <span>
-                      ${item}
+                      ${escapeHealthHtml(item)}
                     </span>
                   </li>
                 `
@@ -469,7 +669,7 @@ function displayHealthResult(
             </div>
 
             <h3>
-              Prevention & Monitoring
+              ${healthText("Prevention & Monitoring", "Pag-iwas at Pagsubaybay")}
             </h3>
 
           </div>
@@ -483,7 +683,7 @@ function displayHealthResult(
                     <i data-lucide="circle-check"></i>
 
                     <span>
-                      ${item}
+                      ${escapeHealthHtml(item)}
                     </span>
                   </li>
                 `
@@ -505,10 +705,10 @@ function displayHealthResult(
 
               <p>
                 <strong>
-                  Veterinary Guidance:
+                  ${healthText("Veterinary Guidance:", "Gabay ng Beterinaryo:")}
                 </strong>
 
-                ${analysis.veterinaryGuidance}
+                ${escapeHealthHtml(analysis.veterinaryGuidance)}
               </p>
 
             </div>
@@ -522,14 +722,13 @@ function displayHealthResult(
 
         <p>
           <strong>
-            This is not a veterinary diagnosis.
+            ${healthText("This is not a veterinary diagnosis.", "Hindi ito diagnosis ng beterinaryo.")}
           </strong>
 
-          SmartCoop provides AI-assisted
-          guidance based on observable
-          symptoms. A licensed veterinarian
-          should evaluate serious, persistent,
-          worsening, or uncertain conditions.
+          ${healthText(
+            "SmartCoop provides AI-assisted guidance based on observable symptoms. A licensed veterinarian should evaluate serious, persistent, worsening, or uncertain conditions.",
+            "Nagbibigay ang SmartCoop ng gabay gamit ang AI batay sa mga napansing sintomas. Kumonsulta sa lisensiyadong beterinaryo para sa malubha, nagpapatuloy, lumalala, o hindi tiyak na kondisyon."
+          )}
         </p>
 
       </div>
@@ -542,7 +741,7 @@ function displayHealthResult(
           onclick="saveCurrentHealthRecord()"
         >
           <i data-lucide="save"></i>
-          Save Health Check
+          ${healthText("Save Health Check", "I-save ang Pagsusuri")}
         </button>
 
         <button
@@ -551,7 +750,7 @@ function displayHealthResult(
           onclick="resetHealthChecker()"
         >
           <i data-lucide="rotate-ccw"></i>
-          Check Another
+          ${healthText("Check Another", "Magsuri Muli")}
         </button>
 
       </div>
@@ -570,7 +769,7 @@ function displayHealthResult(
       match,
 
     symptoms:
-      selectedLabels,
+      englishSelectedLabels,
 
     summary:
       analysis.summary ||
@@ -594,9 +793,14 @@ function displayHealthResult(
       )
   };
 
-  if (window.lucide) {
-    lucide.createIcons();
+  const saveButton = result.querySelector(".health-save-btn");
+  if (saveButton && (isHealthSaving || isHealthSaved)) {
+    saveButton.disabled = true;
+    saveButton.textContent = isHealthSaved
+      ? healthText("Saved Successfully", "Matagumpay na Na-save")
+      : healthText("Saving...", "Sine-save...");
   }
+  if (window.lucide) lucide.createIcons();
 }
 
 function displayHealthError(
@@ -620,12 +824,11 @@ function displayHealthError(
 
       <div>
         <h2>
-          AI Health Analysis
+          ${healthText("AI Health Analysis", "Pagsusuri ng AI sa Kalusugan")}
         </h2>
 
         <p>
-          Unable to complete the
-          health analysis.
+          ${healthText("Unable to complete the health analysis.", "Hindi makumpleto ang pagsusuri sa kalusugan.")}
         </p>
       </div>
 
@@ -638,11 +841,11 @@ function displayHealthError(
       </div>
 
       <h2>
-        Analysis Unavailable
+        ${healthText("Analysis Unavailable", "Hindi Magagamit ang Pagsusuri")}
       </h2>
 
       <p>
-        ${message}
+        ${escapeHealthHtml(message)}
       </p>
 
       <div class="health-disclaimer-modern">
@@ -650,9 +853,7 @@ function displayHealthError(
         <i data-lucide="info"></i>
 
         <p>
-          Make sure the SmartCoop server
-          is running, then try analyzing
-          the symptoms again.
+          ${healthText("Make sure the SmartCoop server is running, then try analyzing the symptoms again.", "Tiyaking gumagana ang SmartCoop server at subukang suriin muli ang mga sintomas.")}
         </p>
 
       </div>
@@ -669,19 +870,25 @@ function getSeverityText(
   severity
 ) {
   if (severity === "high") {
-    return "High Priority";
+    return healthText("High Priority", "Mataas na Prayoridad");
   }
 
   if (severity === "medium") {
-    return "Medium Priority";
+    return healthText("Medium Priority", "Katamtamang Prayoridad");
   }
 
-  return "Low Priority";
+  return healthText("Low Priority", "Mababang Prayoridad");
 }
 
+
 async function saveCurrentHealthRecord() {
+  if (isHealthSaving || isHealthSaved) {
+    return;
+  }
+
   const assessment =
     window.currentHealthAssessment;
+
 
   if (!assessment) {
     alert(
@@ -702,10 +909,21 @@ async function saveCurrentHealthRecord() {
     return;
   }
 
+
+  isHealthSaving = true;
+
+  const saveButton = document.querySelector(".health-save-btn");
+
+  if (saveButton) {
+    saveButton.disabled = true;
+    saveButton.textContent = healthText("Saving...", "Sine-save...");
+  }
+
   try {
     const response =
       await fetch(
         "/api/health-checker/history",
+
         {
           method: "POST",
 
@@ -763,24 +981,35 @@ async function saveCurrentHealthRecord() {
       );
     }
 
-    await loadHealthHistory();
+isHealthSaved = true;
 
-    alert(
-      "Health check saved successfully!"
-    );
+const updatedSaveButton = document.querySelector(".health-save-btn");
+if (updatedSaveButton) {
+  updatedSaveButton.disabled = true;
+  updatedSaveButton.textContent = healthText("Saved Successfully", "Matagumpay na Na-save");
+}
+
+await loadHealthHistory();
+
+alert(healthText("Health check saved successfully!", "Matagumpay na na-save ang pagsusuri!"));
+
+
 
   } catch (error) {
-    console.error(
-      "Save Health Check Error:",
-      error
-    );
+    console.error("Save Health Check Error:", error);
 
-    alert(
-      error.message ||
-      "Unable to save health check."
-    );
+    const updatedSaveButton = document.querySelector(".health-save-btn");
+    if (!isHealthSaved && updatedSaveButton) {
+      updatedSaveButton.disabled = false;
+      updatedSaveButton.textContent = healthText("Save Health Check", "I-save ang Pagsusuri");
+    }
+
+    alert(error.message || "Unable to save health check.");
+  } finally {
+    isHealthSaving = false;
   }
 }
+
 
 async function loadHealthHistory() {
   const container =
@@ -801,6 +1030,7 @@ async function loadHealthHistory() {
     getCurrentUserId();
 
   if (!userId) {
+    lastHealthHistory = null;
     container.innerHTML = `
       <div class="health-history-empty">
 
@@ -809,12 +1039,11 @@ async function loadHealthHistory() {
         </div>
 
         <h3>
-          User Not Found
+          ${healthText("User Not Found", "Hindi Natagpuan ang User")}
         </h3>
 
         <p>
-          Please log in again to view
-          your health check history.
+          ${healthText("Please log in again to view your health check history.", "Mag-log in muli upang makita ang history ng pagsusuri.")}
         </p>
 
       </div>
@@ -822,7 +1051,7 @@ async function loadHealthHistory() {
 
     if (count) {
       count.textContent =
-        "0 Records";
+        healthText("0 Records", "0 Tala");
     }
 
     if (window.lucide) {
@@ -858,58 +1087,8 @@ async function loadHealthHistory() {
         ? data.records
         : [];
 
-    if (count) {
-      count.textContent =
-        `${records.length} ${
-          records.length === 1
-            ? "Record"
-            : "Records"
-        }`;
-    }
-
-    if (
-      records.length === 0
-    ) {
-      container.innerHTML = `
-        <div class="health-history-empty">
-
-          <div>
-            <i data-lucide="clock-3"></i>
-          </div>
-
-          <h3>
-            No Health Checks Yet
-          </h3>
-
-          <p>
-            Saved health assessments
-            will appear here.
-          </p>
-
-        </div>
-      `;
-
-      if (window.lucide) {
-        lucide.createIcons();
-      }
-
-      return;
-    }
-
-    container.innerHTML =
-      records
-        .slice(0, 5)
-        .map(
-          record =>
-            createHealthHistoryCard(
-              record
-            )
-        )
-        .join("");
-
-    if (window.lucide) {
-      lucide.createIcons();
-    }
+    lastHealthHistory = records;
+    renderHealthHistory(records);
 
   } catch (error) {
     console.error(
@@ -917,6 +1096,7 @@ async function loadHealthHistory() {
       error
     );
 
+    lastHealthHistory = null;
     container.innerHTML = `
       <div class="health-history-empty">
 
@@ -925,11 +1105,11 @@ async function loadHealthHistory() {
         </div>
 
         <h3>
-          Unable to Load History
+          ${healthText("Unable to Load History", "Hindi Ma-load ang History")}
         </h3>
 
         <p>
-          Please try again later.
+          ${healthText("Please try again later.", "Subukan muli mamaya.")}
         </p>
 
       </div>
@@ -937,13 +1117,33 @@ async function loadHealthHistory() {
 
     if (count) {
       count.textContent =
-        "0 Records";
+        healthText("0 Records", "0 Tala");
     }
 
     if (window.lucide) {
       lucide.createIcons();
     }
   }
+}
+
+function renderHealthHistory(records) {
+  const container = document.getElementById("healthHistory");
+  const count = document.getElementById("healthHistoryCount");
+  if (!container) return;
+  if (count) count.textContent = healthLanguage === "fil"
+    ? `${records.length} ${records.length === 1 ? "Tala" : "Mga Tala"}`
+    : `${records.length} ${records.length === 1 ? "Record" : "Records"}`;
+  if (records.length === 0) {
+    container.innerHTML = `
+      <div class="health-history-empty">
+        <div><i data-lucide="clock-3"></i></div>
+        <h3>${healthText("No Health Checks Yet", "Wala Pang Pagsusuri")}</h3>
+        <p>${healthText("Saved health assessments will appear here.", "Dito lalabas ang mga na-save na pagsusuri.")}</p>
+      </div>`;
+  } else {
+    container.innerHTML = records.slice(0, 5).map(createHealthHistoryCard).join("");
+  }
+  if (window.lucide) lucide.createIcons();
 }
 
 function createHealthHistoryCard(
@@ -998,8 +1198,7 @@ function createHealthHistoryCard(
 
           <h3>
             ${
-              record.diagnosis ||
-              "Health Assessment"
+              escapeHealthHtml(record.diagnosis || healthText("Health Assessment", "Pagsusuri sa Kalusugan"))
             }
           </h3>
 
@@ -1014,15 +1213,16 @@ function createHealthHistoryCard(
         </div>
 
         <p>
-          Symptoms:
+          ${healthText("Symptoms:", "Mga Sintomas:")}
           ${
             Array.isArray(
               record.symptoms
             ) &&
             record.symptoms.length > 0
-              ? record.symptoms.join(
-                  ", "
-                )
+              ? record.symptoms.map(symptom => {
+                  const key = Object.keys(symptomLabels).find(key => symptomLabels[key] === symptom);
+                  return escapeHealthHtml(healthLanguage === "fil" && key ? symptomLabelsFilipino[key] : symptom);
+                }).join(", ")
               : "N/A"
           }
         </p>
@@ -1047,7 +1247,7 @@ function createHealthHistoryCard(
 
           <span>
             <i data-lucide="scan-search"></i>
-            Match:
+            ${healthText("Match:", "Pagkakatugma:")}
             ${record.confidence || 0}%
           </span>
 
@@ -1059,7 +1259,7 @@ function createHealthHistoryCard(
         type="button"
         class="health-history-delete"
         onclick="deleteHealthRecord(${record.id})"
-        title="Delete health check"
+        title="${healthText("Delete health check", "Burahin ang pagsusuri")}"
       >
         <i data-lucide="trash-2"></i>
       </button>
@@ -1073,7 +1273,7 @@ async function deleteHealthRecord(
 ) {
   const confirmed =
     confirm(
-      "Delete this health check?"
+      healthText("Delete this health check?", "Burahin ang pagsusuring ito?")
     );
 
   if (!confirmed) {
@@ -1137,8 +1337,10 @@ function resetHealthChecker() {
       input.checked = false;
     });
 
-  window.currentHealthAssessment =
-    null;
+  window.currentHealthAssessment = null;
+  lastHealthResult = null;
+  isHealthSaving = false;
+  isHealthSaved = false;
 
   updateSelectedSymptomCount();
 
@@ -1160,12 +1362,11 @@ function resetHealthChecker() {
 
       <div>
         <h2>
-          AI Health Analysis
+          ${healthText("AI Health Analysis", "Pagsusuri ng AI sa Kalusugan")}
         </h2>
 
         <p>
-          Your health assessment
-          will appear here.
+          ${healthText("Your health assessment will appear here.", "Dito lalabas ang resulta ng pagsusuri sa kalusugan.")}
         </p>
       </div>
 
@@ -1178,15 +1379,11 @@ function resetHealthChecker() {
       </div>
 
       <h2>
-        AI-Powered Health Analysis
+        ${healthText("AI-Powered Health Analysis", "Pagsusuri sa Kalusugan Gamit ang AI")}
       </h2>
 
       <p>
-        Select the symptoms you observe
-        in your chickens and SmartCoop
-        will analyze them to identify
-        possible health concerns and
-        provide care recommendations.
+        ${healthText("Select the symptoms you observe in your chickens and SmartCoop will analyze them to identify possible health concerns and provide care recommendations.", "Piliin ang mga sintomas na napansin sa mga manok upang masuri ng SmartCoop ang posibleng problema sa kalusugan at makapagbigay ng gabay sa pag-aalaga.")}
       </p>
 
       <div class="health-disclaimer-modern">
@@ -1195,16 +1392,10 @@ function resetHealthChecker() {
 
         <p>
           <strong>
-            Important:
+            ${healthText("Important:", "Mahalaga:")}
           </strong>
 
-          This tool provides general
-          guidance only and does not
-          replace professional veterinary
-          consultation. Contact a licensed
-          veterinarian for serious,
-          worsening, or uncertain
-          conditions.
+          ${healthText("This tool provides general guidance only and does not replace professional veterinary consultation. Contact a licensed veterinarian for serious, worsening, or uncertain conditions.", "Ang tool na ito ay nagbibigay lamang ng pangkalahatang gabay at hindi kapalit ng konsultasyon sa beterinaryo. Kumonsulta sa lisensiyadong beterinaryo para sa malubha, lumalala, o hindi tiyak na kondisyon.")}
         </p>
 
       </div>
@@ -1253,11 +1444,11 @@ function showHealthUpgradePopup(message) {
       </div>
 
       <h2>
-        Free Limit Reached
+        ${healthText("Free Limit Reached", "Naabot ang Libreng Limitasyon")}
       </h2>
 
       <p>
-        ${message}
+        ${escapeHealthHtml(message)}
       </p>
 
       <div class="upgrade-actions">
@@ -1267,7 +1458,7 @@ function showHealthUpgradePopup(message) {
           class="upgrade-later-btn"
           onclick="closeHealthUpgradePopup()"
         >
-          Maybe Later
+          ${healthText("Maybe Later", "Sa Susunod Na Lang")}
         </button>
 
         <button
@@ -1276,7 +1467,7 @@ function showHealthUpgradePopup(message) {
           onclick="window.location.href='subscription.html'"
         >
           <i data-lucide="crown"></i>
-          Upgrade to Premium
+          ${healthText("Upgrade to Premium", "Mag-upgrade sa Premium")}
         </button>
 
       </div>

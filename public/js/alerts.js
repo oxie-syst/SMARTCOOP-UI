@@ -681,8 +681,7 @@ activeAlerts.sort(compareRemindersByUrgency);
       return;
     }
 
-    const dashboardAlerts =
-      activeAlerts.slice(0, 3);
+const dashboardAlerts = activeAlerts;
 
     container.innerHTML =
       dashboardAlerts
@@ -1018,6 +1017,19 @@ function openReminderModal() {
   if (!modal) return;
 
   clearReminderForm();
+  
+const dateInput = document.getElementById("reminderDate");
+
+if (dateInput) {
+  const today = new Date();
+  const localToday =
+    today.getFullYear() + "-" +
+    String(today.getMonth() + 1).padStart(2, "0") + "-" +
+    String(today.getDate()).padStart(2, "0");
+
+  dateInput.min = localToday;
+}
+
 
   const title =
     modal.querySelector("h2");
@@ -1147,6 +1159,23 @@ async function addReminder() {
     );
     return;
   }
+  
+const selectedDateTime = new Date(
+  `${reminderDate}T${reminderTime}`
+);
+
+const currentDateTime = new Date();
+
+if (
+  Number.isNaN(selectedDateTime.getTime()) ||
+  selectedDateTime <= currentDateTime
+) {
+  alert(
+    "Please select a future date and time. Past dates and times are not allowed."
+  );
+  return;
+}
+
 
   const payload = {
     userId,
