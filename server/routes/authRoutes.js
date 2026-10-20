@@ -10,13 +10,15 @@ const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID
 );
 
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_APP_PASSWORD
+    user: process.env.EMAIL_USER?.trim(),
+    pass: process.env.EMAIL_APP_PASSWORD?.replace(/\s+/g, "")
   }
 });
+
 
 router.get("/", (req, res) => {
   res.json({
