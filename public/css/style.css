@@ -21247,3 +21247,102 @@ body {
   white-space: nowrap;
   color: #64748b;
 }
+/* VIEW MATERIALS - COMING SOON MODAL */
+
+.materials-soon-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+}
+
+.materials-soon-overlay.hidden {
+  display: none;
+}
+
+.materials-soon-modal {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  animation: materialsModalFadeIn 0.25s ease;
+}
+
+.materials-soon-icon {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: #ecfdf5;
+  color: #047857;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+}
+
+.materials-soon-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.materials-soon-modal h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 12px;
+}
+
+.materials-soon-modal p {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.materials-soon-btn {
+  background: #047857;
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s ease;
+}
+
+.materials-soon-btn:hover {
+  background: #065f46;
+}
+
+@keyframes materialsModalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.capacity-only-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.capacity-only-grid > * {
+  width: 100%;
+  max-width: none;
+}
+.smart-planner-page .analysis-cards {
+  grid-template-columns: 1fr;
+}

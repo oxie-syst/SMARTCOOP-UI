@@ -1704,6 +1704,66 @@ const dualPurposeHotspotPositions = {
     brooderLamp: "0m 1.5285m -0.0019m"
 }
 };
+const layersMaterialSizes = {
+  "1x1": {
+    concrete: {
+      name: "Concrete Slab",
+      size: "1.00m × 1.00m × 0.10m"
+    },
+    posts: {
+      name: "Wood Posts",
+      size: "1.80m × 0.05m × 0.05m"
+    },
+    roof: {
+      name: "Roof Sheet",
+      size: "3ft × 9ft sheet, divided into 3",
+      thickness: "0.4mm"
+    },
+    ridgeBoard: {
+      name: "Ridge Board",
+      size: "1.5374m × 0.05m × 0.05m"
+    },
+    cage: {
+      name: "Metal Cage Framework",
+      size: "Steel wire and metal framing"
+    },
+    feeder: {
+      name: "PVC Feeder Trough",
+      size: "0.0989m × 0.4569m × 0.0986m"
+    },
+    waterer: {
+      name: "PVC Water Trough",
+      size: "0.0673m × 0.4576m × 0.065m"
+    },
+    eggCatcher: {
+      name: "Egg Catcher",
+      size: "0.46m component length"
+    },
+    tray: {
+      name: "Collection Tray",
+      size: "0.427m × 1.00m × 0.05m"
+    },
+    lamp: {
+      name: "Lighting Assembly",
+      size: "Bulb, socket and cord"
+    }
+  }
+};
+
+const layersHotspotPositions = {
+  "1x1": {
+    concrete: "0m 0m 0m",
+    posts: "-0.4732m 0.7m 0.4749m",
+    roof: "0.3364m 1.8527m -0.4752m",
+    ridgeBoard: "0m 2.0074m 0m",
+    cage: "-0.227m 0.3849m 0.0114m",
+    feeder: "-0.0016m 0.2774m 0.4174m",
+    waterer: "-0.002m 0.3849m 0.1864m",
+    eggCatcher: "0.0001m 0.177m 0.6092m",
+    tray: "0m 0.0741m 0m",
+    lamp: "0m 1.4326m 0.0019m"
+  }
+};
 const setupCostData = {
   broiler: {
     "1x1": {
@@ -2749,6 +2809,18 @@ else if (type === "Dual Purpose") {
     dualPurposeHotspotPositions[sizeKey];
 }
 
+else if (
+  type === "Layers (Egg Production)" &&
+  sizeKey === "1x1"
+) {
+  materials =
+    layersMaterialSizes[sizeKey];
+
+  positions =
+    layersHotspotPositions[sizeKey];
+}
+
+
       previewBox.innerHTML = `
         <div class="model-view-controls">
           <button
@@ -2778,10 +2850,39 @@ else if (type === "Dual Purpose") {
           environment-image="neutral"
           style="width:100%;height:100%;"
         >
+        ${
+  type === "Layers (Egg Production)" &&
+  sizeKey === "1x1" &&
+  materials &&
+  positions
+    ? Object.entries(materials)
+        .filter(([key]) => positions[key])
+        .map(([key, item]) => `
+          <button
+            class="model-hotspot material-marker"
+            slot="hotspot-layers-${key}"
+            data-position="${positions[key]}"
+            data-normal="0m 1m 0m"
+          >
+            <span class="hotspot-label">
+              <strong>${item.name}</strong>
+              <span>${item.size}</span>
+              ${
+                item.thickness
+                  ? `<span>Thickness: ${item.thickness}</span>`
+                  : ""
+              }
+            </span>
+          </button>
+        `)
+        .join("")
+    : ""
+}
 
           ${
-            materials && positions
-              ? `
+materials && positions &&
+type !== "Layers (Egg Production)"
+  ? `
           <button
             class="model-hotspot material-marker roof-marker"
             slot="hotspot-roof"
@@ -3041,6 +3142,16 @@ ${
           document.getElementById(
             "coopModelViewer"
           );
+
+          const materialsComingSoon =
+  (type === "Dual Purpose" ||
+   type === "Layers (Egg Production)") &&
+  sizeKey !== "1x1";
+
+if (materialsComingSoon) {
+  showMaterialsComingSoonModal();
+  return;
+}
 
         materialMarkers.forEach(
           marker => {
@@ -3366,6 +3477,35 @@ const createMaterialRows = (title, items, categoryTotal) => {
     status: "active"
   };
 }
+function showMaterialsComingSoonModal() {
+  const modal = document.getElementById(
+    "materialsComingSoonModal"
+  );
+
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+}
+
+function closeMaterialsComingSoonModal() {
+  const modal = document.getElementById(
+    "materialsComingSoonModal"
+  );
+
+  if (!modal) return;
+
+  modal.classList.add("hidden");
+}
+
+document.getElementById("closeMaterialsSoonBtn")
+  ?.addEventListener("click", closeMaterialsComingSoonModal);
+
+document.getElementById("materialsComingSoonModal")
+  ?.addEventListener("click", event => {
+    if (event.target === event.currentTarget) {
+      closeMaterialsComingSoonModal();
+    }
+  });
 
 function resetPlannerForm() {
   const budget =
@@ -3884,6 +4024,10 @@ async function deletePlan(id) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+  if (!document.getElementById("coopSize")) {
+    return;
+  }
+
   populateSizeDropdown();
   loadPlans();
 

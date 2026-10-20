@@ -411,8 +411,7 @@
             <h2>Coop Overview</h2>
 
             <p>
-              Review the recommended capacity, space usage,
-              and ventilation of your generated coop.
+              View the recommended chicken capacity for your generated coop.
             </p>
           </div>
 
@@ -436,47 +435,6 @@
             <span id="capacityStatus">
               Awaiting calculation...
             </span>
-
-            <p id="spacePerChicken">
-              0m² per chicken
-            </p>
-          </article>
-
-          <article class="analysis-card space-analysis">
-            <div class="analysis-icon blue-icon">
-              <i data-lucide="maximize"></i>
-            </div>
-
-            <div class="analysis-label">Space Usage</div>
-
-            <h2 id="spaceUsageResult">0%</h2>
-
-            <div class="usage-bar">
-              <div id="usageBarFill"></div>
-            </div>
-
-            <p id="totalAreaText">
-              0m² total area
-            </p>
-          </article>
-
-          <article class="analysis-card ventilation-analysis">
-            <div class="analysis-icon teal-icon">
-              <i data-lucide="wind"></i>
-            </div>
-
-            <div class="analysis-label">Ventilation</div>
-
-            <h2 id="ventilationStatus">Good</h2>
-
-            <span class="good-badge">
-              <i data-lucide="circle-check"></i>
-              Adequate
-            </span>
-
-            <p id="climateText">
-              Climate optimized
-            </p>
           </article>
 
         </div>
@@ -701,6 +659,38 @@
 
     </div>
   </div>
+
+<div
+  id="materialsComingSoonModal"
+  class="materials-soon-overlay hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="materialsSoonTitle">
+
+  <div class="materials-soon-modal">
+
+    <div class="materials-soon-icon">
+      <i data-lucide="wrench"></i>
+    </div>
+
+    <h2 id="materialsSoonTitle">Coming Soon!</h2>
+
+    <p>
+      Detailed material specifications for this
+      chicken coop size are not yet available.
+      We're working on bringing this feature soon!
+    </p>
+
+    <button
+      type="button"
+      id="closeMaterialsSoonBtn"
+      class="materials-soon-btn">
+      Got It
+    </button>
+
+  </div>
+</div>
+  
 
   <script src="js/auth.js"></script>
   <script src="js/coop-planner.js"></script>

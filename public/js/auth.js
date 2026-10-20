@@ -4022,8 +4022,14 @@ function openDashboardModel(coopId) {
     return;
   }
 
+const modelBaseURL =
+  "https://smartcoop-models.porcallaramuel179.workers.dev";
+
+const modelFilename =
+  `${sizeKey}.${typeData.name.replaceAll(" ", ".")}.glb`;
+
 const modelPath =
-  `/${encodeURIComponent(typeData.folder)}/${encodeURIComponent(`${sizeKey} ${typeData.name}.glb`)}`;
+  `${modelBaseURL}/${encodeURIComponent(modelFilename)}`;
 
   let modal =
     document.getElementById("dashboardModelModal");
@@ -4151,132 +4157,19 @@ function openDashboardCosts(coopId) {
   const chickens =
     Number(plan.NumberOfChickens) || 0;
 
-  const chickPrice = 60;
-  const chickenCost = chickens * chickPrice;
+const chickenType = String(plan.ChickenType || "").trim();
 
-  const setupCostData = {
-    "1x1": {
-      construction: [
-        {
-          name: "Concrete Slab",
-          specification: "1.00m × 1.00m × 0.55m",
-          quantity: 1,
-          unit: "set",
-          unitPrice: 1000
-        },
-        {
-          name: "Wood Posts",
-          specification: "1.80m × 0.05m × 0.05m",
-          quantity: 5,
-          unit: "pcs",
-          unitPrice: 125
-        },
-        {
-          name: "Ridge Board",
-          specification: "1.54m × 0.05m × 0.05m",
-          quantity: 1,
-          unit: "pc",
-          unitPrice: 110
-        },
-        {
-          name: "Front / Back Wall Plate",
-          specification: "1.47m × 0.05m × 0.05m",
-          quantity: 2,
-          unit: "pcs",
-          unitPrice: 105
-        },
-        {
-          name: "Side Wall Plate",
-          specification: "1.00m × 0.05m × 0.05m",
-          quantity: 2,
-          unit: "pcs",
-          unitPrice: 80
-        },
-        {
-          name: "Roof Rafters",
-          specification: "Wood roof framing",
-          quantity: 4,
-          unit: "pcs",
-          unitPrice: 100
-        },
-        {
-          name: "Roof Sheet",
-          specification: "3ft × 9ft • 0.4mm • divided into 3",
-          quantity: 2,
-          unit: "sections",
-          unitPrice: 180
-        },
-        {
-          name: "Wire Mesh",
-          specification: "0.025m openings • 0.0016m wire",
-          quantity: 6,
-          unit: "m²",
-          unitPrice: 100
-        },
-        {
-          name: "Door",
-          specification: "1.52m × 0.70m × 0.05m",
-          quantity: 1,
-          unit: "set",
-          unitPrice: 450
-        }
-      ],
+const estimatedChickenPrices = {
+  "Broilers": 60,
+  "Layers (Egg Production)": 180,
+  "Dual Purpose": 120
+};
 
-      hardware: [
-        {
-          name: "Nails / Screws",
-          quantity: 1,
-          unit: "set",
-          unitPrice: 150
-        },
-        {
-          name: "Door Hinges",
-          quantity: 2,
-          unit: "pcs",
-          unitPrice: 60
-        },
-        {
-          name: "Door Latch",
-          quantity: 1,
-          unit: "set",
-          unitPrice: 100
-        }
-      ],
+const chickPrice = estimatedChickenPrices[chickenType] ?? 60;
+const chickenCost = chickens * chickPrice;
 
-      equipment: [
-        {
-          name: "Bell Waterer",
-          quantity: 1,
-          unit: "set",
-          unitPrice: 300
-        },
-        {
-          name: "Brooder Lamp / Refractor",
-          quantity: 1,
-          unit: "set",
-          unitPrice: 500
-        },
-        {
-          name: "Feeder",
-          quantity: 1,
-          unit: "set",
-          unitPrice: 160
-        }
-      ],
+const costData = getSetupCostData(sizeKey, chickenType);
 
-      bedding: [
-        {
-          name: "Rice Hull",
-          specification: "For 0.90m × 0.90m × 0.075m bedding area",
-          quantity: 2,
-          unit: "sacks",
-          unitPrice: 100
-        }
-      ]
-    }
-  };
-
-  const costData = setupCostData[sizeKey];
 
   if (!costData) {
     alert(
@@ -4313,8 +4206,9 @@ function openDashboardCosts(coopId) {
     equipmentTotal +
     beddingTotal;
 
-  const total =
-    setupTotal + chickenCost;
+const baseTotal = setupTotal + chickenCost;
+const allowance = Math.ceil(baseTotal * 0.10);
+const total = baseTotal + allowance;
 
   const createRows = (
     title,
@@ -4503,7 +4397,7 @@ function openDashboardCosts(coopId) {
     <tr class="dashboard-cost-item-row">
 
       <td>
-        <strong>Broiler Chicks</strong>
+        <strong>${chickenType} Chickens</strong>
       </td>
 
       <td>
@@ -4521,7 +4415,31 @@ function openDashboardCosts(coopId) {
       </td>
 
     </tr>
+    <tr class="dashboard-cost-category">
+  <td colspan="4">
+    Budget Allowance
+  </td>
+</tr>
+
+<tr class="dashboard-cost-item-row">
+  <td>
+    <strong>Budget Allowance (10%)</strong>
+  </td>
+
+  <td>1 allowance</td>
+
+  <td>
+    10%
+  </td>
+
+  <td>
+    <strong>
+      ₱${allowance.toLocaleString()}
+    </strong>
+  </td>
+</tr>
   `;
+  
 
   document.getElementById(
     "dashboardTotalCost"
