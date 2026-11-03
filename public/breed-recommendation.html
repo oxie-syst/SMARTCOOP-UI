@@ -4,11 +4,12 @@
   <title>Breed Recommendation</title>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body class="dashboard-body" onload="loadUserInfo()">
 
-  <aside class="sidebar">
+<aside class="sidebar" id="mobileSidebar">
 
     <div class="logo">
       <span>S</span>
@@ -79,6 +80,18 @@
   <main class="main">
 
     <header class="topbar">
+      
+<button
+  type="button"
+  class="mobile-menu-btn"
+  id="mobileMenuBtn"
+  aria-label="Open navigation"
+  aria-controls="mobileSidebar"
+  aria-expanded="false"
+  onclick="toggleBreedMobileSidebar()">
+  <i data-lucide="menu"></i>
+</button>
+
 
       <div class="topbar-brand">
         <i data-lucide="leaf"></i>
@@ -511,6 +524,65 @@
     );
 
   </script>
+  
+<script>
+function toggleBreedMobileSidebar() {
+  const sidebar = document.getElementById("mobileSidebar");
+  const button = document.getElementById("mobileMenuBtn");
+
+  if (!sidebar || !button) return;
+
+  const isOpen = sidebar.classList.toggle("open");
+
+  button.setAttribute("aria-expanded", String(isOpen));
+  button.setAttribute(
+    "aria-label",
+    isOpen ? "Close navigation" : "Open navigation"
+  );
+}
+
+document.addEventListener("click", function(event) {
+  const sidebar = document.getElementById("mobileSidebar");
+  const button = document.getElementById("mobileMenuBtn");
+
+  if (!sidebar || !button) return;
+
+  if (
+    sidebar.classList.contains("open") &&
+    !sidebar.contains(event.target) &&
+    !button.contains(event.target)
+  ) {
+    sidebar.classList.remove("open");
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-label", "Open navigation");
+  }
+});
+
+document.addEventListener("keydown", function(event) {
+  if (event.key !== "Escape") return;
+
+  const sidebar = document.getElementById("mobileSidebar");
+  const button = document.getElementById("mobileMenuBtn");
+
+  if (!sidebar || !button) return;
+
+  sidebar.classList.remove("open");
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-label", "Open navigation");
+});
+
+window.addEventListener("resize", function() {
+  if (window.innerWidth > 820) {
+    const sidebar = document.getElementById("mobileSidebar");
+    const button = document.getElementById("mobileMenuBtn");
+
+    sidebar?.classList.remove("open");
+    button?.setAttribute("aria-expanded", "false");
+    button?.setAttribute("aria-label", "Open navigation");
+  }
+});
+</script>
+
 
 </body>
 </html>

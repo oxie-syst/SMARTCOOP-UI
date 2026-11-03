@@ -16,7 +16,7 @@
   class="dashboard-body"
   onload="loadUserInfo(); loadChickenInfoPage();">
 
-  <aside class="sidebar">
+<aside class="sidebar" id="mobileSidebar">
 
     <div class="logo">
       <span>S</span>
@@ -88,6 +88,18 @@
   <main class="main">
 
     <header class="topbar">
+      
+<button
+  type="button"
+  class="mobile-menu-btn"
+  id="mobileMenuBtn"
+  aria-label="Open navigation"
+  aria-controls="mobileSidebar"
+  aria-expanded="false"
+  onclick="toggleChickenMobileSidebar()">
+  <i data-lucide="menu"></i>
+</button>
+
 
       <div class="topbar-brand">
         <i data-lucide="leaf"></i>
@@ -608,6 +620,62 @@
   <script src="js/auth.js"></script>
   <script src="js/chicken-info.js"></script>
   <script src="js/alerts.js"></script>
+  
+<script>
+function toggleChickenMobileSidebar() {
+  const sidebar = document.getElementById("mobileSidebar");
+  const button = document.getElementById("mobileMenuBtn");
+
+  if (!sidebar || !button) return;
+
+  const isOpen = sidebar.classList.toggle("open");
+
+  button.setAttribute("aria-expanded", String(isOpen));
+  button.setAttribute(
+    "aria-label",
+    isOpen ? "Close navigation" : "Open navigation"
+  );
+}
+
+function closeChickenMobileSidebar() {
+  const sidebar = document.getElementById("mobileSidebar");
+  const button = document.getElementById("mobileMenuBtn");
+
+  if (!sidebar || !button) return;
+
+  sidebar.classList.remove("open");
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-label", "Open navigation");
+}
+
+document.addEventListener("click", function(event) {
+  const sidebar = document.getElementById("mobileSidebar");
+  const button = document.getElementById("mobileMenuBtn");
+
+  if (
+    sidebar &&
+    button &&
+    sidebar.classList.contains("open") &&
+    !sidebar.contains(event.target) &&
+    !button.contains(event.target)
+  ) {
+    closeChickenMobileSidebar();
+  }
+});
+
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Escape") {
+    closeChickenMobileSidebar();
+  }
+});
+
+window.addEventListener("resize", function() {
+  if (window.innerWidth > 820) {
+    closeChickenMobileSidebar();
+  }
+});
+</script>
+
 
   <script>
     if (window.lucide) {

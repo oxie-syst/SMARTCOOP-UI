@@ -971,10 +971,26 @@ async function logout() {
   }
 }
 
-    function toggleSidebar() {
-      const sidebar = document.getElementById("sidebar");
-      if (sidebar) sidebar.classList.toggle("open");
-    }
+function toggleSidebar() {
+  const sidebar = document.getElementById("mobileSidebar");
+  const button = document.getElementById("mobileMenuBtn");
+
+  if (!sidebar) return;
+
+  const isOpen = sidebar.classList.toggle("open");
+
+  if (button) {
+    button.setAttribute("aria-expanded", String(isOpen));
+    button.setAttribute(
+      "aria-label",
+      isOpen ? "Close navigation" : "Open navigation"
+    );
+  }
+}
+
+function toggleMobileSidebar() {
+  toggleSidebar();
+}
 
     function scrollToSection(sectionId) {
       const element = document.getElementById(sectionId);

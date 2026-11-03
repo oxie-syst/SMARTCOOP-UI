@@ -16,7 +16,7 @@
 
 <body class="dashboard-body" onload="loadDashboard()">
 
-  <aside class="sidebar">
+<aside class="sidebar" id="mobileSidebar">
     <div class="logo">
       <span>S</span>
       <h2>SmartCoop</h2>
@@ -84,6 +84,16 @@
   <main class="main">
 
     <header class="topbar">
+<button
+  type="button"
+  class="mobile-menu-btn"
+  id="mobileMenuBtn"
+  aria-label="Open navigation"
+  aria-controls="mobileSidebar"
+  aria-expanded="false"
+  onclick="toggleMobileSidebar()">
+  <i data-lucide="menu"></i>
+</button>
 
       <div class="topbar-brand">
         <i data-lucide="leaf"></i>
@@ -721,6 +731,53 @@
 
     });
   </script>
+  
+<script>
+function toggleMobileSidebar() {
+  const sidebar = document.getElementById("mobileSidebar");
+  const button = document.getElementById("mobileMenuBtn");
+
+  if (!sidebar || !button) return;
+
+  const isOpen = sidebar.classList.toggle("open");
+  button.setAttribute("aria-expanded", String(isOpen));
+  button.setAttribute(
+    "aria-label",
+    isOpen ? "Close navigation" : "Open navigation"
+  );
+}
+
+document.addEventListener("click", function (event) {
+  const sidebar = document.getElementById("mobileSidebar");
+  const button = document.getElementById("mobileMenuBtn");
+
+  if (!sidebar || !button) return;
+
+  if (
+    sidebar.classList.contains("open") &&
+    !sidebar.contains(event.target) &&
+    !button.contains(event.target)
+  ) {
+    sidebar.classList.remove("open");
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-label", "Open navigation");
+  }
+});
+
+document.addEventListener("keydown", function (event) {
+  if (event.key !== "Escape") return;
+
+  const sidebar = document.getElementById("mobileSidebar");
+  const button = document.getElementById("mobileMenuBtn");
+
+  if (sidebar && button) {
+    sidebar.classList.remove("open");
+    button.setAttribute("aria-expanded", "false");
+    button.setAttribute("aria-label", "Open navigation");
+  }
+});
+</script>
 
 </body>
+
 </html>

@@ -250,11 +250,11 @@ async function loadActiveCoopOptions() {
             .toLowerCase() === "active"
       );
 
-    select.innerHTML = `
-      <option value="">
-        Select an active coop
-      </option>
-    `;
+      select.innerHTML = `
+        <option value="" disabled selected>
+          Select an active coop
+        </option>
+      `;
 
     coops.forEach(coop => {
       const option =
