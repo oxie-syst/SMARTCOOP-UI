@@ -250,6 +250,22 @@
                 placeholder="Enter coop name">
             </div>
 
+             <div class="input-group">
+          <label for="type">
+            <i data-lucide="bird"></i>
+            Chicken Type
+          </label>
+
+          <select id="type" required onchange="updateCapacity()">
+            <option value="" disabled selected>
+              Select Chicken Type
+            </option>
+            <option>Layers (Egg Production)</option>
+            <option>Broilers</option>
+            <option>Dual Purpose</option>
+          </select>
+        </div>
+
             <div class="input-group">
               <label for="coopSize">
                 <i data-lucide="ruler"></i>
@@ -274,23 +290,6 @@
               </div>
 
             </div>
-
-
-        <div class="input-group">
-          <label for="type">
-            <i data-lucide="bird"></i>
-            Chicken Type
-          </label>
-
-          <select id="type" required onchange="updateCapacity()">
-            <option value="" disabled selected>
-              Select Chicken Type
-            </option>
-            <option>Layers (Egg Production)</option>
-            <option>Broilers</option>
-            <option>Dual Purpose</option>
-          </select>
-        </div>
 
         <div class="input-group">
           <label for="capacity">
