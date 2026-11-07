@@ -29,18 +29,28 @@ const rotationState = {
   }
 };
 
+
+let cachedBreedDataset = null;
+
 function loadBreedDataset() {
+  if (cachedBreedDataset !== null) {
+    return cachedBreedDataset;
+  }
+
   const content = fs.readFileSync(
     datasetPath,
     "utf8"
   );
 
-  return content
+  cachedBreedDataset = content
     .split("\n")
     .map(line => line.trim())
     .filter(Boolean)
     .map(line => JSON.parse(line));
+
+  return cachedBreedDataset;
 }
+
 
 function getRelevantExamples(
   dataset,
@@ -393,359 +403,19 @@ try {
     });
   }
 
-  const allowedBreedNames =
-    getAllowedBreedNames(
-      breedPools
-    );
-
   try {
-    const datasetContext =
-      formatExamples(
-        relevantExamples
-      );
-
-    const { GoogleGenAI } =
-      await import(
-        "@google/genai"
-      );
-
-    const ai =
-      new GoogleGenAI({
-        apiKey:
-          process.env.GEMINI_API_KEY
-      });
-
-    const prompt = `
-You are SmartCoop's AI Chicken Breed Recommendation Specialist.
-
-USER'S SELECTED PRIMARY GOAL:
-
-${goalName}
-
-SmartCoop has a curated local poultry dataset.
-
-Use the supplied dataset as the grounding source for the recommendation.
-
-ALL BEGINNER-FRIENDLY BREEDS AVAILABLE FOR THIS GOAL:
-
-${allowedBreedNames.beginner.join(", ")}
-
-ALL EXPERIENCED-RAISER BREEDS AVAILABLE FOR THIS GOAL:
-
-${allowedBreedNames.experienced.join(", ")}
-
-SMARTCOOP ROTATION HAS SELECTED THESE BREEDS FOR THIS REQUEST:
-
-Recommendation 1:
-${targetBreeds.beginner}
-
-Recommendation 2:
-${targetBreeds.experienced}
-
-You MUST use those exact two selected breed names for this request.
-
-Do not replace them with another breed.
-
-SMARTCOOP DATASET REFERENCES:
-
-${datasetContext}
-
-END OF SMARTCOOP DATASET REFERENCES.
-
-TASK:
-
-Generate exactly TWO recommendations for:
-
-${goalName}
-
-RECOMMENDATION 1:
-
-Breed must be exactly:
-
-"${targetBreeds.beginner}"
-
-Experience level must be exactly:
-
-"Beginner Friendly"
-
-RECOMMENDATION 2:
-
-Breed must be exactly:
-
-"${targetBreeds.experienced}"
-
-Experience level must be exactly:
-
-"Experienced Raisers"
-
-FOR EACH RECOMMENDATION RETURN:
-
-1. breed
-
-Use the exact selected breed name.
-
-2. bestFor
-
-Must clearly match:
-
-${goalName}
-
-3. recommendedCoopSpace
-
-Use SmartCoop planning ranges supported by the dataset.
-
-Allowed dimensions are:
-
-1x1
-2x2
-3x3
-4x4
-5x5
-6x6
-7x7
-8x8
-9x9
-10x10
-
-Examples:
-
-"1x1 - 3x3"
-"4x4 - 6x6"
-"7x7 - 10x10"
-
-4. climateSuitability
-
-Use only climate suitability represented in the dataset for that breed.
-
-5. experienceLevel
-
-Recommendation 1:
-"Beginner Friendly"
-
-Recommendation 2:
-"Experienced Raisers"
-
-6. whyRecommended
-
-Provide a concise explanation based on the SmartCoop dataset.
-
-7. advantages
-
-Provide exactly THREE advantages.
-
-8. thingsToConsider
-
-Provide exactly THREE practical considerations.
-
-IMPORTANT RULES:
-
-- Use only information supported by the supplied SmartCoop dataset.
-- Do not invent breeds.
-- Do not change the two selected breed names.
-- Do not recommend the same breed twice.
-- Do not fabricate precise production statistics.
-- Do not assume the user's climate.
-- Do not assume the user's available space.
-- Do not assume the user's experience.
-- Use clear professional English.
-- Keep responses concise enough for SmartCoop recommendation cards.
-
-Return only the structured data required by the response schema.
-`;
-
-    const response =
-      await ai.models.generateContent({
-        model:
-          "gemini-3.7-flash",
-
-        contents: prompt,
-
-        config: {
-          responseMimeType:
-            "application/json",
-
-          responseSchema: {
-            type: "object",
-
-            properties: {
-              recommendations: {
-                type: "array",
-                minItems: 2,
-                maxItems: 2,
-
-                items: {
-                  type: "object",
-
-                  properties: {
-                    breed: {
-                      type: "string"
-                    },
-
-                    bestFor: {
-                      type: "string"
-                    },
-
-                    recommendedCoopSpace: {
-                      type: "array",
-
-                      items: {
-                        type: "string"
-                      }
-                    },
-
-                    climateSuitability: {
-                      type: "array",
-
-                      items: {
-                        type: "string"
-                      }
-                    },
-
-                    experienceLevel: {
-                      type: "string",
-
-                      enum: [
-                        "Beginner Friendly",
-                        "Experienced Raisers"
-                      ]
-                    },
-
-                    whyRecommended: {
-                      type: "string"
-                    },
-
-                    advantages: {
-                      type: "array",
-                      minItems: 3,
-                      maxItems: 3,
-
-                      items: {
-                        type: "string"
-                      }
-                    },
-
-                    thingsToConsider: {
-                      type: "array",
-                      minItems: 3,
-                      maxItems: 3,
-
-                      items: {
-                        type: "string"
-                      }
-                    }
-                  },
-
-                  required: [
-                    "breed",
-                    "bestFor",
-                    "recommendedCoopSpace",
-                    "climateSuitability",
-                    "experienceLevel",
-                    "whyRecommended",
-                    "advantages",
-                    "thingsToConsider"
-                  ]
-                }
-              }
-            },
-
-            required: [
-              "recommendations"
-            ]
-          }
-        }
-      });
-
-    const data =
-      JSON.parse(
-        response.text
-      );
+    const recommendations =
+      targetBreeds.fallbackRecommendations;
 
     if (
-      !Array.isArray(
-        data.recommendations
-      ) ||
-      data.recommendations.length !== 2
+      !Array.isArray(recommendations) ||
+      recommendations.length !== 2
     ) {
-      throw new Error(
-        "Gemini returned an invalid recommendation count."
-      );
+      return res.status(500).json({
+        success: false,
+        message: "Unable to generate breed recommendations."
+      });
     }
-
-    data.recommendations[0].breed =
-      targetBreeds.beginner;
-
-    data.recommendations[0].experienceLevel =
-      "Beginner Friendly";
-
-    data.recommendations[1].breed =
-      targetBreeds.experienced;
-
-    data.recommendations[1].experienceLevel =
-      "Experienced Raisers";
-
-if (!featureCheck.isPremium) {
-  await logFeatureUsage(
-    userId,
-    "breed_recommendation"
-  );
-}
-
-    return res.json({
-      success: true,
-
-      source:
-        "SmartCoop Curated Dataset + Gemini",
-
-      fallback: false,
-
-      datasetRecords:
-        dataset.length,
-
-      relevantDatasetRecords:
-        relevantExamples.length,
-
-      availableBeginnerBreeds:
-        breedPools.beginner.length,
-
-      availableExperiencedBreeds:
-        breedPools.experienced.length,
-
-      recommendations:
-        data.recommendations
-    });
-
- } catch (error) {
-
-  const errorStatus =
-    error?.status ||
-    error?.code ||
-    error?.error?.code;
-
-  const errorMessage =
-    String(
-      error?.message ||
-      error ||
-      ""
-    );
-
-
-  const shouldUseFallback =
-    errorStatus === 429 ||
-    errorStatus === 503 ||
-    errorMessage.includes('"code":429') ||
-    errorMessage.includes('"code":503') ||
-    errorMessage.includes("RESOURCE_EXHAUSTED") ||
-    errorMessage.includes("UNAVAILABLE") ||
-    errorMessage.includes("high demand");
-
-
-  if (shouldUseFallback) {
-
-    console.log(
-      "Gemini temporarily unavailable. Using SmartCoop dataset fallback."
-    );
-
 
     if (!featureCheck.isPremium) {
       await logFeatureUsage(
@@ -754,20 +424,13 @@ if (!featureCheck.isPremium) {
       );
     }
 
-
     return res.json({
       success: true,
+      source: "SmartCoop Curated Dataset",
+      fallback: false,
 
-      source:
-        "SmartCoop Curated Dataset Fallback",
-
-      fallback: true,
-
-      datasetRecords:
-        dataset.length,
-
-      relevantDatasetRecords:
-        relevantExamples.length,
+      datasetRecords: dataset.length,
+      relevantDatasetRecords: relevantExamples.length,
 
       availableBeginnerBreeds:
         breedPools.beginner.length,
@@ -775,27 +438,21 @@ if (!featureCheck.isPremium) {
       availableExperiencedBreeds:
         breedPools.experienced.length,
 
-      recommendations:
-        targetBreeds.fallbackRecommendations
+      recommendations: recommendations
     });
 
+  } catch (error) {
+    console.error(
+      "Breed Recommendation Error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to generate breed recommendations."
+    });
   }
-
-
-  console.error(
-    "Breed Recommendation Error:",
-    error.message || error
-  );
-
-
-  return res.status(500).json({
-    success: false,
-
-    message:
-      "Unable to generate breed recommendations."
-  });
-
-}
 });
+
 
 module.exports = router;
