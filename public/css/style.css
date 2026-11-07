@@ -25520,3 +25520,143 @@ body.dashboard-body:has(.settings-modern) .main,
     padding-bottom: 12px;
   }
 }
+/* BREED RECOMMENDATION AI LOADING */
+
+.breed-ai-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+  padding: 65px 20px;
+  animation: breedFadeIn 0.4s ease;
+}
+
+.breed-loading-animation {
+  position: relative;
+  width: 105px;
+  height: 105px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.breed-loading-ring {
+  position: absolute;
+  inset: 0;
+  border: 4px solid #d9f5e7;
+  border-top-color: #10b981;
+  border-right-color: #059669;
+  border-radius: 50%;
+  animation: breedSpin 1.2s linear infinite;
+}
+
+.breed-loading-center {
+  width: 72px;
+  height: 72px;
+  background: #ecfdf5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: breedPulse 1.8s ease-in-out infinite;
+}
+
+.breed-loading-center svg {
+  width: 35px;
+  height: 35px;
+  color: #059669;
+}
+
+.breed-ai-loading h2 {
+  font-size: 21px;
+  font-weight: 700;
+  color: #102a43;
+  margin: 0;
+}
+
+.breed-ai-loading p {
+  max-width: 430px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.breed-loading-dots {
+  display: flex;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.breed-loading-dots span {
+  width: 9px;
+  height: 9px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: breedBounce 1.2s ease-in-out infinite;
+}
+
+.breed-loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.breed-loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.breed-main-btn:disabled svg {
+  animation: breedSpin 1.2s linear infinite;
+}
+
+@keyframes breedSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes breedPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.18);
+  }
+
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 12px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes breedBounce {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+
+  30% {
+    transform: translateY(-9px);
+    opacity: 1;
+  }
+}
+
+@keyframes breedFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breed-ai-loading,
+  .breed-loading-ring,
+  .breed-loading-center,
+  .breed-loading-dots span,
+  .breed-main-btn:disabled svg {
+    animation: none;
+  }
+}

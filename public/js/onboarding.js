@@ -22,21 +22,21 @@ const onboardingSlides = [
     benefit:
       "Understanding these fundamentals helps you make better decisions before planning your poultry setup.",
     connection:
-      "Next, use Breed Recommendation to identify breeds suited to your goals and farm conditions."
+      "Next, use Breed Recommendation to find chicken breeds based on your production goal."
   },
 
-  {
-    icon: "search",
-    step: "03 — Choose",
-    title: "Breed Recommendation",
-    tagline: "Choose with Confidence",
-    description:
-      "Receive breed recommendations based on your production goals, available space, and farm conditions.",
-    benefit:
-      "Use these recommendations as a starting point when selecting breeds suitable for your planned poultry operation.",
-    connection:
-      "Save promising options so you can review and compare them before making a decision."
-  },
+{
+  icon: "search",
+  step: "03 — Choose",
+  title: "Breed Recommendation",
+  tagline: "Choose with Confidence",
+  description:
+    "Receive AI-powered chicken breed recommendations based on your selected production goal: egg production, meat production, or dual purpose.",
+  benefit:
+    "Get two breed recommendations: one suitable for beginners and another for experienced poultry raisers.",
+  connection:
+    "Save your preferred breed recommendations so you can review and compare them before making a decision."
+},
 
   {
     icon: "bookmark",

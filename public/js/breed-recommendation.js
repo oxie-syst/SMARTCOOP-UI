@@ -56,21 +56,30 @@ async function getBreedRecommendation() {
 
     </div>
 
-    <div class="recommendation-loading">
+<div class="recommendation-loading breed-ai-loading">
 
-      <div class="empty-recommendation-icon">
-        <i data-lucide="loader-circle"></i>
-      </div>
+  <div class="breed-loading-animation">
+    <div class="breed-loading-ring"></div>
 
-      <h2>
-        Finding Suitable Breeds...
-      </h2>
-
-      <p>
-        SmartCoop is generating your AI breed recommendations.
-      </p>
-
+    <div class="breed-loading-center">
+      <i data-lucide="bird"></i>
     </div>
+  </div>
+
+  <h2>Finding Suitable Breeds...</h2>
+
+  <p>
+    SmartCoop is analyzing your selected production goal
+    and preparing suitable chicken breed recommendations.
+  </p>
+
+  <div class="breed-loading-dots" aria-hidden="true">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+</div>
   `;
 
   if (window.lucide) {
