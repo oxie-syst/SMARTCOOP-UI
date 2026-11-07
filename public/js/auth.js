@@ -910,16 +910,27 @@ setText(
         );
         setText("monthlyCost", "₱0");
 
-        if (projectContainer) {
-          projectContainer.innerHTML = `
-            <div class="empty-project">
-              <p>No coop projects yet.</p>
-              <a href="coop-planner.html">
-                Create Your First Coop
-              </a>
-            </div>
-          `;
-        }
+if (projectContainer) {
+  projectContainer.innerHTML = `
+    <div class="empty-project">
+      <div class="empty-project-icon">
+        <i data-lucide="folder-plus"></i>
+      </div>
+
+      <h3>No Active Projects Yet</h3>
+
+      <p>
+        You haven't created a coop project yet.
+        Start planning your first coop.
+      </p>
+
+      <a href="coop-planner.html" class="create-coop-btn">
+        <i data-lucide="plus"></i>
+        Create Coop Plan
+      </a>
+    </div>
+  `;
+}
       }
 
     if (window.lucide) {
