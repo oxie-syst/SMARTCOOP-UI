@@ -1,0 +1,276 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Materials & Cost Management | SmartCoop</title>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="dashboard-body admin-dashboard-page">
+
+  <aside class="sidebar">
+    <div class="logo">
+      <span>S</span>
+      <h2>SmartCoop</h2>
+    </div>
+
+    <nav>
+      <a href="admin-dashboard.html">
+        <i data-lucide="layout-dashboard"></i>
+        Dashboard
+      </a>
+
+      <a href="admin-users.html">
+        <i data-lucide="users"></i>
+        Manage Users
+      </a>
+
+      <a href="admin-reports.html">
+        <i data-lucide="bar-chart-3"></i>
+        Reports & Analytics
+      </a>
+
+      <a href="admin-materials.html" class="active">
+        <i data-lucide="package"></i>
+        Materials & Cost Management
+      </a>
+    </nav>
+  </aside>
+
+  <main class="main">
+
+    <header class="topbar">
+      <div class="topbar-brand">
+        <i data-lucide="package"></i>
+        <span id="topbarText">Materials & Cost Management</span>
+      </div>
+
+      <div class="top-profile">
+        <button
+          class="profile-trigger"
+          type="button"
+          onclick="toggleProfileMenu()">
+
+          <div class="avatar" id="userAvatarTop">A</div>
+
+          <div class="top-profile-name">
+            <span id="topUsername">Admin</span>
+            <small>Administrator</small>
+          </div>
+
+          <i data-lucide="chevron-down"></i>
+        </button>
+
+        <div id="profileDropdown" class="profile-dropdown hidden">
+          <div class="dropdown-user">
+            <strong id="dropdownName">Admin</strong>
+            <p id="dropdownEmail">admin@smartcoop.com</p>
+            <small>SmartCoop Administrator</small>
+          </div>
+
+          <button
+            type="button"
+            class="logout-link"
+            onclick="logout()">
+            <i data-lucide="log-out"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <section class="content admin-content">
+
+      <div class="admin-page-header">
+        <div>
+          <span class="admin-page-eyebrow">PRICE MAINTENANCE</span>
+          <h1>Materials & Cost Management</h1>
+          <p>
+            View and update estimated material prices used
+            in SmartCoop's Coop Planner.
+          </p>
+        </div>
+      </div>
+
+      <div class="admin-users-kpis">
+
+        <div class="admin-users-card">
+          <p>Total Materials</p>
+          <h2 id="totalMaterials">0</h2>
+          <small>Registered material records</small>
+        </div>
+
+        <div class="admin-users-card">
+          <p>Active Materials</p>
+          <h2 id="activeMaterials">0</h2>
+          <small>Available for cost estimation</small>
+        </div>
+
+        <div class="admin-users-card">
+          <p>Inactive Materials</p>
+          <h2 id="inactiveMaterials">0</h2>
+          <small>Deactivated material records</small>
+        </div>
+
+      </div>
+
+
+<div class="admin-users-panel materials-panel">
+
+  <div class="materials-panel-header">
+    <div>
+      <h2 id="materialCategoryTitle">
+        Broilers Material Price List
+      </h2>
+      <p>
+        Manage material prices for each chicken type.
+      </p>
+    </div>
+
+    <div class="materials-panel-icon">
+      <i data-lucide="package-check"></i>
+    </div>
+  </div>
+
+  <div class="material-category-tabs">
+    <button
+      type="button"
+      class="material-category-tab active"
+      data-chicken-type="Broilers">
+      Broilers
+    </button>
+
+    <button
+      type="button"
+      class="material-category-tab"
+      data-chicken-type="Layers (Egg Production)">
+      Layers
+    </button>
+
+    <button
+      type="button"
+      class="material-category-tab"
+      data-chicken-type="Dual Purpose">
+      Dual Purpose
+    </button>
+  </div>
+
+  <div class="admin-users-tools materials-toolbar">
+<div class="admin-users-search materials-search">
+  <i data-lucide="search"></i>
+  <input
+    id="materialSearch"
+    type="text"
+    placeholder="Search materials..."
+    autocomplete="off">
+</div>
+
+    <select id="materialStatusFilter">
+      <option value="All">All Status</option>
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+    </select>
+  </div>
+
+  <div class="admin-table-wrapper">
+    <table class="admin-users-table materials-table">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Unit</th>
+          <th>Unit Price</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="adminMaterialsTable">
+        <tr>
+          <td colspan="5">Loading materials...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+
+    </section>
+  </main>
+
+  <div id="editMaterialPriceModal" class="admin-modal hidden">
+    <div class="admin-modal-card">
+
+      <button
+        type="button"
+        class="admin-modal-close"
+        id="closeMaterialPriceModal">
+        ×
+      </button>
+
+      <h2>Edit Material Price</h2>
+
+      <form id="editMaterialPriceForm">
+
+        <input type="hidden" id="editMaterialId">
+
+        <div class="input-group">
+          <label for="editMaterialName">Material Name</label>
+          <input id="editMaterialName" type="text" readonly>
+        </div>
+
+        <div class="input-group">
+          <label for="editMaterialUnit">Unit</label>
+          <input id="editMaterialUnit" type="text" readonly>
+        </div>
+
+        <div class="input-group">
+          <label for="editMaterialPrice">New Unit Price (₱)</label>
+          <input
+            id="editMaterialPrice"
+            type="number"
+            min="0"
+            max="9999999999.99"
+            step="0.01"
+            required>
+        </div>
+
+        <div class="admin-modal-actions">
+          <button
+            type="submit"
+            class="admin-action-btn"
+            id="saveMaterialPriceBtn">
+            Save Changes
+          </button>
+
+          <button
+            type="button"
+            class="cancel-btn"
+            id="cancelMaterialPriceBtn">
+            Cancel
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/admin-materials.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+  </script>
+
+</body>
+</html>

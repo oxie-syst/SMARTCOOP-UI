@@ -15,6 +15,9 @@ db.connect((err) => {
     console.log("Database Error:", err);
   } else {
     console.log("Connected to MySQL");
+console.log("Database Host:", db.config.host);
+console.log("Database Name:", db.config.database);
+console.log("Database Port:", db.config.port);
   }
 });
 

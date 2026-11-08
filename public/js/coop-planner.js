@@ -1830,6 +1830,38 @@ const layersHotspotPositions = {
     lamp: "0m 1.4326m 0.0019m"
   }
 };
+
+let databaseMaterialPrices = [];
+
+async function loadMaterialPrices() {
+  try {
+    const response = await fetch("/api/materials/prices", {
+  credentials: "same-origin",
+  cache: "no-store"
+});
+
+    if (!response.ok) {
+      throw new Error("Failed to load material prices.");
+    }
+
+    const data = await response.json();
+
+    if (!data.success || !Array.isArray(data.materials)) {
+      throw new Error("Invalid material prices response.");
+    }
+
+    databaseMaterialPrices = data.materials;
+
+    console.log(
+      "Material prices loaded:",
+      databaseMaterialPrices.length
+    );
+
+  } catch (error) {
+    console.error("MATERIAL PRICES ERROR:", error);
+    databaseMaterialPrices = [];
+  }
+}
 const setupCostData = {
   broiler: {
     "1x1": {
@@ -2166,17 +2198,71 @@ Object.keys(broilerCostConfig)
   });
 
 
-function calculateMaterialSubtotal(item) {
-  const quantity = Number(item.quantity || 0);
-  const unitPrice = Number(item.unitPrice || 0);
 
-  return quantity * unitPrice;
+function getMaterialUnitPrice(item, chickenType) {
+  const normalize = value =>
+    String(value ?? "")
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, " ");
+
+  const originalPrice = Number(item.unitPrice);
+
+  const matchingMaterial = databaseMaterialPrices.find(
+    material =>
+      normalize(material.MaterialName) === normalize(item.name) &&
+      normalize(material.ChickenType) === normalize(chickenType)
+  );
+
+  if (!matchingMaterial) {
+    return originalPrice;
+  }
+
+  const databasePrice = Number(matchingMaterial.UnitPrice);
+
+  if (!Number.isFinite(databasePrice) || databasePrice < 0) {
+    return originalPrice;
+  }
+
+  if (chickenType === "Broilers") {
+    const baseItems = Object.values(
+      setupCostData.broiler["1x1"]
+    ).flat();
+
+    const baseItem = baseItems.find(
+      material =>
+        normalize(material.name) === normalize(item.name)
+    );
+
+    if (baseItem) {
+      const basePrice = Number(baseItem.unitPrice);
+
+      if (
+        Number.isFinite(basePrice) &&
+        basePrice > 0 &&
+        Number.isFinite(originalPrice)
+      ) {
+        return databasePrice * (originalPrice / basePrice);
+      }
+    }
+  }
+
+  return databasePrice;
 }
 
-function calculateCategoryTotal(items = []) {
+
+
+
+function calculateMaterialSubtotal(item, chickenType) {
+  const quantity = Number(item.quantity || 0);
+
+  return quantity * getMaterialUnitPrice(item, chickenType);
+}
+
+function calculateCategoryTotal(items = [], chickenType) {
   return items.reduce(
     (total, item) =>
-      total + calculateMaterialSubtotal(item),
+      total + calculateMaterialSubtotal(item, chickenType),
     0
   );
 }
@@ -2193,8 +2279,6 @@ const estimatedChickenPrices = {
 const layerSetupCosts = {};
 const dualPurposeSetupCosts = {};
 
-// Planning estimates only.
-// Blender object counts and supplier prices still need verification.
 const COST_ESTIMATE_NOTE =
   "Estimated material quantity and price; subject to verification";
 
@@ -2487,17 +2571,17 @@ function calculateRecommendedBudget(sizeKey, chickenType) {
     return null;
   }
 
-  const constructionTotal =
-    calculateCategoryTotal(costData.construction);
+const constructionTotal =
+  calculateCategoryTotal(costData.construction, chickenType);
 
-  const hardwareTotal =
-    calculateCategoryTotal(costData.hardware);
+const hardwareTotal =
+  calculateCategoryTotal(costData.hardware, chickenType);
 
-  const equipmentTotal =
-    calculateCategoryTotal(costData.equipment);
+const equipmentTotal =
+  calculateCategoryTotal(costData.equipment, chickenType);
 
-  const beddingTotal =
-    calculateCategoryTotal(costData.bedding);
+const beddingTotal =
+  calculateCategoryTotal(costData.bedding, chickenType);
 
   const coopCost =
     constructionTotal +
@@ -2838,6 +2922,8 @@ function updateCapacity() {
 
 
 async function generatePlan() {
+  await loadMaterialPrices();
+
   const sizeValue =
     document.getElementById(
       "coopSize"
@@ -3617,7 +3703,7 @@ const createMaterialRows = (title, items, categoryTotal) => {
   const rows = items
     .map(item => {
       const subtotal =
-        calculateMaterialSubtotal(item);
+        calculateMaterialSubtotal(item, type);
 
       return `
         <tr class="cost-item-row">
@@ -3635,7 +3721,7 @@ const createMaterialRows = (title, items, categoryTotal) => {
           </td>
 
           <td class="cost-unit-price">
-            ₱${item.unitPrice.toLocaleString()}
+           ₱${getMaterialUnitPrice(item, type).toLocaleString()}
           </td>
 
           <td class="cost-item-subtotal">
@@ -4383,7 +4469,7 @@ async function deletePlan(id) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
   if (!document.getElementById("coopSize")) {
     return;
   }
@@ -4464,7 +4550,10 @@ if (typeSelect && recommendedType) {
   }
 }
 
-  if (window.lucide) {
-    lucide.createIcons();
-  }
+if (window.lucide) {
+  lucide.createIcons();
+}
+
+await loadMaterialPrices();
+
 });

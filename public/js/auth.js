@@ -352,23 +352,19 @@ function setupAdminLoginPage() {
       );
 
       try {
-        const response =
-          await fetch(
-            "/api/auth/admin-login",
-            {
-              method: "POST",
 
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
+const response = await fetch("/api/auth/admin-login", {
+  method: "POST",
+  credentials: "same-origin",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    username,
+    password
+  })
+});
 
-              body: JSON.stringify({
-                username,
-                password
-              })
-            }
-          );
 
         const result =
           await response.json();
@@ -1229,47 +1225,67 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (window.lucide) lucide.createIcons();
 
-function checkAdmin() {
-  const storedUser =
-    localStorage.getItem("user") ||
-    localStorage.getItem(
-      SMARTCOOP_USER_KEY
-    );
 
-  if (!storedUser) {
-    window.location.href =
-      "admin-login.html";
-    return;
-  }
-
-  let user;
-
+async function checkAdmin() {
   try {
-    user =
-      JSON.parse(storedUser);
-  } catch (error) {
-    localStorage.removeItem("user");
-    localStorage.removeItem(
-      SMARTCOOP_USER_KEY
-    );
+    const response = await fetch("/api/auth/session", {
+      method: "GET",
+      credentials: "same-origin",
+      cache: "no-store"
+    });
 
-    window.location.href =
-      "admin-login.html";
+    if (!response.ok) {
+      window.location.replace("admin-login.html");
+      return false;
+    }
 
-    return;
-  }
+    const result = await response.json();
 
-  const role =
-    String(
-      user.role ||
-      user.Role ||
+    if (
+      !result.success ||
+      !result.authenticated ||
+      !result.user
+    ) {
+      window.location.replace("admin-login.html");
+      return false;
+    }
+
+    const role = String(
+      result.user.role ||
+      result.user.Role ||
       ""
     ).toLowerCase();
 
-  if (role !== "admin") {
-    window.location.href =
-      "user.html";
+    if (role !== "admin") {
+      window.location.replace("user.html");
+      return false;
+    }
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(result.user)
+    );
+
+    localStorage.setItem(
+      SMARTCOOP_USER_KEY,
+      JSON.stringify(result.user)
+    );
+
+    return true;
+
+  } catch (error) {
+    console.error("ADMIN SESSION ERROR:", error);
+    window.location.replace("admin-login.html");
+    return false;
   }
+}
+async function initializeAdminDashboard() {
+  const authorized = await checkAdmin();
+
+  if (!authorized) return;
+
+  loadUserInfo();
+  await loadAdminDashboard();
 }
 
 
@@ -1333,18 +1349,10 @@ async function loadAdminDashboard() {
   }
 
   try {
-    const response =
-      await fetch(
-        "/api/admin/dashboard",
-        {
-          method: "GET",
-
-          headers: {
-            "x-admin-user-id":
-              adminUserId
-          }
-        }
-      );
+const response = await fetch("/api/admin/dashboard", {
+  method: "GET",
+  credentials: "same-origin"
+});
 
     const result =
       await response.json();
@@ -2016,18 +2024,10 @@ async function loadAdminUsersPage() {
   }
 
   try {
-    const response =
-      await fetch(
-        "/api/admin/users",
-        {
-          method: "GET",
-
-          headers: {
-            "x-admin-user-id":
-              adminUserId
-          }
-        }
-      );
+const response = await fetch("/api/admin/users", {
+  method: "GET",
+  credentials: "same-origin"
+});
 
     const result =
       await response.json();
@@ -2541,26 +2541,19 @@ async function toggleAdminUserStatus(
 
 
   try {
-    const response =
-      await fetch(
-        `/api/admin/users/${userId}/status`,
-        {
-          method: "PATCH",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            "x-admin-user-id":
-              adminUserId
-          },
-
-          body: JSON.stringify({
-            status:
-              newStatus
-          })
-        }
-      );
+const response = await fetch(
+  `/api/admin/users/${userId}/status`,
+  {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      status: newStatus
+    })
+  }
+);
 
 
     const result =
@@ -2658,25 +2651,21 @@ async function updateAdminUserSubscription() {
     adminUser.id;
 
   try {
-    const response =
-      await fetch(
-        `/api/admin/users/${selectedAdminSubscriptionUserId}/subscription`,
-        {
-          method: "PATCH",
 
-          headers: {
-            "Content-Type":
-              "application/json",
+const response = await fetch(
+  `/api/admin/users/${selectedAdminSubscriptionUserId}/subscription`,
+  {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      action
+    })
+  }
+);
 
-            "x-admin-user-id":
-              adminUserId
-          },
-
-          body: JSON.stringify({
-            action
-          })
-        }
-      );
 
     const result =
       await response.json();
@@ -2834,18 +2823,12 @@ async function loadAdminReports() {
 
 
   try {
-    const response =
-      await fetch(
-        url,
-        {
-          method: "GET",
 
-          headers: {
-            "x-admin-user-id":
-              adminUserId
-          }
-        }
-      );
+const response = await fetch(url, {
+  method: "GET",
+  credentials: "same-origin"
+});
+
 
 
     const result =

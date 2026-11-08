@@ -34,111 +34,61 @@ function queryDatabase(
 }
 
 
-async function verifyAdmin(
-  req,
-  res,
-  next
-) {
+
+async function verifyAdmin(req, res, next) {
   try {
+    const adminUserId = Number(req.session?.userId);
 
-    const adminUserId =
-      Number(
-        req.headers[
-          "x-admin-user-id"
-        ]
-      );
-
-
-    if (!adminUserId) {
-
-      return res
-        .status(401)
-        .json({
-          success: false,
-          message:
-            "Administrator authentication is required."
-        });
+    if (!Number.isSafeInteger(adminUserId) || adminUserId <= 0) {
+      return res.status(401).json({
+        success: false,
+        message: "Administrator login is required."
+      });
     }
 
-
-    const result =
-      await queryDatabase(
-        `
-          SELECT
-            UserID,
-            Role
-
-          FROM users
-
-          WHERE UserID = ?
-
-          LIMIT 1
-        `,
-        [
-          adminUserId
-        ]
-      );
-
-
-    if (
-      result.length === 0
-    ) {
-
-      return res
-        .status(401)
-        .json({
-          success: false,
-          message:
-            "Administrator account not found."
-        });
-    }
-
-
-    const role =
-      String(
-        result[0].Role ||
-        ""
-      ).toLowerCase();
-
-
-    if (
-      role !== "admin"
-    ) {
-
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message:
-            "Administrator access is required."
-        });
-    }
-
-
-    req.adminUser =
-      result[0];
-
-
-    next();
-
-
-  } catch (error) {
-
-    console.error(
-      "ADMIN AUTH ERROR:",
-      error
+    const result = await queryDatabase(
+      `SELECT UserID, Role, AccountStatus
+       FROM users
+       WHERE UserID = ?
+       LIMIT 1`,
+      [adminUserId]
     );
 
-
-    return res
-      .status(500)
-      .json({
+    if (result.length === 0) {
+      return res.status(401).json({
         success: false,
-        message:
-          "Unable to verify administrator."
+        message: "Administrator account not found."
       });
+    }
+
+    const admin = result[0];
+
+    if (String(admin.Role || "").toLowerCase() !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Administrator access is required."
+      });
+    }
+
+    if (String(admin.AccountStatus || "").toLowerCase() !== "active") {
+      return res.status(403).json({
+        success: false,
+        message: "Administrator account is inactive."
+      });
+    }
+
+    req.adminUser = admin;
+    next();
+  } catch (error) {
+    console.error("ADMIN AUTH ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to verify administrator."
+    });
   }
 }
+
 
 
 
@@ -1777,5 +1727,107 @@ router.patch(
     }
   }
 );
+
+router.get("/materials", verifyAdmin, async (req, res) => {
+  try {
+    const materials = await queryDatabase(`
+      SELECT
+        m.MaterialID,
+        m.MaterialName,
+        m.Specification,
+        m.Unit,
+        m.UnitPrice,
+        m.IsActive,
+        c.ChickenType
+      FROM coop_materials m
+      INNER JOIN coop_material_categories c
+        ON m.MaterialID = c.MaterialID
+      WHERE c.ChickenType = 'Broilers'
+      ORDER BY m.MaterialName ASC
+    `);
+
+    return res.json({
+      success: true,
+      stats: {
+        totalMaterials: materials.length,
+        activeMaterials: materials.filter(
+          m => Number(m.IsActive) === 1
+        ).length,
+        inactiveMaterials: materials.filter(
+          m => Number(m.IsActive) === 0
+        ).length
+      },
+      materials
+    });
+
+  } catch (error) {
+    console.error("ADMIN MATERIALS ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to load materials."
+    });
+  }
+});
+
+router.patch("/materials/:id/price", verifyAdmin, async (req, res) => {
+  try {
+    const materialId = Number(req.params.id);
+    const price = Number(req.body?.unitPrice);
+
+    if (
+      !Number.isSafeInteger(materialId) ||
+      materialId <= 0 ||
+      req.body?.unitPrice === undefined ||
+      req.body?.unitPrice === null ||
+      req.body?.unitPrice === "" ||
+      !Number.isFinite(price) ||
+      price < 0 ||
+      price > 9999999999.99 ||
+      !Number.isInteger(Math.round(price * 100)) ||
+      Math.abs(price * 100 - Math.round(price * 100)) > 0.000001
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid material ID or unit price."
+      });
+    }
+
+    const result = await queryDatabase(`
+      UPDATE coop_materials
+      SET UnitPrice = ?
+      WHERE MaterialID = ?
+      AND IsActive = 1
+        AND EXISTS (
+          SELECT 1
+          FROM coop_material_categories
+          WHERE MaterialID = ?
+            AND ChickenType = 'Broilers'
+        )
+    `, [price, materialId, materialId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Broilers material not found."
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "Material price updated successfully.",
+      materialId,
+      unitPrice: price
+    });
+
+  } catch (error) {
+    console.error("UPDATE MATERIAL PRICE ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update material price."
+    });
+  }
+});
 
 module.exports = router;

@@ -79,8 +79,11 @@ const reportRoutes = require("./routes/reportRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const aiAssistantRoutes = require("./routes/aiAssistantRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const adminMaterialsRoutes = require("./routes/adminMaterialsRoutes");
+const materialsRoutes = require("./routes/materialsRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api/coops", coopRoutes);
@@ -92,7 +95,9 @@ app.use("/api/records", recordRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/ai-assistant", aiAssistantRoutes);
+app.use("/api/admin/materials", adminMaterialsRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/materials", materialsRoutes);
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 
