@@ -8,31 +8,27 @@ router.get("/prices", (req, res) => {
       m.MaterialID,
       m.MaterialName,
       m.Unit,
-      m.UnitPrice,
+      COALESCE(c.UnitPriceOverride, m.UnitPrice) AS UnitPrice,
       m.Specification,
-      c.ChickenType,
-      c.CoopSize
-    FROM coop_materials m
-    INNER JOIN coop_material_categories c
-      ON m.MaterialID = c.MaterialID
-    WHERE m.IsActive = 1
-      AND m.ChickenType = 'Broilers'
-
-    UNION ALL
-
-    SELECT
-      m.MaterialID,
-      m.MaterialName,
-      m.Unit,
-      m.UnitPrice,
-      m.Specification,
+      m.IsActive,
+      m.Category,
       m.ChickenType,
-      NULL AS CoopSize
+      COALESCE(q.CoopSize, c.CoopSize) AS CoopSize,
+      q.Quantity
     FROM coop_materials m
-    WHERE m.IsActive = 1
-      AND m.ChickenType IN ('Layers (Egg Production)', 'Dual Purpose')
-
-    ORDER BY MaterialName ASC
+    LEFT JOIN coop_material_quantities q
+      ON q.MaterialID = m.MaterialID
+    LEFT JOIN coop_material_categories c
+      ON c.MaterialID = m.MaterialID
+      AND c.ChickenType = m.ChickenType
+      AND (
+        c.CoopSize = q.CoopSize
+        OR (
+          q.CoopSize IS NULL
+          AND c.CoopSize IS NOT NULL
+        )
+      )
+    ORDER BY m.MaterialName ASC
   `;
 
   db.query(sql, (error, results) => {

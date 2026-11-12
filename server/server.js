@@ -83,6 +83,7 @@ const adminMaterialsRoutes = require("./routes/adminMaterialsRoutes");
 const materialsRoutes = require("./routes/materialsRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const newsletterRoutes = require("./routes/newsletterRoutes");
+const feedbackRoutes = require("./routes/feedbackRoutes");
 
 
 app.use("/api/auth", authRoutes);
@@ -100,6 +101,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/materials", materialsRoutes);
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/newsletter", newsletterRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 
 app.get("/", (req, res) => {

@@ -1831,14 +1831,15 @@ const layersHotspotPositions = {
   }
 };
 
+
 let databaseMaterialPrices = [];
 
 async function loadMaterialPrices() {
   try {
     const response = await fetch("/api/materials/prices", {
-  credentials: "same-origin",
-  cache: "no-store"
-});
+      credentials: "same-origin",
+      cache: "no-store"
+    });
 
     if (!response.ok) {
       throw new Error("Failed to load material prices.");
@@ -1857,11 +1858,16 @@ async function loadMaterialPrices() {
       databaseMaterialPrices.length
     );
 
+    return true;
+
   } catch (error) {
     console.error("MATERIAL PRICES ERROR:", error);
     databaseMaterialPrices = [];
+
+    return false;
   }
 }
+
 const setupCostData = {
   broiler: {
     "1x1": {
@@ -1870,7 +1876,7 @@ const setupCostData = {
             name: "Concrete Slab",
             specification: "1.00m × 1.00m × 0.55m",
             quantity: 1,
-            unit: "set",
+            unit: "sqm",
             unitPrice: 1000
           },
           {
@@ -1935,7 +1941,7 @@ const setupCostData = {
         {
           name: "Nails / Screws",
           quantity: 1,
-          unit: "set",
+          unit: "kg",
           unitPrice: 150
         },
         {
@@ -2083,7 +2089,7 @@ function buildBroilerSetupCost(sizeKey) {
         specification:
           `${materials.roof.size} • ${materials.roof.thickness}`,
         quantity: config.roof,
-        unit: "sheets",
+        unit: "sections",
         unitPrice: 535
       },
 
@@ -2199,74 +2205,178 @@ Object.keys(broilerCostConfig)
 
 
 
-function getMaterialUnitPrice(item, chickenType) {
-  const normalize = value =>
-    String(value ?? "")
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, " ");
 
-  const originalPrice = Number(item.unitPrice);
+function normalizeMaterialValue(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
 
-  const matchingMaterial = databaseMaterialPrices.find(
-    material =>
-      normalize(material.MaterialName) === normalize(item.name) &&
-      normalize(material.ChickenType) === normalize(chickenType)
+function normalizeMaterialUnit(value) {
+  const unit = normalizeMaterialValue(value);
+
+  const aliases = {
+    pcs: "pc",
+    pieces: "pc",
+    piece: "pc",
+    sets: "set",
+    sheets: "sheet",
+    "m²": "sqm",
+    m2: "sqm"
+  };
+
+  return aliases[unit] || unit;
+}
+
+
+function getMatchingMaterialRecords(item, chickenType, sizeKey) {
+  const matchingMaterials = databaseMaterialPrices.filter(material => {
+    const sameName =
+      normalizeMaterialValue(material.MaterialName) ===
+      normalizeMaterialValue(item.name);
+
+    const sameType =
+      normalizeMaterialValue(material.ChickenType) ===
+      normalizeMaterialValue(chickenType);
+
+    return sameName && sameType;
+  });
+
+
+  const exactSizeRecords = matchingMaterials.filter(material =>
+    material.CoopSize &&
+    normalizeMaterialValue(material.CoopSize) ===
+      normalizeMaterialValue(sizeKey)
   );
 
-  if (!matchingMaterial) {
-    return originalPrice;
+  if (exactSizeRecords.length > 0) {
+    return exactSizeRecords;
   }
 
-  const databasePrice = Number(matchingMaterial.UnitPrice);
+  const generalRecords = matchingMaterials.filter(material =>
+    !material.CoopSize
+  );
 
-  if (!Number.isFinite(databasePrice) || databasePrice < 0) {
-    return originalPrice;
+  if (generalRecords.length > 0) {
+    return generalRecords;
   }
 
-  if (chickenType === "Broilers") {
-    const baseItems = Object.values(
-      setupCostData.broiler["1x1"]
-    ).flat();
+  const legacyRecords = matchingMaterials.filter(material =>
+    material.Quantity === null ||
+    material.Quantity === undefined
+  );
 
-    const baseItem = baseItems.find(
-      material =>
-        normalize(material.name) === normalize(item.name)
+  return legacyRecords;
+}
+
+function isInactiveMaterial(item, chickenType, sizeKey) {
+  const records = getMatchingMaterialRecords(
+    item, chickenType, sizeKey
+  );
+
+  return records.length > 0 &&
+    records.every(material => Number(material.IsActive) === 0);
+}
+
+function getMaterialUnitPrice(item, chickenType, sizeKey) {
+  const records = getMatchingMaterialRecords(
+    item, chickenType, sizeKey
+  );
+
+  const material = records.find(record =>
+    Number(record.IsActive) === 1 &&
+    normalizeMaterialUnit(record.Unit) ===
+      normalizeMaterialUnit(item.unit)
+  );
+
+  if (!material) return null;
+
+  const price = Number(material.UnitPrice);
+
+  return Number.isFinite(price) && price > 0
+    ? price
+    : null;
+}
+
+function getMaterialPricingIssues(sizeKey, chickenType) {
+  const costData = getSetupCostData(sizeKey, chickenType);
+
+  if (!costData) {
+    return ["No material configuration for this coop size."];
+  }
+
+  const issues = [];
+
+  for (const item of Object.values(costData).flat()) {
+    if (isInactiveMaterial(item, chickenType, sizeKey)) {
+      continue;
+    }
+
+    if (getMaterialUnitPrice(item, chickenType, sizeKey) !== null) {
+      continue;
+    }
+
+    const records = getMatchingMaterialRecords(
+      item, chickenType, sizeKey
     );
 
-    if (baseItem) {
-      const basePrice = Number(baseItem.unitPrice);
+    const activeRecords = records.filter(
+      material => Number(material.IsActive) === 1
+    );
 
-      if (
-        Number.isFinite(basePrice) &&
-        basePrice > 0 &&
-        Number.isFinite(originalPrice)
-      ) {
-        return databasePrice * (originalPrice / basePrice);
-      }
+    if (activeRecords.length === 0) {
+      issues.push(
+        `${item.name}: No active material record for ${sizeKey}.`
+      );
+      continue;
     }
+
+    const matchingUnit = activeRecords.find(material =>
+      normalizeMaterialUnit(material.Unit) ===
+      normalizeMaterialUnit(item.unit)
+    );
+
+    if (!matchingUnit) {
+      const units = [
+        ...new Set(activeRecords.map(material => material.Unit))
+      ];
+
+      issues.push(
+        `${item.name}: Planner uses ${item.unit}, ` +
+        `but database uses ${units.join(", ")}.`
+      );
+      continue;
+    }
+
+    issues.push(`${item.name}: Invalid or missing unit price.`);
   }
 
-  return databasePrice;
+  return [...new Set(issues)];
 }
 
 
 
 
-function calculateMaterialSubtotal(item, chickenType) {
-  const quantity = Number(item.quantity || 0);
+function calculateMaterialSubtotal(item, chickenType, sizeKey) {
+  const unitPrice = getMaterialUnitPrice(
+    item, chickenType, sizeKey
+  );
 
-  return quantity * getMaterialUnitPrice(item, chickenType);
+  if (unitPrice === null) return 0;
+
+  return Number(item.quantity || 0) * unitPrice;
 }
 
-function calculateCategoryTotal(items = [], chickenType) {
+function calculateCategoryTotal(items = [], chickenType, sizeKey) {
   return items.reduce(
     (total, item) =>
-      total + calculateMaterialSubtotal(item, chickenType),
+      total + calculateMaterialSubtotal(
+        item, chickenType, sizeKey
+      ),
     0
   );
 }
-
 
 const BUDGET_ALLOWANCE = 0.10;
 
@@ -2275,6 +2385,28 @@ const estimatedChickenPrices = {
   "Layers (Egg Production)": 180,
   "Dual Purpose": 120
 };
+function getLivestockUnitPrice(chickenType) {
+  const records = databaseMaterialPrices.filter(material =>
+    normalizeMaterialValue(material.Category) === "livestock" &&
+    normalizeMaterialValue(material.ChickenType) ===
+      normalizeMaterialValue(chickenType)
+  );
+
+  const activeRecord = records.find(material =>
+    Number(material.IsActive) === 1 &&
+    normalizeMaterialUnit(material.Unit) === "chick"
+  );
+
+  if (!activeRecord) {
+    return null;
+  }
+
+  const price = Number(activeRecord.UnitPrice);
+
+  return Number.isFinite(price) && price > 0
+    ? price
+    : null;
+}
 
 const layerSetupCosts = {};
 const dualPurposeSetupCosts = {};
@@ -2282,13 +2414,18 @@ const dualPurposeSetupCosts = {};
 const COST_ESTIMATE_NOTE =
   "Estimated material quantity and price; subject to verification";
 
-function createCostItem(name, quantity, unit, unitPrice, specification = COST_ESTIMATE_NOTE) {
+function createCostItem(
+  name,
+  quantity,
+  unit,
+  unusedPrice,
+  specification = COST_ESTIMATE_NOTE
+) {
   return {
     name,
     specification,
     quantity,
-    unit,
-    unitPrice
+    unit
   };
 }
 
@@ -2305,6 +2442,15 @@ function buildAlternativeSetupCost(sizeKey, chickenType) {
 
 
 const data = JSON.parse(JSON.stringify(base));
+if (chickenType === "Dual Purpose") {
+  const nails = data.hardware.find(
+    item => item.name === "Nails / Screws"
+  );
+
+  if (nails) {
+    nails.unit = "set";
+  }
+}
 
 if (chickenType === "Dual Purpose") {
   const materials = dualPurposeMaterialSizes[sizeKey];
@@ -2529,27 +2675,124 @@ Object.keys(coopData).forEach(sizeKey => {
     );
 });
 
-
 function getSetupCostData(sizeKey, chickenType) {
+  let originalData = null;
+
   if (chickenType === "Broilers") {
-    return setupCostData.broiler[sizeKey] ?? null;
+    originalData = setupCostData.broiler[sizeKey];
+  } else if (chickenType === "Layers (Egg Production)") {
+    originalData = layerSetupCosts[sizeKey];
+  } else if (chickenType === "Dual Purpose") {
+    originalData = dualPurposeSetupCosts[sizeKey];
   }
 
-  if (chickenType === "Layers (Egg Production)") {
-    return layerSetupCosts[sizeKey] ?? null;
+  if (!originalData) return null;
+
+  const costData = {
+    construction: [...(originalData.construction || [])],
+    hardware: [...(originalData.hardware || [])],
+    equipment: [...(originalData.equipment || [])],
+    bedding: [...(originalData.bedding || [])]
+  };
+
+  const categoryMap = {
+    construction: "construction",
+    hardware: "hardware",
+    equipment: "equipment",
+    bedding: "bedding"
+  };
+
+  const existingMaterials = new Set(
+    Object.values(costData)
+      .flat()
+      .map(item =>
+        `${normalizeMaterialValue(item.name)}|` +
+        `${normalizeMaterialUnit(item.unit)}`
+      )
+  );
+
+  for (const material of databaseMaterialPrices) {
+
+    if (Number(material.IsActive) !== 1) {
+      continue;
+    }
+
+
+    if (
+      normalizeMaterialValue(material.ChickenType) !==
+      normalizeMaterialValue(chickenType)
+    ) {
+      continue;
+    }
+
+    if (
+      material.CoopSize &&
+      normalizeMaterialValue(material.CoopSize) !==
+      normalizeMaterialValue(sizeKey)
+    ) {
+      continue;
+    }
+
+    const category = categoryMap[
+      normalizeMaterialValue(material.Category)
+    ];
+
+    if (!category) {
+      continue;
+    }
+
+    const key =
+      `${normalizeMaterialValue(material.MaterialName)}|` +
+      `${normalizeMaterialUnit(material.Unit)}`;
+
+    if (existingMaterials.has(key)) {
+      continue;
+    }
+
+    const hasSavedQuantity =
+      material.Quantity !== null &&
+      material.Quantity !== undefined &&
+      material.Quantity !== "";
+
+    const quantity = hasSavedQuantity
+      ? Number(material.Quantity)
+      : 1;
+
+    if (
+      !Number.isFinite(quantity) ||
+      quantity < 0
+    ) {
+      continue;
+    }
+
+    if (quantity === 0) {
+      continue;
+    }
+
+    const unitPrice = Number(material.UnitPrice);
+
+    costData[category].push({
+      name: material.MaterialName,
+      specification: material.Specification || "",
+      quantity: quantity,
+      unit: material.Unit,
+      unitPrice: Number.isFinite(unitPrice)
+        ? unitPrice
+        : 0,
+      isNewMaterial: true
+    });
+
+    existingMaterials.add(key);
   }
 
-  if (chickenType === "Dual Purpose") {
-    return dualPurposeSetupCosts[sizeKey] ?? null;
-  }
+  return costData;
+}
 
+function calculateRecommendedBudget(sizeKey, chickenType) {
+  if (getMaterialPricingIssues(sizeKey, chickenType).length > 0) {
   return null;
 }
 
-
-
-
-function calculateRecommendedBudget(sizeKey, chickenType) {
   const capacity = getChickenCapacity(
     sizeKey,
     chickenType
@@ -2561,27 +2804,26 @@ function calculateRecommendedBudget(sizeKey, chickenType) {
   );
 
   const chickenUnitPrice =
-    estimatedChickenPrices[chickenType];
+    getLivestockUnitPrice(chickenType);
 
-  if (
-    !capacity ||
-    !costData ||
-    !Number.isFinite(chickenUnitPrice)
-  ) {
-    return null;
-  }
-
+    if (
+      !capacity ||
+      !costData ||
+      chickenUnitPrice === null
+    ) {
+      return null;
+    }
 const constructionTotal =
-  calculateCategoryTotal(costData.construction, chickenType);
+  calculateCategoryTotal(costData.construction, chickenType, sizeKey);
 
 const hardwareTotal =
-  calculateCategoryTotal(costData.hardware, chickenType);
+  calculateCategoryTotal(costData.hardware, chickenType, sizeKey);
 
 const equipmentTotal =
-  calculateCategoryTotal(costData.equipment, chickenType);
+  calculateCategoryTotal(costData.equipment, chickenType, sizeKey);
 
 const beddingTotal =
-  calculateCategoryTotal(costData.bedding, chickenType);
+  calculateCategoryTotal(costData.bedding, chickenType, sizeKey);
 
   const coopCost =
     constructionTotal +
@@ -2704,131 +2946,159 @@ function populateSizeDropdown() {
 
 
 
+
 function findSuitableSizes() {
-  const budget = Number(
-    document.getElementById("budget").value
-  );
+  const budgetInput = document.getElementById("budget");
+  const chickenType = document.getElementById("type").value;
+  const sizeSelect = document.getElementById("coopSize");
+  const capacityInput = document.getElementById("capacity");
+  const message = document.getElementById("budgetMessage");
 
-  const chickenType =
-    document.getElementById("type").value;
-
-  const sizeSelect =
-    document.getElementById("coopSize");
-
-  const capacityInput =
-    document.getElementById("capacity");
-
-  const message =
-    document.getElementById("budgetMessage");
-
+  const rawBudget = budgetInput.value.trim();
+  const budget = Number(rawBudget);
   const previousSize = sizeSelect.value;
 
   sizeSelect.innerHTML = "";
   capacityInput.value = "";
 
-const budgetInput = document.getElementById("budget");
-const rawBudget = budgetInput.value.trim();
+  if (rawBudget === "") {
+    sizeSelect.innerHTML =
+      '<option value="" disabled selected>Enter your budget first</option>';
+    message.textContent = "";
+    return;
+  }
 
-if (rawBudget === "") {
-  sizeSelect.innerHTML =
-    '<option value="" disabled selected>Enter your budget first</option>';
-  message.textContent = "";
-  return;
-}
+  if (
+    !/^\d+(\.\d{1,2})?$/.test(rawBudget) ||
+    !Number.isFinite(budget)
+  ) {
+    sizeSelect.innerHTML =
+      '<option value="" disabled selected>Invalid budget</option>';
 
-if (rawBudget === "-" || !Number.isFinite(budget) || budget < 0) {
-  sizeSelect.innerHTML =
-    '<option value="" disabled selected>Invalid budget</option>';
-  message.textContent =
-    "Invalid Budget. Please enter a valid positive amount.";
-  return;
-}
+    message.textContent =
+      "Invalid Budget. Please enter a valid positive amount.";
+    return;
+  }
 
-if (budget === 0) {
-  sizeSelect.innerHTML =
-    '<option value="" disabled selected>No suitable coop size</option>';
-  message.textContent =
-    "Below Minimum Budget. No coop fits your budget.";
-  return;
-}
+  if (budget === 0) {
+    sizeSelect.innerHTML =
+      '<option value="" disabled selected>No suitable coop size</option>';
+
+    message.textContent =
+      "Below Minimum Budget. No coop fits your budget.";
+    return;
+  }
 
   if (!Object.hasOwn(estimatedChickenPrices, chickenType)) {
-  sizeSelect.innerHTML =
-    '<option value="" disabled selected>Select Chicken Type first</option>';
+    sizeSelect.innerHTML =
+      '<option value="" disabled selected>Select Chicken Type first</option>';
 
-  message.textContent =
-    "Please select a chicken type first.";
+    message.textContent =
+      "Please select a chicken type first.";
+    return;
+  }
 
-  return;
-}
+  const recommendedSizes = Object.keys(coopData)
+    .filter(size => isRecommendedCoopSize(size));
 
+  const validSizes = [];
+  const pricingIssueSizes = [];
 
-const affordableSizes = Object.keys(coopData)
-  .filter(size => isRecommendedCoopSize(size))
-  .map(size => ({
-    size,
-    costing: calculateRecommendedBudget(
+  for (const size of recommendedSizes) {
+    const issues = getMaterialPricingIssues(size, chickenType);
+
+    if (issues.length > 0) {
+      pricingIssueSizes.push({ size, issues });
+      continue;
+    }
+
+    const costing = calculateRecommendedBudget(
       size,
       chickenType
-    )
-  }))
-  .filter(item =>
-    item.costing &&
-    item.costing.recommendedBudget <= budget
+    );
+
+    if (!costing || !Number.isFinite(costing.recommendedBudget)) {
+      pricingIssueSizes.push({
+        size,
+        issues: ["Cost estimation is unavailable."]
+      });
+      continue;
+    }
+
+    validSizes.push({ size, costing });
+  }
+
+  const affordableSizes = validSizes.filter(
+    item => item.costing.recommendedBudget <= budget
   );
 
+  if (pricingIssueSizes.length > 0) {
+    console.warn(
+      "Coop sizes with pricing issues:",
+      pricingIssueSizes
+    );
+  }
 
+  if (affordableSizes.length === 0) {
+    sizeSelect.innerHTML =
+      '<option value="" disabled selected>No suitable coop size</option>';
 
+    if (validSizes.length === 0) {
+      message.textContent =
+        "Material pricing is unavailable or incomplete. " +
+        "Please contact the administrator.";
+      return;
+    }
 
-if (affordableSizes.length === 0) {
-  sizeSelect.innerHTML =
-    '<option value="" disabled selected>No suitable coop size</option>';
+    const minimumBudget = Math.min(
+      ...validSizes.map(
+        item => item.costing.recommendedBudget
+      )
+    );
 
-  const recommendedBudgets = Object.keys(coopData)
-    .filter(size => isRecommendedCoopSize(size))
-    .map(size => calculateRecommendedBudget(size, chickenType))
-    .filter(Boolean)
-    .map(item => item.recommendedBudget);
+    message.textContent =
+      `Your budget is below the minimum verified ` +
+      `recommended total of ₱${minimumBudget.toLocaleString()}, ` +
+      `including coop setup, chickens, and budget allowance.` +
+      (pricingIssueSizes.length > 0
+        ? " Some coop sizes could not be evaluated due to material pricing issues."
+        : "");
 
-  const minimumBudget = recommendedBudgets.length
-    ? Math.min(...recommendedBudgets)
-    : null;
-
-  message.textContent = minimumBudget !== null
-    ? `Your budget is below the minimum recommended total of ₱${minimumBudget.toLocaleString()}, including coop setup, chickens, and budget allowance.`
-    : "No recommended coop sizes are available.";
-
-  return;
-}
-
-
+    return;
+  }
 
   sizeSelect.innerHTML =
     '<option value="" disabled selected>Select your preferred coop size</option>';
 
+  affordableSizes.forEach(({ size, costing }) => {
+    const [length, width] = size.split("x");
 
-affordableSizes.forEach(({ size, costing }) => {
-  const [length, width] = size.split("x");
+    const option = document.createElement("option");
 
-  const option = document.createElement("option");
+    option.value = `${length},${width}`;
 
-  option.value = `${length},${width}`;
+    option.textContent =
+      `${size} meters - Estimated Budget: ` +
+      `₱${costing.recommendedBudget.toLocaleString()}`;
 
-  option.textContent =
-    `${size} meters - Estimated Budget: ₱${costing.recommendedBudget.toLocaleString()}`;
+    sizeSelect.appendChild(option);
+  });
 
-  sizeSelect.appendChild(option);
-});
-
-if ([...sizeSelect.options].some(
-  option => option.value === previousSize
-)) {
-  sizeSelect.value = previousSize;
-}
+  if (
+    [...sizeSelect.options].some(
+      option => option.value === previousSize
+    )
+  ) {
+    sizeSelect.value = previousSize;
+  }
 
   message.textContent =
-    `${affordableSizes.length} coop size(s) fit your estimated budget.`;
+    `${affordableSizes.length} coop size(s) fit your estimated budget.` +
+    (pricingIssueSizes.length > 0
+      ? ` ${pricingIssueSizes.length} coop size(s) were excluded due to material pricing issues.`
+      : "");
 }
+
 
 
 function useManualPlanning() {
@@ -2922,7 +3192,14 @@ function updateCapacity() {
 
 
 async function generatePlan() {
-  await loadMaterialPrices();
+const materialsLoaded = await loadMaterialPrices();
+
+if (!materialsLoaded) {
+  alert(
+    "Unable to load material prices. Please try again."
+  );
+  return;
+}
 
   const sizeValue =
     document.getElementById(
@@ -2983,26 +3260,6 @@ if (!type) {
   return;
 }
 
-if (rawBudget !== "") {
-  const minimumBudget = Math.min(
-...Object.keys(coopData)
-  .filter(size => isRecommendedCoopSize(size))
-  .map(size => calculateRecommendedBudget(size, type))
-      .filter(Boolean)
-      .map(cost => cost.recommendedBudget)
-  );
-
-  if (Number.isFinite(minimumBudget) && budget < minimumBudget) {
-    alert(
-      `Below Minimum Budget!\n\n` +
-      `Available Budget: ₱${budget.toLocaleString()}\n` +
-      `Minimum Estimated Cost: ₱${minimumBudget.toLocaleString()}\n\n` +
-      `Please increase your budget.`
-    );
-    return;
-  }
-}
-
 if (!sizeValue) {
   alert("Please choose a coop size.");
   return;
@@ -3021,11 +3278,29 @@ if (!user || !user.id) {
       .split(",")
       .map(Number);
 
-  const sizeKey =
-    `${length}x${width}`;
 
-  const area =
-    length * width;
+const sizeKey = `${length}x${width}`;
+
+const pricingIssues = getMaterialPricingIssues(sizeKey, type);
+
+if (pricingIssues.length > 0) {
+  console.error(
+    "Material pricing issues:",
+    pricingIssues
+  );
+
+  alert(
+    "Material Pricing Issue!\n\n" +
+    "Some active material prices are missing, invalid, or have unit mismatches.\n\n" +
+    pricingIssues.join("\n") +
+    "\n\nPlease contact the administrator to correct the material pricing."
+  );
+
+  return;
+}
+
+const area = length * width;
+
 
   const selectedCoop =
     coopData[sizeKey];
@@ -3700,10 +3975,11 @@ if (materialsComingSoon) {
 if (costTableBody) {
   if (costData) {
 const createMaterialRows = (title, items, categoryTotal) => {
-  const rows = items
-    .map(item => {
+const rows = items
+  .filter(item => getMaterialUnitPrice(item, type, sizeKey)!== null)
+  .map(item => {
       const subtotal =
-        calculateMaterialSubtotal(item, type);
+        calculateMaterialSubtotal(item, type, sizeKey);
 
       return `
         <tr class="cost-item-row">
@@ -3721,7 +3997,7 @@ const createMaterialRows = (title, items, categoryTotal) => {
           </td>
 
           <td class="cost-unit-price">
-           ₱${getMaterialUnitPrice(item, type).toLocaleString()}
+           ₱${getMaterialUnitPrice(item, type, sizeKey).toLocaleString()}
           </td>
 
           <td class="cost-item-subtotal">
@@ -3846,7 +4122,7 @@ const createMaterialRows = (title, items, categoryTotal) => {
     `;
   }
 }
-
+captureCustomMaterials();
   const totalCost =
     document.getElementById(
       "totalCost"
@@ -4557,3 +4833,245 @@ if (window.lucide) {
 await loadMaterialPrices();
 
 });
+
+let customMaterialsEntries = [];
+let customMaterialsDraft = [];
+
+function customMaterialsMoney(value) {
+  return `₱${Math.round(value).toLocaleString("en-PH")}`;
+}
+
+function captureCustomMaterials() {
+  const tbody = document.getElementById("costTableBody");
+
+  customMaterialsEntries = [];
+  customMaterialsDraft = [];
+
+  if (!tbody) return;
+
+  let category = "";
+
+  for (const row of tbody.querySelectorAll("tr")) {
+    if (row.classList.contains("cost-category-row")) {
+      category = row.textContent.trim();
+      continue;
+    }
+
+    if (!row.classList.contains("cost-item-row")) continue;
+    if (row.textContent.includes("Contingency Allowance")) continue;
+
+    const cells = row.querySelectorAll("td");
+
+    if (cells.length !== 4) continue;
+
+    const name = cells[0].querySelector("strong")?.textContent.trim();
+    const price = Number(
+      cells[3].textContent.replace(/[^0-9.]/g, "")
+    );
+
+    if (!name || !Number.isFinite(price)) continue;
+
+    customMaterialsEntries.push({
+      name,
+      category,
+      price,
+      selected: true,
+      row
+    });
+  }
+}
+
+function openCustomizeMaterials() {
+  const modal = document.getElementById("customMaterialsModal");
+
+  if (!modal || !customMaterialsEntries.length) return;
+
+  customMaterialsDraft = customMaterialsEntries.map(
+    item => item.selected
+  );
+
+  const list = document.getElementById("customMaterialsList");
+
+  list.innerHTML = customMaterialsEntries.map((item, i) => `
+    <label style="display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid #edf2f7;cursor:pointer">
+
+      <input
+        type="checkbox"
+        data-material-index="${i}"
+        ${item.selected ? "checked" : ""}
+        style="width:18px;height:18px;accent-color:#047857"
+      >
+
+      <span style="flex:1;min-width:0">
+        <strong style="display:block;color:#0f172a">
+          ${escapeCoopHTML(item.name)}
+        </strong>
+        <small style="color:#64748b">
+          ${escapeCoopHTML(item.category)}
+        </small>
+      </span>
+
+      <strong>${customMaterialsMoney(item.price)}</strong>
+
+    </label>
+  `).join("");
+
+  list.onchange = event => {
+    const checkbox = event.target.closest(
+      "input[data-material-index]"
+    );
+
+    if (!checkbox) return;
+
+    customMaterialsDraft[
+      Number(checkbox.dataset.materialIndex)
+    ] = checkbox.checked;
+
+    updateCustomMaterialsPreview();
+  };
+
+  modal.classList.remove("hidden");
+  modal.style.display = "flex";
+
+  updateCustomMaterialsPreview();
+}
+
+function calculateCustomMaterialsTotal(selection) {
+  const subtotal = customMaterialsEntries.reduce(
+    (sum, item, i) => sum + (selection[i] ? item.price : 0),
+    0
+  );
+
+  return subtotal + Math.ceil(subtotal * 0.1);
+}
+
+function updateCustomMaterialsPreview() {
+  const label = document.getElementById(
+    "customMaterialsPreviewTotal"
+  );
+
+  if (label) {
+    label.textContent = customMaterialsMoney(
+      calculateCustomMaterialsTotal(customMaterialsDraft)
+    );
+  }
+}
+
+function closeCustomizeMaterials() {
+  const modal = document.getElementById("customMaterialsModal");
+
+  if (modal) {
+    modal.style.display = "none";
+    modal.classList.add("hidden");
+  }
+}
+
+function resetCustomizeMaterials() {
+  customMaterialsDraft = customMaterialsEntries.map(() => true);
+
+  document.querySelectorAll(
+    "#customMaterialsList input[data-material-index]"
+  ).forEach(input => {
+    input.checked = true;
+  });
+
+  updateCustomMaterialsPreview();
+}
+
+function applyCustomizeMaterials() {
+  if (!customMaterialsEntries.length) return;
+
+  customMaterialsEntries.forEach((item, i) => {
+    item.selected = customMaterialsDraft[i];
+
+    const subtotal = item.row.querySelector(
+      ".cost-item-subtotal"
+    );
+
+    if (subtotal) {
+      subtotal.textContent = customMaterialsMoney(
+        item.selected ? item.price : 0
+      );
+    }
+
+    item.row.style.opacity = item.selected ? "1" : "0.55";
+
+    const description = item.row.querySelector(
+      ".cost-item-name small"
+    );
+
+    if (description) {
+      if (item.originalDescription === undefined) {
+        item.originalDescription = description.textContent;
+      }
+
+      description.textContent = item.selected
+        ? item.originalDescription
+        : "Already available — no purchase needed";
+    }
+  });
+
+  const tbody = document.getElementById("costTableBody");
+
+  let category = "";
+
+  for (const row of tbody.querySelectorAll("tr")) {
+    if (row.classList.contains("cost-category-row")) {
+      category = row.textContent.trim();
+    }
+
+    if (row.classList.contains("cost-subtotal-row")) {
+      const sum = customMaterialsEntries
+        .filter(item => item.category === category && item.selected)
+        .reduce((total, item) => total + item.price, 0);
+
+      const cell = row.querySelector("td:last-child strong");
+
+      if (cell) {
+        cell.textContent = customMaterialsMoney(sum);
+      }
+    }
+  }
+
+  const subtotal = customMaterialsEntries.reduce(
+    (sum, item) => sum + (item.selected ? item.price : 0),
+    0
+  );
+
+const allowance = Math.ceil(subtotal * 0.1);
+const total = subtotal + allowance;
+
+const contingency = [...tbody.querySelectorAll("tr")]
+  .find(row =>
+    row.querySelector("td:first-child")?.textContent
+      .includes("Contingency Allowance")
+  );
+
+  if (contingency) {
+    const cell = contingency.querySelector("td:last-child");
+
+    if (cell) {
+      cell.textContent = customMaterialsMoney(allowance);
+    }
+  }
+
+  const totalEl = document.getElementById("totalCost");
+
+  if (totalEl) {
+    totalEl.textContent = customMaterialsMoney(total);
+  }
+
+  if (currentPlan) {
+    currentPlan.total = total;
+
+    currentPlan.materialSelections = customMaterialsEntries.map(
+      ({ name, category, selected }) => ({
+        name,
+        category,
+        selected
+      })
+    );
+  }
+
+  closeCustomizeMaterials();
+}

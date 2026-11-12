@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -13,9 +14,8 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body
-  class="dashboard-body"
-  onload="checkAdmin(); loadAdminReports(); loadUserInfo();">
+<body class="dashboard-body"
+  onload="checkAdmin(); loadUserInfo(); loadFeedbackReports();">
 
   <aside class="sidebar">
 
@@ -25,7 +25,6 @@
     </div>
 
     <nav>
-
       <a href="admin-dashboard.html">
         <i data-lucide="layout-dashboard"></i>
         Dashboard
@@ -36,39 +35,27 @@
         Manage Users
       </a>
 
-      <a
-        href="admin-reports.html"
-        class="active">
-
+      <a href="admin-reports.html" class="active">
         <i data-lucide="bar-chart-3"></i>
         Reports & Analytics
-
       </a>
-      
-       <a href="admin-materials.html">
+
+      <a href="admin-materials.html">
         <i data-lucide="package"></i>
         Materials & Cost Management
       </a>
-
     </nav>
 
   </aside>
-
 
   <main class="main">
 
     <header class="topbar">
 
       <div class="topbar-brand">
-
         <i data-lucide="bar-chart-3"></i>
-
-        <span id="topbarText">
-          Reports & Analytics
-        </span>
-
+        <span id="topbarText">Reports & Analytics</span>
       </div>
-
 
       <div class="top-profile">
 
@@ -77,51 +64,24 @@
           type="button"
           onclick="toggleProfileMenu()">
 
-          <div
-            class="avatar"
-            id="userAvatarTop">
-
-            A
-
-          </div>
+          <div class="avatar" id="userAvatarTop">A</div>
 
           <div class="top-profile-name">
-
-            <span id="topUsername">
-              Admin
-            </span>
-
-            <small>
-              Administrator
-            </small>
-
+            <span id="topUsername">Admin</span>
+            <small>Administrator</small>
           </div>
 
           <i data-lucide="chevron-down"></i>
-
         </button>
 
-
-        <div
-          id="profileDropdown"
+        <div id="profileDropdown"
           class="profile-dropdown hidden">
 
           <div class="dropdown-user">
-
-            <strong id="dropdownName">
-              Admin
-            </strong>
-
-            <p id="dropdownEmail">
-              admin@smartcoop.com
-            </p>
-
-            <small>
-              SmartCoop Administrator
-            </small>
-
+            <strong id="dropdownName">Admin</strong>
+            <p id="dropdownEmail">admin@smartcoop.com</p>
+            <small>SmartCoop Administrator</small>
           </div>
-
 
           <button
             type="button"
@@ -130,40 +90,31 @@
 
             <i data-lucide="log-out"></i>
             Logout
-
           </button>
 
         </div>
-
       </div>
 
     </header>
 
-
     <section class="content admin-content">
+
+      <!-- PAGE HEADER -->
 
       <div class="admin-page-header">
 
         <div>
+          <span class="admin-page-eyebrow">ANALYTICS</span>
 
-          <span class="admin-page-eyebrow">
-            ANALYTICS
-          </span>
-
-          <h1>
-            Reports & Analytics
-          </h1>
+          <h1>Reports & Analytics</h1>
 
           <p>
-            Review SmartCoop growth, feature usage,
-            farm records, and system activity.
+            Monitor user growth, analyze feedback,
+            and improve the SmartCoop experience.
           </p>
-
         </div>
 
-
         <div class="reports-actions">
-
           <button
             class="btn-outline"
             type="button"
@@ -171,13 +122,10 @@
 
             <i data-lucide="file-spreadsheet"></i>
             Export CSV
-
           </button>
-
         </div>
 
       </div>
-
 
       <!-- DATE FILTER -->
 
@@ -186,63 +134,40 @@
         <div class="date-filter">
 
           <div>
-
-            <label>
-              Date Range
-            </label>
-
+            <label>Date Range</label>
             <p id="adminReportPeriod">
               Showing: All Time
             </p>
-
           </div>
-
 
           <div class="date-inputs">
 
             <div>
-
-              <small>
-                From
-              </small>
-
+              <small>From</small>
               <input
                 type="date"
                 id="adminReportDateFrom">
-
             </div>
 
-
             <div>
-
-              <small>
-                To
-              </small>
-
+              <small>To</small>
               <input
                 type="date"
                 id="adminReportDateTo">
-
             </div>
-
 
             <button
               class="btn-primary"
               type="button"
               onclick="applyAdminReportFilter()">
-
               Apply
-
             </button>
-
 
             <button
               class="btn-outline"
               type="button"
               onclick="resetAdminReportFilter()">
-
               Reset
-
             </button>
 
           </div>
@@ -250,326 +175,148 @@
         </div>
 
       </div>
-
 
       <!-- SUMMARY CARDS -->
 
       <div class="reports-cards">
 
         <div class="report-card">
-
-          <p>
-            Total Users
-          </p>
-
-          <h2 id="reportTotalUsers">
-            0
-          </h2>
-
-          <span>
-            Registered farmer accounts
-          </span>
-
+          <p>Total Users</p>
+          <h2 id="reportTotalUsers">0</h2>
+          <span>Registered farmer accounts</span>
         </div>
 
-
         <div class="report-card">
-
-          <p>
-            Total Coop Projects
-          </p>
-
-          <h2 id="reportTotalProjects">
-            0
-          </h2>
-
-          <span>
-            Coop plans created
-          </span>
-
+          <p>Total Feedback</p>
+          <h2 id="reportTotalFeedback">0</h2>
+          <span>Feedback submissions</span>
         </div>
 
-
         <div class="report-card">
-
-          <p>
-            Total Farm Records
-          </p>
-
-          <h2 id="reportTotalRecords">
-            0
-          </h2>
-
-          <span>
-            Recorded farm activities
-          </span>
-
+          <p>Average Rating</p>
+          <h2 id="reportAverageRating">0.00 / 5</h2>
+          <span>Average user experience rating</span>
         </div>
 
-
         <div class="report-card">
-
-          <p>
-            Total AI Requests
-          </p>
-
-          <h2 id="reportTotalAIRequests">
-            0
-          </h2>
-
-          <span>
-            SmartCoop AI interactions
-          </span>
-
+          <p>Positive Feedback</p>
+          <h2 id="reportPositiveFeedback">0%</h2>
+          <span>Ratings of 4 or 5 stars</span>
         </div>
 
       </div>
 
-
-      <!-- USER AND PROJECT CHARTS -->
+      <!-- USER GROWTH AND RATING CHARTS -->
 
       <div class="admin-chart-row">
 
         <div class="admin-panel">
 
           <div class="admin-panel-header">
-
             <div>
-
-              <h3>
-                User Registration Growth
-              </h3>
-
-              <p>
-                New SmartCoop users over time
-              </p>
-
+              <h3>User Registration Growth</h3>
+              <p>New SmartCoop users over time</p>
             </div>
 
             <i data-lucide="users"></i>
-
           </div>
 
-
           <div class="admin-chart-container">
-
-            <canvas
-              id="adminReportUserChart">
-            </canvas>
-
+            <canvas id="adminReportUserChart"></canvas>
           </div>
 
         </div>
 
-
         <div class="admin-panel">
 
           <div class="admin-panel-header">
-
             <div>
-
-              <h3>
-                Project Growth
-              </h3>
-
-              <p>
-                Coop projects created over time
-              </p>
-
+              <h3>Feedback Rating Distribution</h3>
+              <p>Number of responses per star rating</p>
             </div>
 
-            <i data-lucide="folder-kanban"></i>
-
+            <i data-lucide="star"></i>
           </div>
 
-
           <div class="admin-chart-container">
-
-            <canvas
-              id="adminReportProjectChart">
-            </canvas>
-
+            <canvas id="adminFeedbackRatingChart"></canvas>
           </div>
 
         </div>
 
       </div>
 
-
-      <!-- RECORDS AND FEATURE USAGE -->
-
-      <div class="admin-chart-row">
-
-        <div class="admin-panel">
-
-          <div class="admin-panel-header">
-
-            <div>
-
-              <h3>
-                Record Activity
-              </h3>
-
-              <p>
-                Breakdown of farm management records
-              </p>
-
-            </div>
-
-            <i data-lucide="database"></i>
-
-          </div>
-
-
-          <div class="admin-chart-container">
-
-            <canvas
-              id="adminRecordActivityChart">
-            </canvas>
-
-          </div>
-
-        </div>
-
-
-        <div class="admin-panel">
-
-          <div class="admin-panel-header">
-
-            <div>
-
-              <h3>
-                Feature Usage
-              </h3>
-
-              <p>
-                Percentage of users using SmartCoop features
-              </p>
-
-            </div>
-
-            <i data-lucide="activity"></i>
-
-          </div>
-
-
-          <div class="usage-wrap">
-
-            <div class="usage-item">
-
-              <div class="usage-row">
-
-                <span>
-                  Coop Planner
-                </span>
-
-                <strong id="reportPlannerUsageText">
-                  0%
-                </strong>
-
-              </div>
-
-
-              <div class="usage-track">
-
-                <div
-                  id="reportPlannerUsageBar"
-                  style="width: 0%;">
-                </div>
-
-              </div>
-
-            </div>
-
-
-            <div class="usage-item light">
-
-              <div class="usage-row">
-
-                <span>
-                  Record Management
-                </span>
-
-                <strong id="reportRecordUsageText">
-                  0%
-                </strong>
-
-              </div>
-
-
-              <div class="usage-track">
-
-                <div
-                  id="reportRecordUsageBar"
-                  style="width: 0%;">
-                </div>
-
-              </div>
-
-            </div>
-
-
-            <div class="usage-item brown">
-
-              <div class="usage-row">
-
-                <span>
-                  AI Features
-                </span>
-
-                <strong id="reportAIUsageText">
-                  0%
-                </strong>
-
-              </div>
-
-
-              <div class="usage-track">
-
-                <div
-                  id="reportAIUsageBar"
-                  style="width: 0%;">
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- AI USAGE -->
+      <!-- FEEDBACK CATEGORY CHART -->
 
       <div class="admin-panel">
 
         <div class="admin-panel-header">
-
           <div>
-
-            <h3>
-              AI Usage Trend
-            </h3>
-
+            <h3>Feedback by Category</h3>
             <p>
-              SmartCoop AI requests over time
+              Bug reports, suggestions,
+              and general feedback
             </p>
-
           </div>
 
-          <i data-lucide="bot"></i>
-
+          <i data-lucide="message-square"></i>
         </div>
 
+        <div class="admin-chart-container">
+          <canvas id="adminFeedbackCategoryChart"></canvas>
+        </div>
 
-        <div class="admin-chart-container admin-chart-large">
+      </div>
 
-          <canvas
-            id="adminAIUsageChart">
-          </canvas>
+      <!-- USER FEEDBACK MANAGEMENT -->
+
+      <div class="admin-panel">
+
+        <div class="admin-panel-header">
+          <div>
+            <h3>User Feedback Management</h3>
+            <p>
+              Review submissions and update
+              their status
+            </p>
+          </div>
+
+          <i data-lucide="clipboard-list"></i>
+        </div>
+
+        <p
+          id="feedbackReportNotice"
+          role="status"
+          aria-live="polite">
+        </p>
+
+        <div style="overflow-x: auto;">
+
+          <table
+            class="feedback-admin-table"
+            style="width: 100%; border-collapse: collapse; text-align: left;">
+
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Rating</th>
+                <th>Category</th>
+                <th>Message</th>
+                <th>Page</th>
+                <th>Submitted</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+
+            <tbody id="adminFeedbackTableBody">
+              <tr>
+                <td colspan="7">
+                  Loading feedback...
+                </td>
+              </tr>
+            </tbody>
+
+          </table>
 
         </div>
 
@@ -579,24 +326,16 @@
 
   </main>
 
-
   <script src="js/auth.js"></script>
+  <script src="js/admin-feedback-reports.js"></script>
 
   <script>
-
-    document.addEventListener(
-      "DOMContentLoaded",
-      function () {
-
-        if (window.lucide) {
-          lucide.createIcons();
-        }
-
+    document.addEventListener("DOMContentLoaded", function () {
+      if (window.lucide) {
+        lucide.createIcons();
       }
-    );
-
+    });
   </script>
 
 </body>
-
 </html>

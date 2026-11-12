@@ -526,733 +526,179 @@ router.get(
 );
 
 
-router.get(
-  "/reports",
-  verifyAdmin,
-  async (req, res) => {
-    try {
-      const from =
-        req.query.from || null;
 
-      const to =
-        req.query.to || null;
+router.get("/reports", verifyAdmin, async (req, res) => {
+  try {
+    const { from, to } = req.query;
 
+    const validDate = value =>
+      typeof value === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+      !Number.isNaN(Date.parse(value)) &&
+      new Date(value).toISOString().slice(0, 10) === value;
 
-      function makeDateCondition(
-        column
-      ) {
-        const conditions = [];
-        const params = [];
+    if (
+      (from && !validDate(from)) ||
+      (to && !validDate(to)) ||
+      (from && to && from > to)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date range."
+      });
+    }
 
-        if (from) {
-          conditions.push(
-            `DATE(${column}) >= ?`
-          );
+    function dateFilter(column) {
+      const conditions = [];
+      const params = [];
 
-          params.push(from);
-        }
-
-        if (to) {
-          conditions.push(
-            `DATE(${column}) <= ?`
-          );
-
-          params.push(to);
-        }
-
-        return {
-          sql:
-            conditions.length > 0
-              ? `WHERE ${conditions.join(
-                  " AND "
-                )}`
-              : "",
-
-          params
-        };
+      if (from) {
+        conditions.push(`${column} >= ?`);
+        params.push(`${from} 00:00:00`);
       }
 
-
-      const userDate =
-        makeDateCondition(
-          "CreatedAt"
-        );
-
-      const coopDate =
-        makeDateCondition(
-          "CreatedAt"
-        );
-
-      const aiDate =
-        makeDateCondition(
-          "CreatedAt"
-        );
-
-
-      const expenseDate =
-        makeDateCondition(
-          "RecordDate"
-        );
-
-      const eggDate =
-        makeDateCondition(
-          "RecordDate"
-        );
-
-      const mortalityDate =
-        makeDateCondition(
-          "RecordDate"
-        );
-
-      const chickenDate =
-        makeDateCondition(
-          "RecordDate"
-        );
-
-      const meatDate =
-        makeDateCondition(
-          "HarvestDate"
-        );
-
-
-      const userRoleCondition =
-        userDate.sql
-          ? `${userDate.sql}
-             AND LOWER(Role) != 'admin'`
-          : `WHERE LOWER(Role) != 'admin'`;
-
-
-      const totalUsersResult =
-        await queryDatabase(
-          `
-            SELECT
-              COUNT(*) AS total
-
-            FROM users
-
-            ${userRoleCondition}
-          `,
-          userDate.params
-        );
-
-
-      const totalProjectsResult =
-        await queryDatabase(
-          `
-            SELECT
-              COUNT(*) AS total
-
-            FROM coops
-
-            ${coopDate.sql}
-          `,
-          coopDate.params
-        );
-
-
-      const aiRequestsResult =
-        await queryDatabase(
-          `
-            SELECT
-              COUNT(*) AS total
-
-            FROM ai_usage_logs
-
-            ${aiDate.sql}
-          `,
-          aiDate.params
-        );
-
-
-      const expenseCountResult =
-        await queryDatabase(
-          `
-            SELECT
-              COUNT(*) AS total
-
-            FROM expense_records
-
-            ${expenseDate.sql}
-          `,
-          expenseDate.params
-        );
-
-
-      const eggCountResult =
-        await queryDatabase(
-          `
-            SELECT
-              COUNT(*) AS total
-
-            FROM egg_records
-
-            ${eggDate.sql}
-          `,
-          eggDate.params
-        );
-
-
-      const mortalityCountResult =
-        await queryDatabase(
-          `
-            SELECT
-              COUNT(*) AS total
-
-            FROM mortality_records
-
-            ${mortalityDate.sql}
-          `,
-          mortalityDate.params
-        );
-
-
-      const chickenCountResult =
-        await queryDatabase(
-          `
-            SELECT
-              COUNT(*) AS total
-
-            FROM chicken_records
-
-            ${chickenDate.sql}
-          `,
-          chickenDate.params
-        );
-
-
-      const meatCountResult =
-        await queryDatabase(
-          `
-            SELECT
-              COUNT(*) AS total
-
-            FROM meat_records
-
-            ${meatDate.sql}
-          `,
-          meatDate.params
-        );
-
-
-      const expenseTotal =
-        Number(
-          expenseCountResult[0]
-            ?.total || 0
-        );
-
-      const eggTotal =
-        Number(
-          eggCountResult[0]
-            ?.total || 0
-        );
-
-      const mortalityTotal =
-        Number(
-          mortalityCountResult[0]
-            ?.total || 0
-        );
-
-      const chickenTotal =
-        Number(
-          chickenCountResult[0]
-            ?.total || 0
-        );
-
-      const meatTotal =
-        Number(
-          meatCountResult[0]
-            ?.total || 0
-        );
-
-
-      const totalRecords =
-        expenseTotal +
-        eggTotal +
-        mortalityTotal +
-        chickenTotal +
-        meatTotal;
-
-
-      const recordBreakdown = [
-        {
-          label:
-            "Expenses",
-
-          total:
-            expenseTotal
-        },
-
-        {
-          label:
-            "Eggs",
-
-          total:
-            eggTotal
-        },
-
-        {
-          label:
-            "Mortality",
-
-          total:
-            mortalityTotal
-        },
-
-        {
-          label:
-            "Chickens",
-
-          total:
-            chickenTotal
-        },
-
-        {
-          label:
-            "Meat",
-
-          total:
-            meatTotal
-        }
-      ];
-
-
-      const userGrowthResult =
-        await queryDatabase(
-          `
-            SELECT
-              DATE_FORMAT(
-                CreatedAt,
-                '%Y-%m'
-              ) AS monthKey,
-
-              DATE_FORMAT(
-                CreatedAt,
-                '%b'
-              ) AS monthLabel,
-
-              COUNT(*) AS total
-
-            FROM users
-
-            ${userRoleCondition}
-
-            GROUP BY
-              DATE_FORMAT(
-                CreatedAt,
-                '%Y-%m'
-              ),
-
-              DATE_FORMAT(
-                CreatedAt,
-                '%b'
-              )
-
-            ORDER BY
-              monthKey ASC
-          `,
-          userDate.params
-        );
-
-
-      const projectGrowthResult =
-        await queryDatabase(
-          `
-            SELECT
-              DATE_FORMAT(
-                CreatedAt,
-                '%Y-%m'
-              ) AS monthKey,
-
-              DATE_FORMAT(
-                CreatedAt,
-                '%b'
-              ) AS monthLabel,
-
-              COUNT(*) AS total
-
-            FROM coops
-
-            ${coopDate.sql}
-
-            GROUP BY
-              DATE_FORMAT(
-                CreatedAt,
-                '%Y-%m'
-              ),
-
-              DATE_FORMAT(
-                CreatedAt,
-                '%b'
-              )
-
-            ORDER BY
-              monthKey ASC
-          `,
-          coopDate.params
-        );
-
-
-      const aiGrowthResult =
-        await queryDatabase(
-          `
-            SELECT
-              DATE_FORMAT(
-                CreatedAt,
-                '%Y-%m'
-              ) AS monthKey,
-
-              DATE_FORMAT(
-                CreatedAt,
-                '%b'
-              ) AS monthLabel,
-
-              COUNT(*) AS total
-
-            FROM ai_usage_logs
-
-            ${aiDate.sql}
-
-            GROUP BY
-              DATE_FORMAT(
-                CreatedAt,
-                '%Y-%m'
-              ),
-
-              DATE_FORMAT(
-                CreatedAt,
-                '%b'
-              )
-
-            ORDER BY
-              monthKey ASC
-          `,
-          aiDate.params
-        );
-
-
-      const plannerUsersResult =
-        await queryDatabase(
-          `
-            SELECT
-              COUNT(
-                DISTINCT UserID
-              ) AS total
-
-            FROM coops
-
-            ${
-              coopDate.sql
-                ? `${coopDate.sql}
-                   AND UserID IS NOT NULL`
-                : `WHERE UserID IS NOT NULL`
-            }
-          `,
-          coopDate.params
-        );
-
-
-      const expenseUsersResult =
-        await queryDatabase(
-          `
-            SELECT
-              DISTINCT UserID
-
-            FROM expense_records
-
-            ${
-              expenseDate.sql
-                ? `${expenseDate.sql}
-                   AND UserID IS NOT NULL`
-                : `WHERE UserID IS NOT NULL`
-            }
-          `,
-          expenseDate.params
-        );
-
-
-      const eggUsersResult =
-        await queryDatabase(
-          `
-            SELECT
-              DISTINCT UserID
-
-            FROM egg_records
-
-            ${
-              eggDate.sql
-                ? `${eggDate.sql}
-                   AND UserID IS NOT NULL`
-                : `WHERE UserID IS NOT NULL`
-            }
-          `,
-          eggDate.params
-        );
-
-
-      const mortalityUsersResult =
-        await queryDatabase(
-          `
-            SELECT
-              DISTINCT UserID
-
-            FROM mortality_records
-
-            ${
-              mortalityDate.sql
-                ? `${mortalityDate.sql}
-                   AND UserID IS NOT NULL`
-                : `WHERE UserID IS NOT NULL`
-            }
-          `,
-          mortalityDate.params
-        );
-
-
-      const chickenUsersResult =
-        await queryDatabase(
-          `
-            SELECT
-              DISTINCT UserID
-
-            FROM chicken_records
-
-            ${
-              chickenDate.sql
-                ? `${chickenDate.sql}
-                   AND UserID IS NOT NULL`
-                : `WHERE UserID IS NOT NULL`
-            }
-          `,
-          chickenDate.params
-        );
-
-
-      const meatUsersResult =
-        await queryDatabase(
-          `
-            SELECT
-              DISTINCT UserID
-
-            FROM meat_records
-
-            ${
-              meatDate.sql
-                ? `${meatDate.sql}
-                   AND UserID IS NOT NULL`
-                : `WHERE UserID IS NOT NULL`
-            }
-          `,
-          meatDate.params
-        );
-
-
-      const recordUserIds =
-        new Set([
-          ...expenseUsersResult.map(
-            item =>
-              Number(item.UserID)
-          ),
-
-          ...eggUsersResult.map(
-            item =>
-              Number(item.UserID)
-          ),
-
-          ...mortalityUsersResult.map(
-            item =>
-              Number(item.UserID)
-          ),
-
-          ...chickenUsersResult.map(
-            item =>
-              Number(item.UserID)
-          ),
-
-          ...meatUsersResult.map(
-            item =>
-              Number(item.UserID)
-          )
-        ]);
-
-
-      const aiUsersResult =
-        await queryDatabase(
-          `
-            SELECT
-              COUNT(
-                DISTINCT UserID
-              ) AS total
-
-            FROM ai_usage_logs
-
-            ${
-              aiDate.sql
-                ? `${aiDate.sql}
-                   AND UserID IS NOT NULL`
-                : `WHERE UserID IS NOT NULL`
-            }
-          `,
-          aiDate.params
-        );
-
-
-      const totalUsers =
-        Number(
-          totalUsersResult[0]
-            ?.total || 0
-        );
-
-
-      const totalProjects =
-        Number(
-          totalProjectsResult[0]
-            ?.total || 0
-        );
-
-
-      const totalAIRequests =
-        Number(
-          aiRequestsResult[0]
-            ?.total || 0
-        );
-
-
-      const plannerUsers =
-        Number(
-          plannerUsersResult[0]
-            ?.total || 0
-        );
-
-
-      const recordUsers =
-        recordUserIds.size;
-
-
-      const aiUsers =
-        Number(
-          aiUsersResult[0]
-            ?.total || 0
-        );
-
-
-      const calculateUsage =
-        users =>
-          totalUsers > 0
-            ? Math.min(
-                Math.round(
-                  (
-                    users /
-                    totalUsers
-                  ) * 100
-                ),
-                100
-              )
-            : 0;
-
-
-      return res.json({
-        success: true,
-
-
-        stats: {
-          totalUsers,
-          totalProjects,
-          totalRecords,
-          totalAIRequests
-        },
-
-
-        usage: {
-          planner:
-            calculateUsage(
-              plannerUsers
-            ),
-
-          records:
-            calculateUsage(
-              recordUsers
-            ),
-
-          ai:
-            calculateUsage(
-              aiUsers
-            )
-        },
-
-
-        userGrowth:
-          userGrowthResult.map(
-            item => ({
-              month:
-                item.monthLabel,
-
-              monthKey:
-                item.monthKey,
-
-              total:
-                Number(
-                  item.total || 0
-                )
-            })
-          ),
-
-
-        projectGrowth:
-          projectGrowthResult.map(
-            item => ({
-              month:
-                item.monthLabel,
-
-              monthKey:
-                item.monthKey,
-
-              total:
-                Number(
-                  item.total || 0
-                )
-            })
-          ),
-
-
-        recordBreakdown,
-
-
-        aiGrowth:
-          aiGrowthResult.map(
-            item => ({
-              month:
-                item.monthLabel,
-
-              monthKey:
-                item.monthKey,
-
-              total:
-                Number(
-                  item.total || 0
-                )
-            })
-          )
-      });
-
-
-    } catch (error) {
-
-      console.error(
-        "ADMIN REPORTS ERROR:",
-        error
-      );
-
-
-      return res
-        .status(500)
-        .json({
-          success: false,
-          message:
-            "Unable to load admin reports."
-        });
+      if (to) {
+        conditions.push(`${column} < DATE_ADD(?, INTERVAL 1 DAY)`);
+        params.push(to);
+      }
+
+      return {
+        sql: conditions.length
+          ? ` AND ${conditions.join(" AND ")}`
+          : "",
+        params
+      };
     }
+
+    const userFilter = dateFilter("u.CreatedAt");
+    const feedbackFilter = dateFilter("f.CreatedAt");
+
+    const [userStats, userGrowth, feedbackStats,
+      ratingRows, categoryRows, feedbackRows] =
+      await Promise.all([
+        queryDatabase(
+          `SELECT COUNT(*) AS total
+           FROM users u
+           WHERE LOWER(u.Role) != 'admin'
+           ${userFilter.sql}`,
+          userFilter.params
+        ),
+
+        queryDatabase(
+          `SELECT
+             DATE_FORMAT(u.CreatedAt, '%Y-%m') AS monthKey,
+             DATE_FORMAT(u.CreatedAt, '%b %Y') AS month,
+             COUNT(*) AS total
+           FROM users u
+           WHERE LOWER(u.Role) != 'admin'
+             AND u.CreatedAt IS NOT NULL
+             ${userFilter.sql}
+           GROUP BY monthKey, month
+           ORDER BY monthKey ASC`,
+          userFilter.params
+        ),
+
+        queryDatabase(
+          `SELECT
+             COUNT(*) AS totalFeedback,
+             COALESCE(AVG(f.Rating), 0) AS averageRating,
+             COALESCE(
+               ROUND(
+                 100 * SUM(CASE WHEN f.Rating >= 4 THEN 1 ELSE 0 END)
+                 / NULLIF(COUNT(*), 0), 1
+               ), 0
+             ) AS positivePercentage
+           FROM feedback f
+           WHERE 1=1 ${feedbackFilter.sql}`,
+          feedbackFilter.params
+        ),
+
+        queryDatabase(
+          `SELECT f.Rating AS rating, COUNT(*) AS total
+           FROM feedback f
+           WHERE 1=1 ${feedbackFilter.sql}
+           GROUP BY f.Rating
+           ORDER BY f.Rating ASC`,
+          feedbackFilter.params
+        ),
+
+        queryDatabase(
+          `SELECT f.Category AS category, COUNT(*) AS total
+           FROM feedback f
+           WHERE 1=1 ${feedbackFilter.sql}
+           GROUP BY f.Category
+           ORDER BY f.Category ASC`,
+          feedbackFilter.params
+        ),
+
+        queryDatabase(
+          `SELECT
+             f.FeedbackID AS id,
+             f.UserID AS userId,
+             u.FullName AS userName,
+             u.Email AS userEmail,
+             f.Rating AS rating,
+             f.Category AS category,
+             f.Message AS message,
+             f.Page AS page,
+             f.Status AS status,
+             f.CreatedAt AS createdAt
+           FROM feedback f
+           INNER JOIN users u ON u.UserID = f.UserID
+           WHERE 1=1 ${feedbackFilter.sql}
+           ORDER BY f.CreatedAt DESC, f.FeedbackID DESC`,
+          feedbackFilter.params
+        )
+      ]);
+
+    const stats = feedbackStats[0];
+
+    const ratings = [1, 2, 3, 4, 5].map(rating => ({
+      rating,
+      total: Number(
+        ratingRows.find(row => Number(row.rating) === rating)?.total || 0
+      )
+    }));
+
+    const categories = [
+      "Bug Report",
+      "Suggestion",
+      "General Feedback",
+      "Others"
+    ].map(category => ({
+      category,
+      total: Number(
+        categoryRows.find(row => row.category === category)?.total || 0
+      )
+    }));
+
+    return res.json({
+      success: true,
+      stats: {
+        totalUsers: Number(userStats[0]?.total || 0),
+        totalFeedback: Number(stats?.totalFeedback || 0),
+        averageRating: Number(Number(stats?.averageRating || 0).toFixed(2)),
+        positivePercentage: Number(stats?.positivePercentage || 0)
+      },
+      userGrowth: userGrowth.map(row => ({
+        monthKey: row.monthKey,
+        month: row.month,
+        total: Number(row.total || 0)
+      })),
+      ratingDistribution: ratings,
+      feedbackCategories: categories,
+      feedback: feedbackRows
+    });
+  } catch (error) {
+    console.error("ADMIN REPORTS ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to load admin reports."
+    });
   }
-);
+});
+
 
 
 router.get(
@@ -1829,5 +1275,60 @@ router.patch("/materials/:id/price", verifyAdmin, async (req, res) => {
     });
   }
 });
+
+
+router.patch("/feedback/:id/status", verifyAdmin, async (req, res) => {
+  try {
+    const feedbackId = Number(req.params.id);
+    const { status } = req.body;
+
+    if (!Number.isSafeInteger(feedbackId) || feedbackId <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid feedback ID."
+      });
+    }
+
+    const allowedStatuses = ["New", "Reviewed", "Resolved"];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid feedback status."
+      });
+    }
+
+    const result = await queryDatabase(
+      `UPDATE feedback
+       SET Status = ?
+       WHERE FeedbackID = ?`,
+      [status, feedbackId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Feedback not found."
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: `Feedback marked as ${status}.`,
+      feedback: {
+        id: feedbackId,
+        status
+      }
+    });
+  } catch (error) {
+    console.error("FEEDBACK STATUS ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update feedback status."
+    });
+  }
+});
+
 
 module.exports = router;

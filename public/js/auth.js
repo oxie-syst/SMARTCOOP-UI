@@ -1279,14 +1279,20 @@ async function checkAdmin() {
     return false;
   }
 }
+
 async function initializeAdminDashboard() {
   const authorized = await checkAdmin();
 
   if (!authorized) return;
 
   loadUserInfo();
-  await loadAdminDashboard();
+
+  await Promise.all([
+    loadAdminDashboard(),
+    loadAdminCurrentConcerns()
+  ]);
 }
+
 
 
 let adminDashboardData = {
@@ -1308,164 +1314,41 @@ let adminDashboardData = {
 };
 
 
+
 async function loadAdminDashboard() {
-  const storedUser =
-    localStorage.getItem("user") ||
-    localStorage.getItem(
-      SMARTCOOP_USER_KEY
-    );
-
-  if (!storedUser) {
-    window.location.href =
-      "admin-login.html";
-    return;
-  }
-
-  let adminUser;
-
   try {
-    adminUser =
-      JSON.parse(storedUser);
-  } catch (error) {
-    localStorage.removeItem("user");
-    localStorage.removeItem(
-      SMARTCOOP_USER_KEY
-    );
+    const response = await fetch("/api/admin/dashboard", {
+      method: "GET",
+      credentials: "same-origin",
+      cache: "no-store"
+    });
 
-    window.location.href =
-      "admin-login.html";
-
-    return;
-  }
-
-  const adminUserId =
-    adminUser.UserID ||
-    adminUser.id;
-
-  if (!adminUserId) {
-    window.location.href =
-      "admin-login.html";
-    return;
-  }
-
-  try {
-const response = await fetch("/api/admin/dashboard", {
-  method: "GET",
-  credentials: "same-origin"
-});
-
-    const result =
-      await response.json();
-
-    if (
-      response.status === 401 ||
-      response.status === 403
-    ) {
-      localStorage.removeItem(
-        "user"
-      );
-
-      localStorage.removeItem(
-        SMARTCOOP_USER_KEY
-      );
-
-      window.location.href =
-        "admin-login.html";
-
+    if (response.status === 401 || response.status === 403) {
+      window.location.replace("admin-login.html");
       return;
     }
 
-    if (
-      !response.ok ||
-      !result.success
-    ) {
-      throw new Error(
-        result.message ||
-        "Unable to load admin dashboard."
-      );
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || "Unable to load dashboard.");
     }
 
     adminDashboardData = {
-      stats:
-        result.stats || {
-          totalUsers: 0,
-          activeUsers: 0,
-          totalProjects: 0
-        },
-
-      usage:
-        result.usage || {
-          planner: 0,
-          records: 0,
-          ai: 0
-        },
-
-      userGrowth:
-        Array.isArray(
-          result.userGrowth
-        )
-          ? result.userGrowth
-          : [],
-
-      projectGrowth:
-        Array.isArray(
-          result.projectGrowth
-        )
-          ? result.projectGrowth
-          : [],
-
-      recentUsers:
-        Array.isArray(
-          result.recentUsers
-        )
-          ? result.recentUsers
-          : []
+      stats: {
+        totalUsers: Number(result.stats?.totalUsers || 0),
+        activeUsers: Number(result.stats?.activeUsers || 0)
+      },
+      userGrowth: Array.isArray(result.userGrowth)
+        ? result.userGrowth
+        : [],
+      recentUsers: Array.isArray(result.recentUsers)
+        ? result.recentUsers
+        : []
     };
 
-    setText(
-      "adminTotalUsers",
-      adminDashboardData
-        .stats
-        .totalUsers || 0
-    );
-
-    setText(
-      "adminActiveUsers",
-      adminDashboardData
-        .stats
-        .activeUsers || 0
-    );
-
-    setText(
-      "adminTotalProjects",
-      adminDashboardData
-        .stats
-        .totalProjects || 0
-    );
-
-    setAdminUsage(
-      "plannerUsageText",
-      "plannerUsageBar",
-      adminDashboardData
-        .usage
-        .planner
-    );
-
-    setAdminUsage(
-      "recordUsageText",
-      "recordUsageBar",
-      adminDashboardData
-        .usage
-        .records
-    );
-
-    setAdminUsage(
-      "aiUsageText",
-      "aiUsageBar",
-      adminDashboardData
-        .usage
-        .ai
-    );
+    setText("adminTotalUsers", adminDashboardData.stats.totalUsers);
+    setText("adminActiveUsers", adminDashboardData.stats.activeUsers);
 
     loadAdminUsersTable();
     loadAdminCharts();
@@ -1475,55 +1358,17 @@ const response = await fetch("/api/admin/dashboard", {
     }
 
   } catch (error) {
-    console.error(
-      "ADMIN DASHBOARD LOAD ERROR:",
-      error
-    );
+    console.error("ADMIN DASHBOARD LOAD ERROR:", error);
 
-    setText(
-      "adminTotalUsers",
-      0
-    );
+    setText("adminTotalUsers", "Unavailable");
+    setText("adminActiveUsers", "Unavailable");
 
-    setText(
-      "adminActiveUsers",
-      0
-    );
-
-    setText(
-      "adminTotalProjects",
-      0
-    );
-
-    setAdminUsage(
-      "plannerUsageText",
-      "plannerUsageBar",
-      0
-    );
-
-    setAdminUsage(
-      "recordUsageText",
-      "recordUsageBar",
-      0
-    );
-
-    setAdminUsage(
-      "aiUsageText",
-      "aiUsageBar",
-      0
-    );
-
-    const table =
-      document.getElementById(
-        "adminUsersTable"
-      );
+    const table = document.getElementById("adminUsersTable");
 
     if (table) {
       table.innerHTML = `
         <tr>
-          <td colspan="5">
-            Unable to load admin dashboard data.
-          </td>
+          <td colspan="5">Unable to load dashboard data.</td>
         </tr>
       `;
     }

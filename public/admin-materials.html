@@ -1,14 +1,293 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Materials & Cost Management | SmartCoop</title>
 
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    .materials-panel .materials-toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .materials-panel .materials-search {
+      position: relative;
+      flex: 1 1 220px;
+      min-width: 180px;
+    }
+
+    .materials-panel .materials-search input {
+      display: block;
+      width: 100%;
+      height: 44px;
+      box-sizing: border-box;
+      padding: 0 14px 0 44px !important;
+    }
+
+    .materials-panel .materials-search svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .materials-panel .materials-toolbar select {
+      flex: 0 1 165px;
+      width: 165px;
+      min-width: 140px;
+      height: 44px;
+      box-sizing: border-box;
+    }
+
+    .materials-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .materials-add-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 16px;
+      border: 0;
+      border-radius: 9px;
+      background: #059669;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .materials-add-btn:hover {
+      background: #047857;
+    }
+
+    .materials-add-btn svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .materials-action-group {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .materials-action-group button {
+      cursor: pointer;
+    }
+
+    .materials-toggle-btn {
+      padding: 9px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: white;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .materials-toggle-btn:hover {
+      background: #f1f5f9;
+    }
+
+    .materials-restore-btn {
+      border-color: #a7f3d0;
+      background: #ecfdf5;
+      color: #047857;
+    }
+
+    .materials-status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .materials-status.available {
+      color: #047857;
+      background: #d1fae5;
+    }
+
+    .materials-status.unavailable {
+      color: #b45309;
+      background: #fef3c7;
+    }
+
+    .materials-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .materials-form-grid .input-group {
+      margin: 0;
+    }
+
+    .materials-form-grid input,
+    .materials-form-grid select {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 42px;
+    }
+
+    .materials-form-grid .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .materials-form-grid textarea {
+      width: 100%;
+      min-height: 70px;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+
+    .materials-add-modal-card {
+      width: min(560px, calc(100vw - 32px));
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .materials-table {
+      width: 100%;
+    }
+
+    .materials-table th,
+    .materials-table td {
+      vertical-align: middle;
+    }
+
+    .materials-quantity-section {
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      padding: 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .materials-quantity-section h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      color: #0f172a;
+    }
+
+    .materials-quantity-section p {
+      margin: 0 0 15px;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .materials-quantity-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .materials-quantity-grid label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .materials-quantity-grid input {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 11px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      box-sizing: border-box;
+      background: white;
+    }
+
+    .materials-quantity-grid input:focus {
+      outline: 2px solid #059669;
+      outline-offset: 1px;
+    }
+
+    @media (max-width: 768px) {
+      .materials-panel .materials-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .materials-panel .materials-search,
+      .materials-panel .materials-toolbar select {
+        flex: none;
+        width: 100%;
+      }
+
+      .materials-form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .materials-form-grid .full-width {
+        grid-column: auto;
+      }
+
+      .materials-quantity-section {
+        grid-column: 1;
+      }
+    }
+    .quantity-autofill-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.quantity-autofill-controls label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#quantityAutoFillMethod {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+}
+
+.quantity-autofill-btn {
+  padding: 12px 16px;
+  background: #059669;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.quantity-autofill-btn:hover {
+  background: #047857;
+}
+
+.quantity-autofill-note {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.5;
+}
+  </style>
 </head>
 
 <body class="dashboard-body admin-dashboard-page">
@@ -43,11 +322,12 @@
   </aside>
 
   <main class="main">
-
     <header class="topbar">
       <div class="topbar-brand">
         <i data-lucide="package"></i>
-        <span id="topbarText">Materials & Cost Management</span>
+        <span id="topbarText">
+          Materials & Cost Management
+        </span>
       </div>
 
       <div class="top-profile">
@@ -85,20 +365,22 @@
     </header>
 
     <section class="content admin-content">
-
       <div class="admin-page-header">
         <div>
-          <span class="admin-page-eyebrow">PRICE MAINTENANCE</span>
+          <span class="admin-page-eyebrow">
+            MATERIAL MANAGEMENT
+          </span>
+
           <h1>Materials & Cost Management</h1>
+
           <p>
-            View and update estimated material prices used
-            in SmartCoop's Coop Planner.
+            Manage material categories, prices, and availability
+            for SmartCoop's Coop Planner.
           </p>
         </div>
       </div>
 
       <div class="admin-users-kpis">
-
         <div class="admin-users-card">
           <p>Total Materials</p>
           <h2 id="totalMaterials">0</h2>
@@ -106,117 +388,108 @@
         </div>
 
         <div class="admin-users-card">
-          <p>Active Materials</p>
+          <p>Available Materials</p>
           <h2 id="activeMaterials">0</h2>
-          <small>Available for cost estimation</small>
+          <small>Active material records</small>
         </div>
 
         <div class="admin-users-card">
-          <p>Inactive Materials</p>
+          <p>Unavailable Materials</p>
           <h2 id="inactiveMaterials">0</h2>
-          <small>Deactivated material records</small>
+          <small>Hidden material records</small>
         </div>
-
       </div>
 
+      <div class="admin-users-panel materials-panel">
+        <div class="materials-panel-header">
+          <div>
+            <h2>Material Inventory</h2>
+            <p>
+              Manage material prices, categories, and availability.
+            </p>
+          </div>
 
-<div class="admin-users-panel materials-panel">
+          <button
+            type="button"
+            class="materials-add-btn"
+            id="openAddMaterialBtn">
+            <i data-lucide="plus"></i>
+            Add Material
+          </button>
+        </div>
 
-  <div class="materials-panel-header">
-    <div>
-      <h2 id="materialCategoryTitle">
-        Broilers Material Price List
-      </h2>
-      <p>
-        Manage material prices for each chicken type.
-      </p>
-    </div>
+        <div class="admin-users-tools materials-toolbar">
+          <div class="admin-users-search materials-search">
+            <i data-lucide="search"></i>
 
-    <div class="materials-panel-icon">
-      <i data-lucide="package-check"></i>
-    </div>
-  </div>
+            <input
+              id="materialSearch"
+              type="text"
+              placeholder="Search materials..."
+              autocomplete="off">
+          </div>
 
-  <div class="material-category-tabs">
-    <button
-      type="button"
-      class="material-category-tab active"
-      data-chicken-type="Broilers">
-      Broilers
-    </button>
+          <select id="materialChickenTypeFilter">
+            <option value="All">All Chicken Types</option>
+            <option value="Broilers">Broilers</option>
+            <option value="Layers (Egg Production)">Layers</option>
+            <option value="Dual Purpose">Dual Purpose</option>
+          </select>
 
-    <button
-      type="button"
-      class="material-category-tab"
-      data-chicken-type="Layers (Egg Production)">
-      Layers
-    </button>
+          <select id="materialCategoryFilter">
+            <option value="All">All Categories</option>
+            <option value="Construction">Construction</option>
+            <option value="Hardware">Hardware</option>
+            <option value="Equipment">Equipment</option>
+            <option value="Bedding">Bedding</option>
+            <option value="Feed">Feed</option>
+            <option value="Livestock">Livestock</option>
+            <option value="Uncategorized">Uncategorized</option>
+          </select>
 
-    <button
-      type="button"
-      class="material-category-tab"
-      data-chicken-type="Dual Purpose">
-      Dual Purpose
-    </button>
-  </div>
+          <select id="materialStatusFilter">
+            <option value="All">All Status</option>
+            <option value="Active">Available</option>
+            <option value="Inactive">Unavailable</option>
+          </select>
+        </div>
 
-  <div class="admin-users-tools materials-toolbar">
-<div class="admin-users-search materials-search">
-  <i data-lucide="search"></i>
-  <input
-    id="materialSearch"
-    type="text"
-    placeholder="Search materials..."
-    autocomplete="off">
-</div>
+        <div class="admin-table-wrapper">
+          <table class="admin-users-table materials-table">
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>Chicken Type</th>
+                <th>Category</th>
+                <th>Unit</th>
+                <th>Unit Price</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
 
-    <select id="materialStatusFilter">
-      <option value="All">All Status</option>
-      <option value="Active">Active</option>
-      <option value="Inactive">Inactive</option>
-    </select>
-  </div>
-
-  <div class="admin-table-wrapper">
-    <table class="admin-users-table materials-table">
-      <thead>
-        <tr>
-          <th>Material</th>
-          <th>Unit</th>
-          <th>Unit Price</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-
-      <tbody id="adminMaterialsTable">
-        <tr>
-          <td colspan="5">Loading materials...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-</div>
-
-
+            <tbody id="adminMaterialsTable">
+              <tr>
+                <td colspan="7">Loading materials...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </section>
   </main>
 
+  <!-- EDIT PRICE MODAL -->
   <div id="editMaterialPriceModal" class="admin-modal hidden">
     <div class="admin-modal-card">
-
       <button
         type="button"
         class="admin-modal-close"
-        id="closeMaterialPriceModal">
-        ×
-      </button>
+        id="closeMaterialPriceModal">×</button>
 
       <h2>Edit Material Price</h2>
 
       <form id="editMaterialPriceForm">
-
         <input type="hidden" id="editMaterialId">
 
         <div class="input-group">
@@ -230,7 +503,9 @@
         </div>
 
         <div class="input-group">
-          <label for="editMaterialPrice">New Unit Price (₱)</label>
+          <label for="editMaterialPrice">
+            New Unit Price (₱)
+          </label>
           <input
             id="editMaterialPrice"
             type="number"
@@ -255,9 +530,148 @@
             Cancel
           </button>
         </div>
-
       </form>
+    </div>
+  </div>
 
+  <!-- ADD MATERIAL MODAL -->
+  <div id="addMaterialModal" class="admin-modal hidden">
+    <div class="admin-modal-card materials-add-modal-card">
+
+      <button
+        type="button"
+        class="admin-modal-close"
+        id="closeAddMaterialModal">×</button>
+
+      <h2>Add New Material</h2>
+
+      <form id="addMaterialForm">
+        <div class="materials-form-grid">
+
+          <div class="input-group full-width">
+            <label for="addMaterialName">Material Name</label>
+            <input
+              id="addMaterialName"
+              type="text"
+              maxlength="150"
+              required>
+          </div>
+
+          <div class="input-group">
+            <label for="addMaterialChickenType">
+              Chicken Type
+            </label>
+
+            <select id="addMaterialChickenType" required>
+              <option value="Broilers">Broilers</option>
+              <option value="Layers (Egg Production)">Layers</option>
+              <option value="Dual Purpose">Dual Purpose</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="addMaterialCategory">Category</label>
+
+            <select id="addMaterialCategory" required>
+              <option value="Construction">Construction</option>
+              <option value="Hardware">Hardware</option>
+              <option value="Equipment">Equipment</option>
+              <option value="Bedding">Bedding</option>
+              <option value="Feed">Feed</option>
+              <option value="Livestock">Livestock</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label for="addMaterialUnit">Unit</label>
+
+            <input
+              id="addMaterialUnit"
+              type="text"
+              maxlength="50"
+              placeholder="pcs, sqm, sets..."
+              required>
+          </div>
+
+          <div class="input-group">
+            <label for="addMaterialPrice">
+              Unit Price (₱)
+            </label>
+
+            <input
+              id="addMaterialPrice"
+              type="number"
+              min="0"
+              max="9999999999.99"
+              step="0.01"
+              required>
+          </div>
+
+          <div class="input-group full-width">
+            <label for="addMaterialSpecification">
+              Specification (Optional)
+            </label>
+
+            <textarea id="addMaterialSpecification"></textarea>
+          </div>
+
+          <!-- NEW QUANTITY FIELDS -->
+          <div class="materials-quantity-section">
+            <h3>Quantity per Coop Size</h3>
+
+            <p>
+              Enter the required quantity for each coop size.
+              Use 0 if the material is not needed for a particular size.
+            </p>
+            <div class="quantity-autofill-controls">
+  <label for="quantityAutoFillMethod">
+    Auto-Fill Method
+  </label>
+
+  <select id="quantityAutoFillMethod">
+    <option value="area">By Floor Area (m²)</option>
+    <option value="linear">By Coop Length</option>
+    <option value="fixed">Same Quantity for All Sizes</option>
+  </select>
+
+  <button
+    type="button"
+    id="autoFillQuantitiesBtn"
+    class="quantity-autofill-btn"
+  >
+    Auto-Fill Quantities
+  </button>
+
+  <p class="quantity-autofill-note">
+    Enter the 1×1 quantity first. Auto-filled values are
+    suggestions only and can be edited before saving.
+  </p>
+</div>
+
+            <div
+              id="materialQuantityGrid"
+              class="materials-quantity-grid">
+            </div>
+          </div>
+
+        </div>
+
+        <div class="admin-modal-actions">
+          <button
+            type="submit"
+            class="admin-action-btn"
+            id="saveAddMaterialBtn">
+            Add Material
+          </button>
+
+          <button
+            type="button"
+            class="cancel-btn"
+            id="cancelAddMaterialBtn">
+            Cancel
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -271,6 +685,5 @@
       }
     });
   </script>
-
 </body>
 </html>
