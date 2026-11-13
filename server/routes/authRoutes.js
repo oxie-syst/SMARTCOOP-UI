@@ -266,6 +266,14 @@ router.post("/login", (req, res) => {
           });
         }
 
+        if (String(user.AccountStatus || "").toLowerCase() !== "active") {
+  return res.status(403).json({
+    success: false,
+    message: "Your account has been deactivated. Please contact the administrator."
+  });
+}
+
+
         const userResponse =
           createUserResponse(user);
 
@@ -572,6 +580,14 @@ router.post("/google", async (req, res) => {
 
         if (result.length > 0) {
           const existingUser = result[0];
+
+            if (String(existingUser.AccountStatus || "").toLowerCase() !== "active") {
+    return res.status(403).json({
+      success: false,
+      message: "Your account has been deactivated. Please contact the administrator."
+    });
+  }
+
 
           if (
             existingUser.GoogleID &&
